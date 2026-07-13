@@ -43,3 +43,7 @@ Download the JAR below and place it in your plugins folder. Requires SnLib.jar."
 ```
 
 The tag stays prefixed with the plugin id; the release title/notes can be human-friendly.
+
+## Documentation
+
+Every plugin published here also keeps a documentation section under `docs/gitbook/<pluginId>/`, synced automatically to a shared GitBook space: **[Sn Plugins Documentation](https://app.gitbook.com/PLACEHOLDER)**. See `docs/gitbook/README.md` for the convention.
