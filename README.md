@@ -33,7 +33,7 @@ Requires `com.sn:snlib` 1.4.0 or later (adds the `updates(ownerRepo, tagPrefix)`
 ```bash
 gh release create <pluginId>-vX.Y.Z \
   --repo ValentinTarnovsky/Sn-Releases \
-  --title "<PluginName> vX.Y.Z - Brief title" \
+  --title "<PluginName> vX.Y.Z" \
   --notes "## Changes
 - [Description]
 
@@ -42,7 +42,7 @@ Download the JAR below and place it in your plugins folder. Requires SnLib.jar."
   target/<PluginArtifact>-X.Y.Z.jar
 ```
 
-The tag stays prefixed with the plugin id; the release title/notes can be human-friendly.
+The tag stays prefixed with the plugin id. The release **title is always exactly** `<PluginName> vX.Y.Z` (for example `SnClans v1.0.2`) - never append a description or subtitle to the title; anything descriptive goes in `--notes`.
 
 ## Documentation
 
