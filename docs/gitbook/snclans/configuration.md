@@ -24,6 +24,13 @@ debug:
   enabled: false
 
 # ------------------------------------------------------------
+#  Main command. The alias list is re-read on /clan reload.
+# ------------------------------------------------------------
+command:
+  # Aliases of /clan (editable by the server owner).
+  aliases: [c]
+
+# ------------------------------------------------------------
 #  Database. type=sqlite needs nothing else; type=mysql reads host/port/etc.
 # ------------------------------------------------------------
 database:
@@ -225,3 +232,13 @@ These files are also auto-merged on boot, so your edits and comments survive upd
 
 - `lang/messages_en.yml`: all player-facing messages. Copy it to `messages_<code>.yml` and set `lang` in `config.yml` to add a language.
 - `guis/main.yml`, `guis/info.yml`, `guis/list.yml`, `guis/top.yml`, `guis/roster.yml`, `guis/settings.yml`, `guis/confirm.yml`: layout, items, and titles for each menu.
+
+The `guis/` files are seeded on first boot, so every menu opens correctly the first time you start the plugin.
+
+## Language file
+
+`lang/messages_en.yml` holds the message prefix, the shared `snlib` command contract, your own `messages`, and the chat `lists`.
+
+The `prefix` value at the top of the file is prepended automatically by SnLib to every single-line message sent through it. Do not write a literal prefix token inside any message value: SnLib adds the configured prefix for you, and a hardcoded one would render twice.
+
+The `snlib` block is SnLib's shared command contract: 11 keys covering permission errors, usage, number and value validation, unknown subcommands, reload confirmation, and the help header, entry, and footer. Ship the full block so SnClans matches the rest of the Sn fleet. SnLib fills any omitted key with a neutral default, which leaves an unbranded line. Placeholders such as `{plugin}`, `{usage}`, `{value}`, and `{command}` are substituted by SnLib.

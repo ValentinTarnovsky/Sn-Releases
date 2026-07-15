@@ -1,6 +1,6 @@
 # Commands
 
-The root command is `/clan`, with the alias `/c`. Run `/clan` alone to open the main menu, or `/clan help` to list every subcommand. Many actions require a minimum clan role, which you set in `config.yml`.
+The root command is `/clan`. It ships with the alias `/c`, which you can change under `command.aliases` in `config.yml`. That alias list is authoritative and is re-read on `/clan reload`. Run `/clan` alone to open the main menu, or `/clan help` to list every subcommand. Many actions require a minimum clan role, which you set in `config.yml`.
 
 ## Player commands
 
@@ -53,4 +53,19 @@ The optional `-s` flag on `forcedisband` and `forcetransfer` runs the action sil
 
 {% hint style="danger" %}
 `forcedisband` permanently deletes a clan and its data. This cannot be undone.
+{% endhint %}
+
+## Tab completion
+
+Every argument suggests real values as you type:
+
+- Clan names for `join`, `ally`, `unally`, `info`, `givepoint`, `forcedisband`, and `forcetransfer`.
+- Your own clan's members for `kick`, `ban`, `promote`, `demote`, and `transfer`.
+- Your clan's ban list for `unban`.
+- Online player names for `invite` and the `forcetransfer` target.
+- The `confirm` and `-s` literals where those apply.
+- An angle-bracket hint such as `<name>` or `<message>` for free-form arguments.
+
+{% hint style="info" %}
+Suggestions are a convenience only. Offline members stay typable, any typed value is still accepted, and every command's behavior and error messages are unchanged.
 {% endhint %}
