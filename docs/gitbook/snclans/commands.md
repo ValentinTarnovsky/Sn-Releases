@@ -22,7 +22,7 @@ The root command is `/clan`. It ships with the alias `/c`, which you can change 
 | `/clan transfer <player> [confirm]` | Transfer clan ownership (leader only) |
 | `/clan rename <name>` | Rename your clan |
 | `/clan open` | Open the clan to instant joins |
-| `/clan close` | Make the clan invite-only |
+| `/clan close` | Close the clan (join by invite only) |
 | `/clan description [text]` | Set or clear the clan description |
 | `/clan permissions [role] [action] [allow\|deny]` | View or edit the clan permission matrix |
 | `/clan ally <clan>` | Request or accept an alliance |
@@ -33,7 +33,7 @@ The root command is `/clan`. It ships with the alias `/c`, which you can change 
 | `/clan pvp` | Toggle clan friendly fire |
 | `/clan chat [message]` | Toggle clan chat, or send one clan message |
 | `/clan allychat [message]` | Toggle ally chat, or send one ally message |
-| `/clan info [clan]` | Show clan details |
+| `/clan info [clan\|player]` | Show clan details, by clan name or an online player's nick |
 | `/clan list` | List all clans |
 | `/clan top <point>` | Show the leaderboard for a point type |
 | `/clan stats` | Show your clan kills, deaths, and KDR |
@@ -41,7 +41,15 @@ The root command is `/clan`. It ships with the alias `/c`, which you can change 
 | `/clan help` | Show command help |
 
 {% hint style="info" %}
-Clans are invite-only by default. `/clan open` lets anyone join with `/clan join`, and `/clan close` reverts to invite-only. Run `/clan permissions` with no arguments to open the matrix editor, or `/clan permissions <role> <action> allow|deny` to set one entry from chat. The leader is always allowed and only the leader can edit the matrix.
+Clans are closed by default, so members join by invite. `/clan open` lets anyone join with `/clan join`, and `/clan close` closes the clan again. Run `/clan permissions` with no arguments to open the matrix editor, or `/clan permissions <role> <action> allow|deny` to set one entry from chat. The leader is always allowed and only the leader can edit the matrix.
+{% endhint %}
+
+{% hint style="info" %}
+`/clan info` accepts a clan name or an online player's nick and resolves either to the matching clan. When a token matches both a clan and a player, the clan name takes precedence.
+{% endhint %}
+
+{% hint style="info" %}
+The ally commands `/clan ally`, `/clan unally`, and `/clan allychat` work only while `clan.allies.enabled` is `true` in `config.yml`. With the ally system switched off they are disabled, and ally chat is rerouted to clan chat.
 {% endhint %}
 
 ## Admin commands
@@ -62,7 +70,7 @@ Every `/clan admin` action needs the `snclans.admin` parent node plus its own le
 | `/clan admin unban <clan> <player>` | `snclans.admin.unban` | Unban a player from any clan |
 | `/clan admin description <clan> [text]` | `snclans.admin.description` | Set or clear any clan's description |
 | `/clan admin open <clan> [-s]` | `snclans.admin.open` | Open any clan to instant joins |
-| `/clan admin close <clan> [-s]` | `snclans.admin.close` | Make any clan invite-only |
+| `/clan admin close <clan> [-s]` | `snclans.admin.close` | Close any clan (join by invite only) |
 | `/clan reload` | `snclans.admin.reload` | Reload configuration and language files |
 | `/clan debug` | `snclans.admin.debug` | Toggle runtime debug output |
 
@@ -78,7 +86,8 @@ The optional `-s` flag runs an admin action silently, skipping the target clan's
 
 Every argument suggests real values as you type:
 
-- Clan names for `join`, `ally`, `unally`, `info`, `givepoint`, and the `/clan admin` subcommands.
+- Clan names for `join`, `ally`, `unally`, `givepoint`, and the `/clan admin` subcommands.
+- Clan names and online player nicks for `info`; when a token matches both, the clan name wins.
 - Your own clan's members for `kick`, `ban`, `promote`, `demote`, and `transfer`.
 - Your clan's ban list for `unban`.
 - Online player names for `invite` and the `/clan admin` player argument.

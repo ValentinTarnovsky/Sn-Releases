@@ -112,8 +112,11 @@ clan:
       # reject = drop all styling to plain text; strip = remove only disallowed styling.
       on-disallowed: reject
   allies:
+    # Master switch of the ally system. false = ally commands, ally chat and
+    # ally friendly-fire are disabled (stored alliances are kept but inert).
+    enabled: true
     # Maximum simultaneous alliances a clan can hold. 0 = unlimited.
-    max: 10
+    max: 1
 
 # ------------------------------------------------------------
 #  Role display names. The ladder (Leader > Co-Leader > Officer > Member)
@@ -184,8 +187,16 @@ banner:
   hologram:
     # Whether to show the hologram.
     enabled: true
+    # Hologram backend: snlib (built-in, no extra plugin) or decentholograms
+    # (requires the DecentHolograms plugin; falls back to snlib if missing).
+    # Line spacing under decentholograms follows DecentHolograms' own config.
+    provider: snlib
     # Height above the banner block the hologram floats at.
     y-offset: 1.8
+    # Hologram lines. Placeholders: {clan} = clan name, {time} = remaining rally time.
+    lines:
+      - "&#8354f2&l{clan}"
+      - "&7Rally &8- &e{time}"
 
 # ------------------------------------------------------------
 #  Invites
@@ -267,6 +278,8 @@ restrictions:
 notifications:
   # Notify online clan members when their clan is affected (invite, kick, promote...).
   notify-clan: true
+  # Notify online clan members when a clanmate connects or disconnects.
+  connection-events: true
   # Notify staff holding snclans.notify of admin-relevant clan events.
   notify-staff: true
 
@@ -281,6 +294,34 @@ broadcasts:
   # Announce to the whole server when a clan is renamed.
   rename: true
 ```
+
+## Notable settings
+
+A few keys deserve a closer note on how they behave at runtime.
+
+### notifications.connection-events
+
+When `true`, online clan members see a short line as a clanmate connects or disconnects. Set it to `false` to silence those join and quit notices.
+
+### clan.allies.enabled
+
+Master switch of the ally system. When `false`, the ally commands are disabled, ally chat is rerouted to clan chat, and ally friendly-fire is ignored. Stored alliances are kept but stay inert until you switch it back on.
+
+### clan.allies.max
+
+Maximum simultaneous alliances a clan can hold, where `0` means unlimited. The shipped default is now `1`. Existing installs keep their current value: SnLib only inserts missing keys and never overwrites yours.
+
+### banner.hologram.provider
+
+Chooses the rally hologram backend: `snlib` (built-in, no extra plugin) or `decentholograms`. When you pick `decentholograms` but the plugin is absent, SnClans falls back to `snlib` and logs a console warning. Under `decentholograms`, line spacing follows DecentHolograms' own config.
+
+### banner.hologram.lines
+
+The hologram text, one entry per line. Two placeholders are available: `{clan}` for the clan name and `{time}` for the remaining rally time. The default shows the clan name above a `Rally` countdown line.
+
+### banner.cooldown-seconds
+
+The remaining banner cooldown is recomputed against the live value on every check. Editing it and running `/clan reload` retimes cooldowns that are already running, with no restart needed.
 
 ## Other managed YAML
 

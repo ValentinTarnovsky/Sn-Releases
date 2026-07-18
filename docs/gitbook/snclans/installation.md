@@ -21,7 +21,8 @@ SnClans is licensed. The key in `plugins/.Sn-License/license.yml` is shared by e
 | SnLib | Yes |
 | PlaceholderAPI | No (optional, enables placeholders) |
 | WorldGuard | No (optional, enables region gating) |
+| DecentHolograms | No (optional, alternative rally hologram backend) |
 
 {% hint style="info" %}
-When PlaceholderAPI or WorldGuard is absent, the matching feature degrades gracefully. Placeholders stay raw and region rules are skipped.
+When an optional plugin is absent, the matching feature degrades gracefully. Placeholders stay raw, region rules are skipped, and the rally hologram falls back to SnLib's built-in renderer.
 {% endhint %}

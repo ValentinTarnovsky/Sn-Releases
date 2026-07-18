@@ -9,7 +9,9 @@ Every placeholder resolves against the requesting player's clan. A player withou
 | `%snclans_name%` | Clan name |
 | `%snclans_tag%` | Clan tag |
 | `%snclans_leader%` | Clan leader name |
-| `%snclans_motd%` | Clan message of the day |
+| `%snclans_description%` | Clan description |
+| `%snclans_motd%` | Legacy alias of `description`; still resolves |
+| `%snclans_status%` | Join status, `open` or `closed` |
 | `%snclans_members%` | Total member count |
 | `%snclans_online%` | Online member count |
 | `%snclans_max%` | Maximum members allowed |
