@@ -27,7 +27,7 @@ debug:
 #  Main command. The alias list is re-read on /clan reload.
 # ------------------------------------------------------------
 command:
-  # Aliases of /clan (editable by the server owner).
+  # Aliases of /clan. Re-read on /clan reload.
   aliases: [c]
 
 # ------------------------------------------------------------
@@ -56,9 +56,9 @@ presentation:
   top: gui
   # /clan stats
   stats: gui
-  # /clan roster
-  roster: gui
-  # /clan (bare command with no args): open the main menu, or show chat help
+  # /clan members
+  members: gui
+  # Bare /clan and /clan menu. gui = open the main menu; chat = show command help.
   main: gui
 
 # ------------------------------------------------------------
@@ -68,22 +68,52 @@ clan:
   # Maximum members a clan can hold (leader included).
   max-members: 10
   name:
-    # Min/max length of a clan name (stripped of colors).
+    # Min/max visible length of a clan name, styling excluded.
     min-length: 3
     max-length: 16
-    # Characters allowed in a raw (stripped) clan name.
+    # Characters allowed in the plain (styling-stripped) clan name.
     regex: "^[A-Za-z0-9_]+$"
-    # Names that cannot be used (case-insensitive, matched against stripped name).
+    # Names that cannot be used, matched case-insensitively against the plain name.
     blacklist: [admin, staff, owner, server, mod, sn, snclans]
+    # Styling a player may put in a clan name. enabled: false keeps names plain.
+    style:
+      enabled: false
+      allow-legacy-colors: true
+      allow-hex: true
+      allow-bold: true
+      allow-italic: true
+      allow-underline: true
+      allow-strikethrough: false
+      allow-obfuscated: false
+      allow-minimessage: false
+      allow-gradient: false
+      # reject = drop all styling to plain text; strip = remove only disallowed styling.
+      on-disallowed: reject
   tag:
     # Whether clans have a short tag/prefix.
     enabled: true
-    # Min/max length of a clan tag.
+    # Min/max visible length of a clan tag, styling excluded.
     min-length: 2
     max-length: 5
+    # Characters allowed in the plain (styling-stripped) clan tag.
     regex: "^[A-Za-z0-9]+$"
-  # Default join policy for newly created clans: open | request | invite-only
-  default-join-policy: invite-only
+    # Styling a player may put in a clan tag. enabled: false keeps tags plain.
+    style:
+      enabled: false
+      allow-legacy-colors: true
+      allow-hex: true
+      allow-bold: true
+      allow-italic: true
+      allow-underline: true
+      allow-strikethrough: false
+      allow-obfuscated: false
+      allow-minimessage: false
+      allow-gradient: false
+      # reject = drop all styling to plain text; strip = remove only disallowed styling.
+      on-disallowed: reject
+  allies:
+    # Maximum simultaneous alliances a clan can hold. 0 = unlimited.
+    max: 10
 
 # ------------------------------------------------------------
 #  Role display names. The ladder (Leader > Co-Leader > Officer > Member)
@@ -99,8 +129,9 @@ roles:
   member:
     display: "&7Member"
 
-# Minimum role required to perform each managed action.
-# (disband and transfer are always leader-only and are not configurable here.)
+# Minimum role required to perform each managed action. These thresholds seed a
+# clan's editable permission matrix on creation. disband and transfer are always
+# leader-only and are not part of the matrix.
 action-roles:
   invite: officer
   kick: officer
@@ -111,7 +142,9 @@ action-roles:
   rename: co-leader
   sethome: officer
   banner: officer
-  settings: co-leader
+  pvp: co-leader
+  description: co-leader
+  open-close: co-leader
   ally: co-leader
 
 # ------------------------------------------------------------
@@ -128,11 +161,8 @@ cooldowns:
 # ------------------------------------------------------------
 home:
   # Seconds the player must stand still before the teleport fires (0 = instant).
+  # Moving to another block or taking damage cancels the warmup.
   warmup-seconds: 5
-  # Cancel the warmup if the player moves to another block.
-  cancel-on-move: true
-  # Cancel the warmup if the player takes damage.
-  cancel-on-damage: true
 
 # ------------------------------------------------------------
 #  Rally banner. /clan banner spawns a banner at the leader's location;
@@ -144,10 +174,18 @@ banner:
   material: WHITE_BANNER
   # How long the rally banner stays active before despawning.
   duration-seconds: 45
-  # How long a clan must wait between rallies.
+  # How long a clan must wait between placing rally banners.
   cooldown-seconds: 600
   # Teleport warmup for clanmates joining the rally.
   teleport-warmup-seconds: 0
+  # Per-player cooldown between rally teleports to the banner.
+  rally-cooldown-seconds: 3
+  # Floating countdown hologram above the rally banner.
+  hologram:
+    # Whether to show the hologram.
+    enabled: true
+    # Height above the banner block the hologram floats at.
+    y-offset: 1.8
 
 # ------------------------------------------------------------
 #  Invites
@@ -179,19 +217,26 @@ chat:
 # ------------------------------------------------------------
 #  Custom points. Each entry is a point type clans accumulate.
 #  /clan top <id> ranks clans by that type. /clan givepoint <id> <n>
-#  grants points manually. triggers award points automatically:
+#  grants points manually. The info menu shows one {points_<id>}
+#  placeholder per entry. Trigger types:
 #    player-kill  = points to the killer's clan per player kill
 #    mob-kill     = points to the killer's clan per mob kill
 #    death        = points removed from the victim's clan per death
 # ------------------------------------------------------------
 points:
   kills:
+    # Name shown in menus and leaderboards.
     display: "&#8354f2Kills"
     triggers:
+      # Award to the killer's clan on a player kill.
       player-kill: 1
+      # Remove from the victim's clan on death.
+      death: 1
   mobkills:
+    # Name shown in menus and leaderboards.
     display: "&#8354f2Mob Kills"
     triggers:
+      # Award to the killer's clan on a mob kill.
       mob-kill: 1
 
 # ------------------------------------------------------------
@@ -224,6 +269,17 @@ notifications:
   notify-clan: true
   # Notify staff holding snclans.notify of admin-relevant clan events.
   notify-staff: true
+
+# ------------------------------------------------------------
+#  Server-wide broadcasts for clan lifecycle events.
+# ------------------------------------------------------------
+broadcasts:
+  # Announce to the whole server when a clan is created.
+  create: true
+  # Announce to the whole server when a clan is disbanded.
+  disband: true
+  # Announce to the whole server when a clan is renamed.
+  rename: true
 ```
 
 ## Other managed YAML
@@ -231,7 +287,7 @@ notifications:
 These files are also auto-merged on boot, so your edits and comments survive updates.
 
 - `lang/messages_en.yml`: all player-facing messages. Copy it to `messages_<code>.yml` and set `lang` in `config.yml` to add a language.
-- `guis/main.yml`, `guis/info.yml`, `guis/list.yml`, `guis/top.yml`, `guis/roster.yml`, `guis/settings.yml`, `guis/confirm.yml`: layout, items, and titles for each menu.
+- `guis/main.yml`, `guis/info.yml`, `guis/list.yml`, `guis/top.yml`, `guis/members.yml`, `guis/permissions.yml`, `guis/confirm.yml`: layout, items, and titles for each menu.
 
 The `guis/` files are seeded on first boot, so every menu opens correctly the first time you start the plugin.
 

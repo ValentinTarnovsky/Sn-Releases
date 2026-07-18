@@ -5,8 +5,8 @@ SnClans is a full-featured clans and guilds system for Paper servers. Players cr
 ## Features
 
 - Create and manage clans with names, optional tags, and a Leader / Co-Leader / Officer / Member role ladder.
-- Invite, join, kick, ban, promote, demote, and transfer members, each gated by a configurable role.
-- Clan homes with a teleport warmup, plus rally banners that clanmates warp to.
+- Invite-only by default, or open a clan for instant joins; a per-clan permission matrix lets the leader decide which roles may invite, kick, promote, and more.
+- Clan homes with a teleport warmup, plus rally banners with a countdown that clanmates warp to.
 - Friendly-fire control for clanmates and allies, with dedicated clan and ally chat channels.
 - Custom point types with leaderboards, awarded on kills or granted by staff.
 - Every interactive feature shows as a GUI or in chat, and can be gated by WorldGuard regions.

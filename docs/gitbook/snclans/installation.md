@@ -7,7 +7,7 @@
 5. Restart the server. SnClans validates the key at startup and then enables.
 
 {% hint style="warning" %}
-Requires **SnLib** installed (`depend: [SnLib]`), version 1.5.0 or later.
+Requires **SnLib** installed (`depend: [SnLib]`), version 1.6.0 or later.
 {% endhint %}
 
 {% hint style="info" %}
