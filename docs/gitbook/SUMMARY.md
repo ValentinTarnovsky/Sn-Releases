@@ -10,4 +10,5 @@
 * [Permissions](snclans/permissions.md)
 * [Configuration](snclans/configuration.md)
 * [Placeholders](snclans/placeholders.md)
+* [Developer API](snclans/api.md)
 * [FAQ](snclans/faq.md)
