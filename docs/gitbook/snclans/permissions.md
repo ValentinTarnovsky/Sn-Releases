@@ -14,6 +14,7 @@ Basic play permissions default to `true`, so any player can use clans out of the
 | `snclans.admin` | op | Full administrative access (parent of every admin node) |
 | `snclans.admin.reload` | op | Use `/clan reload` |
 | `snclans.admin.debug` | op | Use `/clan debug` |
+| `snclans.admin.update` | op | Receive update notices in chat |
 | `snclans.admin.givepoint` | op | Use `/clan givepoint` |
 | `snclans.admin.silent` | op | Use the `-s` silent flag on admin actions |
 | `snclans.admin.rename` | op | Use `/clan admin rename` |
