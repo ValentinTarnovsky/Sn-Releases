@@ -10,8 +10,8 @@ Basic play permissions default to `true`, so any player can use clans out of the
 | `snclans.banner` | true | Use `/clan banner` |
 | `snclans.ally` | true | Use alliance commands and ally chat |
 | `snclans.chat.color` | true | Use color codes in clan and ally chat |
-| `snclans.notify` | op | Receive staff notifications of clan events |
-| `snclans.admin` | op | Full administrative access (parent of every admin node) |
+| `snclans.notify` | op | Receive staff notifications of clan events (granted by `snclans.admin`) |
+| `snclans.admin` | op | Full administrative access (parent of every admin node and of `snclans.notify`) |
 | `snclans.admin.reload` | op | Use `/clan reload` |
 | `snclans.admin.debug` | op | Use `/clan debug` |
 | `snclans.admin.update` | op | Receive update notices in chat |

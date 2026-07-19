@@ -4,7 +4,7 @@ Player permissions default to `true`; every admin node defaults to `op`. `snmini
 
 | Permission | Default | Description |
 |-----------|---------|-------------|
-| `snminigames.play` | true | Join, leave and list minigames |
+| `snminigames.use` | true | Basic usage: join, leave and list minigames |
 | `snminigames.admin` | op | Full administrative access (parent of every node below) |
 | `snminigames.admin.start` | op | Force-start a round |
 | `snminigames.admin.stop` | op | Force-stop a running round |
