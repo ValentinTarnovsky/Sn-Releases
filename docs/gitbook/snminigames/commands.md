@@ -18,8 +18,8 @@ The root command is `/minigames`, alias `/mg` (configurable via `command.aliases
 | `/mg admin start <game>` | `snminigames.admin.start` | Force-open a round now |
 | `/mg admin stop <game>` | `snminigames.admin.stop` | Stop the running round and restore everyone |
 | `/mg admin forcejoin <player> [game]` | `snminigames.admin.forcejoin` | Force a player into a round |
-| `/mg admin wand` | `snminigames.admin.setup` | Get the map setup wand |
-| `/mg admin parkour create <map>` | `snminigames.admin.setup` | Create a new parkour map |
+| `/mg admin wand` | `snminigames.admin.setup` | Toggle the map setup wand (given when absent, removed when present; also removed on quit) |
+| `/mg admin parkour create <name>` | `snminigames.admin.setup` | Create a new parkour map |
 | `/mg admin parkour delete <map>` | `snminigames.admin.setup` | Delete a map (not while a round plays it) |
 | `/mg admin parkour list` | `snminigames.admin.setup` | List maps with waypoint and winner counts |
 | `/mg admin parkour setstart <map>` | `snminigames.admin.setup` | Set the race start to the wand-selected block |

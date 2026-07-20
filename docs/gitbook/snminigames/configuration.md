@@ -136,9 +136,13 @@ leave-item:
 map-rotation: RANDOM
 
 # ------------------------------------------------------------
-#  Maps. Each entry is one parkour course. Set its locations with the
-#  setup wand: /minigames admin parkour <map> setstart|addwaypoint|
-#  setwin|setend|sethold and setwinners.
+#  Maps. Each entry is one parkour course, created in-game with
+#  /minigames admin parkour create <name>.
+#  Wand commands (select a block with the setup wand first):
+#    /minigames admin parkour setstart|addwaypoint|setwin <map>
+#  Standing-position commands (run where you stand):
+#    /minigames admin parkour setwaiting|setend|sethold <map>
+#  Also: delete <map>, setwinners <map> <count>, clearwaypoints <map>, list.
 # ------------------------------------------------------------
 maps:
   arena1:

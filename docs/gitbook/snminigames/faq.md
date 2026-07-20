@@ -4,7 +4,13 @@
 Download the newer `snminigames-v*` release and replace the jar. Configs auto-merge on restart; `games/parkour.yml` is never touched.
 
 ### How do I build a parkour map?
-Get the wand with `/mg admin wand`, click a block, then run `/mg admin parkour <map> setstart`, `addwaypoint` or `setwin`. Stand where you want the waiting lobby, end point or hold spot and run `setwaiting`, `setend` or `sethold`.
+Create it with `/mg admin parkour create <name>`, then get the wand with `/mg admin wand` (running it again removes the wand). Click a block and run `/mg admin parkour setstart <map>`, `addwaypoint <map>` or `setwin <map>`. Stand where you want the waiting lobby, end point or hold spot and run `setwaiting <map>`, `setend <map>` or `sethold <map>`.
+
+### Why does the [JOIN] chat button do nothing for some players?
+Bedrock players (connecting through Geyser) cannot click chat buttons - that is a Bedrock limitation, not a bug. The announce also shows the plain command (`/minigames join <game>`), which works for everyone. If Java players cannot click either, check the startup log: the plugin warns when a language file edit or translation lost the `<click:...>` tag of a message.
+
+### Can players move during the 3-2-1 countdown?
+No. Movement is frozen at the start point until the GO title: position changes are reverted, walking is zeroed and anyone who still drifts is teleported back each second (this also holds for Bedrock players). Looking around stays free.
 
 ### What happens to a player's items if the server crashes mid-game?
 Nothing is lost. The full player state is written to disk before the game touches it, and it restores on the next start or when the player reconnects.
