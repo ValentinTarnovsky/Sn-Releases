@@ -15,7 +15,8 @@ The root command is `/minigames`, alias `/mg` (configurable via `command.aliases
 
 | Command | Permission | Description |
 |---------|-----------|-------------|
-| `/mg admin start <game>` | `snminigames.admin.start` | Force-open a round now |
+| `/mg admin start <game> [map]` | `snminigames.admin.start` | Force-open a round now; the optional map forces a specific map instead of the rotation pick (without advancing the rotation) |
+| `/mg admin forcestart <game>` | `snminigames.admin.forcestart` | Skip the remaining waiting countdown and begin the round now with whoever is queued (bypasses the minimum-players requirement) |
 | `/mg admin stop <game>` | `snminigames.admin.stop` | Stop the running round and restore everyone |
 | `/mg admin forcejoin <player> [game]` | `snminigames.admin.forcejoin` | Force a player into a round |
 | `/mg admin wand` | `snminigames.admin.setup` | Toggle the map setup wand (given when absent, removed when present; also removed on quit) |
