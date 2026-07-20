@@ -2,6 +2,13 @@
 
 The root command is `/minigames`, alias `/mg` (configurable via `command.aliases` in `config.yml`). `help`, `reload` and `debug` are provided by SnLib on the same root.
 
+{% hint style="info" %}
+Each minigame keeps its map setup commands out of `/mg help` and lists them behind its own
+`/mg admin <game> help` instead. That way the root help grows by one line per minigame rather
+than one line per subcommand. The setup commands still run and still tab-complete: type
+`/mg admin parkour ` and press TAB to see them.
+{% endhint %}
+
 ## Player commands
 
 | Command | Description |
@@ -20,6 +27,7 @@ The root command is `/minigames`, alias `/mg` (configurable via `command.aliases
 | `/mg admin stop <game>` | `snminigames.admin.stop` | Stop the running round and restore everyone |
 | `/mg admin forcejoin <player> [game]` | `snminigames.admin.forcejoin` | Force a player into a round |
 | `/mg admin wand` | `snminigames.admin.setup` | Toggle the map setup wand (given when absent, removed when present; also removed on quit) |
+| `/mg admin parkour help [page]` | `snminigames.admin.setup` | List every parkour setup command with its usage, paginated |
 | `/mg admin parkour create <name>` | `snminigames.admin.setup` | Create a new parkour map |
 | `/mg admin parkour delete <map>` | `snminigames.admin.setup` | Delete a map (not while a round plays it) |
 | `/mg admin parkour list` | `snminigames.admin.setup` | List maps with waypoint and winner counts |

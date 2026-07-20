@@ -1,10 +1,16 @@
 # FAQ
 
 ### How do I update SnMiniGames?
-Download the newer `snminigames-v*` release and replace the jar. Configs auto-merge on restart; `games/parkour.yml` is never touched.
+Download the newer `snminigames-v*` release and replace the jar. Update SnLib first if the release notes ask for a newer version. Configs auto-merge on restart; `games/parkour.yml` is never touched.
+
+### Why are the map setup commands missing from `/mg help`?
+They are hidden from the root help on purpose. Every minigame ships its own set of setup commands, so listing them all would make `/mg help` unreadable once several games are installed. Each game exposes one entry instead, `/mg admin <game> help`, which lists that game's commands on its own page. The commands themselves are unchanged: they still run, and they still tab-complete under `/mg admin <game> `.
+
+### Where do I configure the leave item?
+Its material and name live in `config.yml` under `leave-item`, because one item is registered for every minigame and cannot differ between them. Whether a game hands it out and which hotbar slot it uses stay per-game, under `leave-item` in that game's file.
 
 ### How do I build a parkour map?
-Create it with `/mg admin parkour create <name>`, then get the wand with `/mg admin wand` (running it again removes the wand). Click a block and run `/mg admin parkour setstart <map>`, `addwaypoint <map>` or `setwin <map>`. Stand where you want the waiting lobby, end point or hold spot and run `setwaiting <map>`, `setend <map>` or `sethold <map>`.
+Create it with `/mg admin parkour create <name>`, then get the wand with `/mg admin wand` (running it again removes the wand). `/mg admin parkour help` lists every setup command if you forget one. Click a block and run `/mg admin parkour setstart <map>`, `addwaypoint <map>` or `setwin <map>`. Stand where you want the waiting lobby, end point or hold spot and run `setwaiting <map>`, `setend <map>` or `sethold <map>`.
 
 ### How do I start a round manually?
 Two admin commands cover it. `/mg admin start <game>` opens a fresh queue right away without waiting for auto-start; add an optional map (`/mg admin start <game> <map>`) to force a specific map instead of the rotation pick, and the rotation cursor stays where it was. Once players are queued, `/mg admin forcestart <game>` skips the remaining countdown and begins the round immediately with whoever is in the queue - the minimum-players requirement is bypassed on purpose, so an empty queue is refused instead.
