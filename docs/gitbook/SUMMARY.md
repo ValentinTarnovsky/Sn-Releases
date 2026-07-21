@@ -21,6 +21,7 @@
 * [Permissions](snelementalgems/permissions.md)
 * [Configuration](snelementalgems/configuration.md)
 * [Placeholders](snelementalgems/placeholders.md)
+* [Developer API](snelementalgems/api.md)
 * [FAQ](snelementalgems/faq.md)
 
 ## SnMiniGames
