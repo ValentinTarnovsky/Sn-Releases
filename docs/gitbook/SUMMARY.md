@@ -13,6 +13,16 @@
 * [Developer API](snclans/api.md)
 * [FAQ](snclans/faq.md)
 
+## SnElementalGems
+
+* [Overview](snelementalgems/README.md)
+* [Installation](snelementalgems/installation.md)
+* [Commands](snelementalgems/commands.md)
+* [Permissions](snelementalgems/permissions.md)
+* [Configuration](snelementalgems/configuration.md)
+* [Placeholders](snelementalgems/placeholders.md)
+* [FAQ](snelementalgems/faq.md)
+
 ## SnMiniGames
 
 * [Overview](snminigames/README.md)
