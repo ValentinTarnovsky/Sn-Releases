@@ -1,6 +1,6 @@
 # Placeholders
 
-All placeholders require [PlaceholderAPI](https://www.spigotmc.org/resources/placeholderapi.6245/) and use the `%snminigames_` prefix. Values are live and never empty: game-scoped tokens return `idle`, `0` or an empty string when nothing is running. `<game>` is the game id, for example `parkour`.
+All placeholders require [PlaceholderAPI](https://www.spigotmc.org/resources/placeholderapi.6245/) and use the `%snminigames_` prefix. Values are live and never empty: game-scoped tokens return `idle`, `0` or an empty string when nothing is running. `<game>` is the game id: `parkour` or `tntrun`.
 
 | Placeholder | Description |
 |-------------|-------------|

@@ -1,8 +1,8 @@
 # Configuration
 
-SnMiniGames ships with the following YAML files. `config.yml` and `lang/messages_en.yml` are managed: new keys are auto-merged on boot and your edits and comments are preserved. `games/parkour.yml` is seeded once and never auto-merged, so the setup wand and your edits fully own it.
+SnMiniGames ships with the following YAML files. `config.yml` and `lang/messages_en.yml` are managed: new keys are auto-merged on boot and your edits and comments are preserved. `games/parkour.yml` and `games/tntrun.yml` are seeded once and never auto-merged, so the setup commands and your edits fully own them.
 
-Every minigame gets its own `games/<game>.yml` holding its `enabled` flag, queue settings, maps and rewards. Settings shared by every game, such as the leave item appearance, live in `config.yml` instead.
+Every minigame gets its own `games/<game>.yml` holding its `enabled` flag, queue settings, maps and rewards. Settings shared by every game, such as the leave item appearance and the two setup wands, live in `config.yml` instead.
 
 ## config.yml
 
@@ -48,6 +48,50 @@ setup-wand:
   material: BLAZE_ROD
   # Display name of the setup wand item.
   name: "&#8354f2&lSetup Wand"
+
+# ------------------------------------------------------------
+#  Admin region wand (cuboid selection, used by arena games such as
+#  TNT Run). Left-click one corner, right-click the other; the box
+#  edges are rendered with particles while you select.
+#  Given with /minigames admin wand region.
+# ------------------------------------------------------------
+region-wand:
+  # Appearance of the region wand item.
+  item:
+    material: GOLDEN_AXE
+    display-name: "&#8354f2&lRegion Wand"
+    lore:
+      - "&7Left click: &fpos1"
+      - "&7Right click: &fpos2"
+    glow: true
+  # Permission required to USE the wand (empty = anyone holding it).
+  permission: "snminigames.admin.setup"
+  particle:
+    # Edge particle. DUST honours the color and size below.
+    type: DUST
+    # Only for DUST: "R, G, B" or "#RRGGBB".
+    color: "#8354f2"
+    # Only for DUST: dust size, clamped 0.1 - 4.0.
+    size: 1.2
+  # Distance between edge points in blocks. Min 0.1.
+  step: 0.5
+  # Render refresh period in ticks. Min 1.
+  interval-ticks: 5
+  # Max distance (blocks) from a viewer to the box for particles to be shown.
+  render-distance: 64
+  # OWNER_ONLY = only the selecting admin sees the edges; WORLD = everyone near.
+  visibility: OWNER_ONLY
+  # Max particle points per refresh per viewer; bigger boxes render sparser.
+  particle-budget: 2000
+  # Above this block volume only the 8 corners are marked.
+  max-render-volume: 250000
+  # Max selectable arena volume in blocks; 0 = unlimited. This is the safety cap
+  # that keeps a TNT Run arena from growing into a region too big to restore.
+  max-volume: 250000
+  # Session timeout in ticks; 0 = never expires.
+  timeout-ticks: 0
+  # Send no selection messages at all.
+  silent: false
 
 # ------------------------------------------------------------
 #  Leave item (hotbar item that leaves the round on right-click).
@@ -211,6 +255,145 @@ sounds:
   # Played when a player falls and is returned to their checkpoint.
   fell: "ENTITY_VILLAGER_NO 1.0 1.0"
   # Played to a player when they finish the course.
+  win: "UI_TOAST_CHALLENGE_COMPLETE 1.0 1.0"
+```
+
+## games/tntrun.yml
+
+```yaml
+# ============================================================
+#  SnMiniGames - TNT Run game
+#  Seeded once by SnLib and NEVER auto-merged: your structure and values
+#  are kept. The setup commands (/minigames admin tntrun ...) write maps
+#  back into this file.
+# ============================================================
+
+# Whether the TNT Run game is active. When false it is not registered:
+# it will not appear in /minigames list, /minigames join or PlaceholderAPI.
+enabled: true
+
+# Display name of the game, shown wherever {game} appears. Supports color
+# codes and the full SnLib text pipeline.
+display-name: "&#f25c05&lTNT Run"
+
+# ------------------------------------------------------------
+#  Queue and round staging (shared framework settings).
+# ------------------------------------------------------------
+queue:
+  # Seconds between automatic rounds. 0 disables auto-start (rounds then open
+  # only via /minigames admin start tntrun).
+  auto-start-interval: 120
+  # Seconds the queue stays open before the round begins.
+  countdown: 30
+  # Minimum queued players for the round to begin; below this at countdown end
+  # the round is cancelled.
+  min-players: 2
+  # Maximum queued players; reaching it starts the round early.
+  max-players: 12
+  # Broadcast the "starts in" line every N seconds while the queue counts down.
+  announce-interval: 10
+  # Mini-lobby players are teleported to while they wait (world;x;y;z;yaw;pitch).
+  # Set it in-game with /minigames admin tntrun setwaiting <map>.
+  waiting-spawn: ""
+  # Seconds a player must wait before rejoining after leaving or losing. 0 = none.
+  rejoin-cooldown: 15
+
+# ------------------------------------------------------------
+#  Join gate.
+# ------------------------------------------------------------
+join:
+  # Require an empty inventory, armor and hands to join (prevents item smuggling).
+  require-empty-inventory: true
+
+# ------------------------------------------------------------
+#  Start countdown (the 3-2-1 GO freeze before the round).
+# ------------------------------------------------------------
+start-countdown:
+  # Seconds of the pre-round freeze. 0 skips the freeze.
+  seconds: 3
+
+# ------------------------------------------------------------
+#  Leave item (hotbar item that leaves the round on right-click).
+#  Material and name are framework-level and live in config.yml under
+#  leave-item; here you only choose whether this game hands it out and where.
+# ------------------------------------------------------------
+leave-item:
+  # Whether to give the leave item while in the round.
+  enabled: true
+  # Hotbar slot (0-8) the leave item occupies.
+  slot: 8
+
+# ------------------------------------------------------------
+#  Map rotation across rounds: RANDOM (a random map each round) or
+#  SEQUENTIAL (maps picked in file order).
+# ------------------------------------------------------------
+map-rotation: RANDOM
+
+# ------------------------------------------------------------
+#  Maps. Each entry is one TNT Run arena, created in-game with
+#  /minigames admin tntrun create <name>.
+#  Region command (select a cuboid with /minigames admin wand region first):
+#    /minigames admin tntrun setregion <map>
+#  Standing-position commands (run where you stand):
+#    /minigames admin tntrun setstart|setwaiting|setend <map>
+#  Also: delete <map>, list, setelimy, setdelay, setwinners, settimelimit.
+#    Full command list: /minigames admin tntrun help
+#
+#  The arena restores itself: every block the round removes is put back when
+#  the round ends, on /minigames reload and on server shutdown.
+# ------------------------------------------------------------
+maps:
+  arena1:
+    # Arena cuboid (world;minX;minY;minZ;maxX;maxY;maxZ). ONLY blocks inside
+    # this region can disappear. Set it with the region wand + setregion.
+    region: ""
+    # Where players are teleported when the round starts (world;x;y;z;yaw;pitch).
+    # Its world MUST be the region's world or the round is aborted.
+    start-spawn: ""
+    # Y below which a player is eliminated.
+    elimination-y: 60
+    # Ticks between stepping on a block and its disappearance.
+    remove-delay: 4
+    # Materials that may disappear. Empty list = any non-air block of the region.
+    removable-materials: []
+    # Survivors the round ends with (1 = last one standing).
+    winners: 1
+    # Maximum round length in seconds; 0 disables the limit.
+    time-limit: 300
+    # Where the SURVIVORS are teleported when the round ends. Leave blank to send
+    # each player back to where they were before joining. Eliminated players are
+    # restored the instant they fall (there is no spectator hold), so this spot
+    # only applies to whoever was still standing at the end.
+    end-teleport: ""
+    # Rewards by finish position (1 = the winner). Each position is a list of
+    # action strings run for that finisher, with placeholders {player},
+    # {position}, {game} and {map}. Rewards do NOT fire for a player who left
+    # before the round ended (offline finishers are skipped).
+    # Use CONSOLE/economy actions, not [give]: rewards run while the player is
+    # still in the round, so the pre-game inventory restore right afterwards
+    # would wipe any item handed out here.
+    # With winners > 1 the surviving players are TIED (TNT Run has no score to
+    # rank them by), so their relative positions are stable but not earned.
+    rewards:
+      1:
+        - "[console] eco give {player} 1000"
+        - "[broadcastmessage] &a{player}&a won TNT Run!"
+      2:
+        - "[console] eco give {player} 500"
+      3:
+        - "[console] eco give {player} 250"
+
+# ------------------------------------------------------------
+#  Sounds for TNT Run events. Format: "SOUND_ID [volume] [pitch]"
+#  (blank or "none" = silent). The 3-2-1 start countdown sound is
+#  configured globally in config.yml (queue.countdown-sound).
+# ------------------------------------------------------------
+sounds:
+  # Played when a player joins the TNT Run queue.
+  join: "ENTITY_EXPERIENCE_ORB_PICKUP 1.0 1.0"
+  # Played to a player the moment they are eliminated.
+  eliminated: "ENTITY_GENERIC_EXPLODE 0.6 1.4"
+  # Played to the winner when the round ends.
   win: "UI_TOAST_CHALLENGE_COMPLETE 1.0 1.0"
 ```
 
@@ -382,6 +565,55 @@ messages:
     # Broadcast when the round ends because it hit its time limit.
     time-limit: "&c{game}&c round ended - the time limit was reached."
 
+  # TNT Run game feedback. Placeholders: {player} the player's name, {remaining}
+  # survivors left, {game} display name, {map} map id.
+  tntrun:
+    # Sent to a player the moment they are eliminated.
+    eliminated-self: "&cYou fell! You are out of the round."
+    # Title shown to an eliminated player (title;subtitle;fadeIn;stay;fadeOut in ticks).
+    eliminated-title: "&c&lELIMINATED;&7Better luck next round;0;40;10"
+    # Sent to the remaining participants when someone is eliminated.
+    eliminated: "&f{player}&7 was eliminated &8- &f{remaining}&7 left"
+    # Title shown to the winner when the round ends.
+    win-title: "&6&lWINNER;&eLast one standing!;0;40;10"
+    # Broadcast when the round ends with a winner.
+    winner-broadcast: "&f{player}&7 won &6{game}&7!"
+    # Broadcast when the round ends because it hit its time limit.
+    time-limit: "&c{game}&c round ended - the time limit was reached."
+
+    # Map setup feedback for /minigames admin tntrun ... The generic setup lines
+    # (invalid-map-name, map-exists, map-not-found, cannot-delete-active,
+    # map-deleted, waiting-set) are shared and live under messages.setup.
+    # Placeholders: {map} map id, {count} map count, {volume} arena block count,
+    # {world} arena world, {y}/{ticks}/{winners}/{seconds} the value that was set.
+    setup:
+      # Sent when a map is created; names the follow-up commands.
+      map-created: "&aCreated the map &f{map}&a. Select the arena with &f/minigames admin wand region&a, then &f/minigames admin tntrun setregion {map}&a; where you stand: &fsetstart&a, &fsetwaiting&a, &fsetend&a. Full list: &f/minigames admin tntrun help&a."
+      # Sent by setregion when the admin has no complete cuboid selected.
+      no-region-selection: "&cSelect the arena first: &f/minigames admin wand region&c, then left- and right-click the two corners."
+      # Sent when the arena region is set.
+      region-set: "&aArena of &f{map}&a set &8(&7{volume}&8 blocks in &7{world}&8)&a."
+      # Sent when the selection exceeds region-wand.max-volume in config.yml.
+      region-too-big: "&cThat selection is &e{volume}&c blocks; the arena cap is &e{max}&c. Select a smaller region or raise &fregion-wand.max-volume&c in config.yml."
+      # Sent when the start spawn is set.
+      start-set: "&aStart spawn of &f{map}&a set to your location."
+      # Sent when the end teleport is set.
+      end-set: "&aEnd teleport of &f{map}&a set to your location."
+      # Sent when the elimination height is set.
+      elimy-set: "&aElimination height of &f{map}&a set to &f{y}&a."
+      # Sent when the block removal delay is set.
+      delay-set: "&aRemoval delay of &f{map}&a set to &f{ticks}&a ticks."
+      # Sent when the survivor count is set.
+      winners-set: "&aSurvivors of &f{map}&a set to &f{winners}&a."
+      # Sent when the round time limit is set.
+      timelimit-set: "&aTime limit of &f{map}&a set to &f{seconds}&a seconds."
+      # Sent by list when no maps exist yet.
+      list-empty: "&7No TNT Run maps yet. Create one with &f/minigames admin tntrun create <name>&7."
+      # List header, printed before the per-map entries.
+      list-header: "&8&m---------&r &#f25c05&lTNT Run maps &8(&7{count}&8)"
+      # One line per map.
+      list-entry: "&8- &#f25c05{map} &8- region &7{region}&8, &7{winners}&8 survivors"
+
   # Map setup feedback (the /mg admin wand + /mg admin parkour ... commands).
   # Placeholders: {map} map id, {x}/{y}/{z}/{world} selected block, {count} map
   # count, {waypoints} checkpoint count, {winners} winner count, {index} the new
@@ -391,6 +623,11 @@ messages:
     wand-given: "&aReceived the setup wand. Left- or right-click a block to select it; run the command again to remove it."
     # Sent when the wand command removes the wand the admin already had.
     wand-removed: "&aSetup wand removed from your inventory."
+    # Sent when the region wand is given (/minigames admin wand region toggles it).
+    # The pos1/pos2/too-big feedback itself is emitted by SnLib (snlib.selection.*).
+    region-wand-given: "&aReceived the region wand. Left-click for &fpos1&a, right-click for &fpos2&a; run the command again to remove it."
+    # Sent when the region wand command removes the wand the admin already had.
+    region-wand-removed: "&aRegion wand removed from your inventory."
     # Sent when a block is selected with the wand.
     block-selected: "&7Selected block &f{x}&7, &f{y}&7, &f{z}&7 in &f{world}&7."
     # Sent when a wand-consuming command runs with no block selected yet.
