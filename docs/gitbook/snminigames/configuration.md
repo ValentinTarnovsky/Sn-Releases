@@ -336,7 +336,7 @@ map-rotation: RANDOM
 #    /minigames admin tntrun setregion <map>
 #  Standing-position commands (run where you stand):
 #    /minigames admin tntrun setstart|setwaiting|setend <map>
-#  Also: delete <map>, list, setelimy, setdelay, setwinners, settimelimit.
+#  Also: delete <map>, list, setelimy, setdelay, setdepth, setwinners, settimelimit.
 #    Full command list: /minigames admin tntrun help
 #
 #  The arena restores itself: every block the round removes is put back when
@@ -354,6 +354,10 @@ maps:
     elimination-y: 60
     # Ticks between stepping on a block and its disappearance.
     remove-delay: 4
+    # How many blocks deep to remove downward, counting the block you stepped on.
+    # 1 = classic (only the top block); 2 = the top block AND the one below it
+    # (a sand+TNT layer clears both). Stops at the first air/non-removable block.
+    remove-depth: 1
     # Materials that may disappear. Empty list = any non-air block of the region.
     removable-materials: []
     # Survivors the round ends with (1 = last one standing).

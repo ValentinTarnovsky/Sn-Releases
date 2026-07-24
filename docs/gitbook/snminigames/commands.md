@@ -50,6 +50,7 @@ than one line per subcommand. The setup commands still run and still tab-complet
 | `/mg admin tntrun setend <map>` | `snminigames.admin.setup` | Set the survivors' end teleport to where you stand |
 | `/mg admin tntrun setelimy <map> <y>` | `snminigames.admin.setup` | Set the Y below which a player is eliminated |
 | `/mg admin tntrun setdelay <map> <ticks>` | `snminigames.admin.setup` | Set how long a stepped-on block survives |
+| `/mg admin tntrun setdepth <map> <blocks>` | `snminigames.admin.setup` | Set how many blocks deep to remove (1-16; a sand+TNT layer clears both at 2) |
 | `/mg admin tntrun setwinners <map> <n>` | `snminigames.admin.setup` | Set how many survivors end the round |
 | `/mg admin tntrun settimelimit <map> <s>` | `snminigames.admin.setup` | Set the round time limit (0 disables it) |
 | `/mg reload` | `snminigames.admin.reload` | Reload configuration |
