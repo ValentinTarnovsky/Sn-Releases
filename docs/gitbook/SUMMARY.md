@@ -33,3 +33,12 @@
 * [Configuration](snminigames/configuration.md)
 * [Placeholders](snminigames/placeholders.md)
 * [FAQ](snminigames/faq.md)
+
+## SnRTP
+
+* [Overview](snrtp/README.md)
+* [Installation](snrtp/installation.md)
+* [Commands](snrtp/commands.md)
+* [Permissions](snrtp/permissions.md)
+* [Configuration](snrtp/configuration.md)
+* [FAQ](snrtp/faq.md)
