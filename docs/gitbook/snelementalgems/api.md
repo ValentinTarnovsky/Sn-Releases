@@ -94,6 +94,7 @@ queries serve online players; an offline player reads as a zero balance and an e
 | `getRank(uuid)` | `OptionalInt` | The 1-based leaderboard rank, empty when the player is unranked |
 | `isGemItem(item)` | `boolean` | Whether a stack is a gem item, tested by its persistent data tag |
 | `createGemItem(amount)` | `ItemStack` | A fresh, independent gem stack; `amount` is floored at 1 |
+| `createValuedGemItem(value)` | `ItemStack` | A single value-carrying gem worth `value`, clamped to at least 0.01 (`@since` API 1.1.0) |
 | `getApiVersion()` | `String` | The API contract version |
 
 Views are immutable snapshots. `GemPlayerView` copies its upgrade-level map, keyed by lowercase
@@ -103,4 +104,4 @@ upgrade name. `GemTopEntry` is a plain record whose `name` may be `null` when ne
 
 Call `getApiVersion()` for the API contract version. It is independent of the plugin version.
 Additions bump the minor component. Existing members are never removed or changed; deprecated
-members keep working.
+members keep working. As of plugin 1.2.0, `getApiVersion()` returns `1.1.0`.

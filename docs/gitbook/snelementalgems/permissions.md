@@ -8,9 +8,6 @@ Basic play permissions default to `true`, so any player can earn and spend gems 
 | `snelementalgems.pay` | true | Use `/gems pay` |
 | `snelementalgems.withdraw` | true | Use `/gems withdraw` |
 | `snelementalgems.balance.others` | op | View another player's gem balance |
-| `snelementalgems.gemdrop.entity` | true | Receive gems from killing entities |
-| `snelementalgems.gemdrop.block` | true | Receive gems from breaking blocks |
-| `snelementalgems.gemdrop.fish` | true | Receive gems from fishing |
 | `snelementalgems.admin` | op | Full administrative access (parent of every admin node) |
 | `snelementalgems.admin.reload` | op | Use `/gems reload` |
 | `snelementalgems.admin.debug` | op | Use `/gems debug` |
@@ -22,4 +19,8 @@ Basic play permissions default to `true`, so any player can earn and spend gems 
 
 {% hint style="info" %}
 Individual shop rewards can require any permission node you choose, set through `required-permission` in `shops.yml`. These are your own nodes, not fixed plugin permissions.
+{% endhint %}
+
+{% hint style="info" %}
+There is no permission node to gate gem drops per source. Whether entity kills, block breaks, fishing, and automated deaths award gems is controlled by the `drop-sources` toggles in `droprates.yml`, server-wide.
 {% endhint %}

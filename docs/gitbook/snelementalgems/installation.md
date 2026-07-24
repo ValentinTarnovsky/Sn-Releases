@@ -7,7 +7,7 @@
 5. Restart the server. SnElementalGems validates the key at startup and then enables.
 
 {% hint style="warning" %}
-Requires **SnLib** installed (`depend: [SnLib]`), version 1.11.0 or later.
+Requires **SnLib** installed (`depend: [SnLib]`), version 1.12.0 or later.
 {% endhint %}
 
 {% hint style="info" %}

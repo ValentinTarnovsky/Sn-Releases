@@ -6,7 +6,7 @@ SnElementalGems is a gem-economy plugin for Paper servers. Players earn a custom
 
 - Earn gems from killing mobs, breaking blocks, fishing, and automated grinder deaths, each with its own configurable rate.
 - Spend gems in a category shop GUI and on five account-wide upgrades: Fortune, Luck, Discount, Charity, and Execution.
-- Withdraw gems into physical, redeemable items, and pay gems to other online players.
+- Withdraw balance into a single physical, value-carrying gem item, and pay gems to other online players.
 - Rank the richest players with a cached leaderboard, exposed through `/gems top` and placeholders.
 - Store balances in SQLite or MySQL, cached in memory for instant reads.
 - Manage balances with admin give, add, remove, and set commands, including a `*` target for everyone online.

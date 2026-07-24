@@ -11,7 +11,7 @@ The root command is `/gems`. It ships with the aliases `/gem` and `/eg`, which y
 | `/gems top` | Show the gem leaderboard |
 | `/gems shop [category]` | Open the gem shop, or a specific category |
 | `/gems upgrades` | Open the upgrades menu |
-| `/gems withdraw <amount>` | Withdraw gems as a physical item |
+| `/gems withdraw <amount>` | Withdraw balance as one gem item worth the amount |
 | `/gems pay <player> <amount>` | Pay gems to an online player |
 
 ## Admin commands
@@ -20,7 +20,7 @@ Every `/gems admin` action needs the `snelementalgems.admin` parent node plus it
 
 | Command | Permission | Description |
 |---------|-----------|-------------|
-| `/gems admin give <player\|*> <amount> [-s] [-item]` | `snelementalgems.admin.give` | Give gems to a player, or to everyone online with `*` |
+| `/gems admin give <player\|*> <amount> [-s]` | `snelementalgems.admin.give` | Hand a physical gem item worth the amount to a player, or to everyone online with `*` |
 | `/gems admin add <player> <amount> [-s]` | `snelementalgems.admin.add` | Add gems to a player's balance (offline players allowed) |
 | `/gems admin remove <player> <amount> [-s]` | `snelementalgems.admin.remove` | Remove gems from a player's balance |
 | `/gems admin set <player> <amount>` | `snelementalgems.admin.set` | Set a player's balance to an exact value |
@@ -28,5 +28,5 @@ Every `/gems admin` action needs the `snelementalgems.admin` parent node plus it
 | `/gems debug` | `snelementalgems.admin.debug` | Toggle runtime debug output |
 
 {% hint style="info" %}
-The `-s` flag runs an admin action silently, skipping the target's message. The `-item` flag on `/gems admin give` hands physical gem items instead of adding to the balance. The `*` target gives every online player the same amount, never a compounded one.
+The `-s` flag runs an admin action silently, skipping the target's message. `/gems admin give` always hands a physical gem item worth the amount, while `/gems admin add`, `remove`, and `set` operate on the balance directly. The `*` target gives every online player the same amount, never a compounded one. Every `<amount>` argument accepts the `k`, `m`, and `b` suffixes (for example `10k` is 10000).
 {% endhint %}

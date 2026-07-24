@@ -70,10 +70,6 @@ economy:
   decimals: false
   # Enable /gems withdraw. false blocks it with messages.withdraw-disabled.
   withdraw-enabled: true
-  # Max gems withdrawable in a single /gems withdraw (0 = no limit).
-  withdraw-limit: 2304
-  # Cap on a single /gems give amount to avoid item floods (0 = no limit).
-  max-give: 10000
   # Anti-abuse: hard cap a single drop can ever award (0 = no cap). Prevents the
   # legacy name-tag inflation exploit even with a misconfigured stacker.
   max-drop-amount: 100000
@@ -83,8 +79,13 @@ economy:
 #  these are the behavioural toggles.
 # ------------------------------------------------------------
 gem-item:
-  # Allow right-click / place to redeem a gem item into balance.
+  # Allow right-click (air or block) to redeem a gem item into balance.
   can-redeem: true
+  # One redeem click consumes every gem stack in the inventory (true) or only the
+  # held stack (false).
+  redeem-all: true
+  # Max gem ITEMS consumed by one redeem-all click (0 = no cap).
+  redeem-all-limit: 0
   # Block materials that must never redeem a gem on right-click (1.21 names).
   redeem-blocked-on: [CHEST, OAK_SIGN, ENDER_CHEST, BARREL]
   # Allow gem items inside villager trade menus.
@@ -178,11 +179,16 @@ silk-touch-drops: false
 # gems (anti place-break farm). Entries expire individually.
 place-break-tracking-seconds: 600
 
-# Permission a player must hold to receive drops from each source.
-permissions:
-  entity: snelementalgems.gemdrop.entity
-  block: snelementalgems.gemdrop.block
-  fish: snelementalgems.gemdrop.fish
+# Allow creative-mode players to receive gem drops. Off by default: creative
+# spawn eggs and infinite block breaking would mint free gems.
+allow-creative: false
+
+# Which sources can award gems, server-wide. false disables that source entirely.
+drop-sources:
+  entity: true
+  block: true
+  fish: true
+  automated: true
 
 # ------------------------------------------------------------
 #  Entity kills: a player kills a mob. Keys are EntityType names (1.21).
@@ -412,8 +418,8 @@ Upgrades:
 ```yaml
 # ============================================================
 #  SnElementalGems - shop data
-#  Managed by SnLib: new keys are auto-merged on boot; your values and comments
-#  are preserved.
+#  Server-owned catalog (seedOnly): seeded once, then NEVER auto-updated, so
+#  deleted or edited categories and rewards stay exactly as you left them.
 #
 #  This is the shop DATA (categories and priced rewards). The menu LAYOUT lives
 #  in guis/shop.yml (the category hub) and guis/shop-category.yml (the paged
@@ -429,7 +435,10 @@ Upgrades:
 #    material             1.21 Material of the reward / display item.
 #    amount               stack size handed out when give-item is true.
 #    display-name         item name shown in the menu and the purchase message.
-#    description          one-line flavour text shown in the reward's menu lore.
+#    lore                 body text of the reward tile and the delivered item: a
+#                         YAML LIST, one lore line per entry, each with its own
+#                         colour codes. (A legacy scalar 'description' still reads
+#                         as a single grey line.)
 #    commands             commands run on purchase. A line with no [tag] runs as
 #                         console; [player]/[console] tags are honoured. {player},
 #                         {price} and {item} are substituted.
@@ -453,7 +462,8 @@ categories:
         material: TRIPWIRE_HOOK
         amount: 1
         display-name: "&aCommon Key"
-        description: "A common crate key."
+        lore:
+          - "&7A common crate key."
         commands:
           - "crates give {player} common 1"
         required-permission: ""
@@ -464,7 +474,8 @@ categories:
         material: TRIPWIRE_HOOK
         amount: 1
         display-name: "&6Legendary Key"
-        description: "A legendary crate key."
+        lore:
+          - "&6A legendary crate key."
         commands:
           - "crates give {player} legendary 1"
         required-permission: ""
@@ -480,7 +491,8 @@ categories:
         material: NAME_TAG
         amount: 1
         display-name: "&bVIP Rank"
-        description: "Unlock the VIP rank."
+        lore:
+          - "&7Unlock the VIP rank."
         commands:
           - "lp user {player} parent add vip"
         required-permission: ""
@@ -491,7 +503,8 @@ categories:
         material: DIAMOND
         amount: 16
         display-name: "&bDiamond Bundle"
-        description: "A stack of 16 diamonds."
+        lore:
+          - "&7A stack of 16 diamonds."
         commands: []
         required-permission: ""
         cancel-if-has-perm: ""
@@ -504,10 +517,10 @@ categories:
 #  SnElementalGems - physical items
 #  Managed by SnLib: new keys merge in on boot, your values are kept.
 # ============================================================
-# The redeemable gem item. Its right-click redeem behaviour is handled by the
-# plugin listener (PDC-tagged), so the appearance lives here and the behaviour
-# lives in code. Supports SKULL:<owner> / HDB:<id> via the material field when
-# HeadDatabase is installed.
+# The redeemable gem item. Its right-click redeem (air or block) runs through
+# SnLib's redeemable-item dispatch; the appearance lives here and the behaviour
+# toggles in config.yml (gem-item section). Supports SKULL:<owner> / HDB:<id>
+# via the material field when HeadDatabase is installed.
 
 gem:
   display-name: "&a&lGem &7(&fRight-Click&7)"
@@ -516,6 +529,10 @@ gem:
   lore:
     - "&7Right-click to redeem this gem"
     - "&7into your balance."
-  # Max stack keeps redeems sane; the plugin reads the stack size on redeem.
+  # Extra lore line on value-carrying gems (withdraw/give/drops); {value} is the
+  # stored worth. Empty = no line.
+  value-lore: "&7Worth: &#8354f2{value} &7gems"
+  # Max stack size of the physical gem item. Gems of different worth never stack
+  # (their stored value differs); redeem credits value x amount per stack.
   max-stack-size: 64
 ```
