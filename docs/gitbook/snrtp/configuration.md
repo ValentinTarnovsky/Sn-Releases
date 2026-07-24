@@ -65,6 +65,14 @@ defaults:
 # ------------------------------------------------------------
 #  Effects. Toggleable, admin-global (no per-player state). enabled: false
 #  turns off every particle and sound.
+#
+#  Only some particles carry a color. Set warmup-particle / arrival-particle to
+#  DUST (a plain colored dot, best all-rounder), DUST_COLOR_TRANSITION (fades
+#  from the color into the fade-color) or ENTITY_EFFECT (color only, no size) to
+#  use the color keys below. Every other particle keeps its own vanilla look and
+#  ignores color / fade-color / size.
+#  Unknown particles, and particles needing data this plugin cannot build
+#  (BLOCK, ITEM, ...), fall back to PORTAL / END_ROD with a console warning.
 # ------------------------------------------------------------
 effects:
   # Master switch for all animations and sounds.
@@ -73,10 +81,22 @@ effects:
   style: portal
   # Particle used by the warmup animation (any Bukkit Particle name).
   warmup-particle: PORTAL
+  # Warmup particle color, "#RRGGBB" or "R,G,B". Color-capable particles only.
+  warmup-color: "#8354f2"
+  # Color DUST_COLOR_TRANSITION fades into. "" = no fade (stays warmup-color).
+  warmup-fade-color: ""
+  # Warmup particle scale, 0.1 - 4.0. DUST and DUST_COLOR_TRANSITION only.
+  warmup-size: 1.0
   # Sound when the search succeeds and the warmup starts ("SOUND vol pitch"). "" = silent.
   warmup-sound: "BLOCK_PORTAL_TRIGGER 0.6 1.4"
   # Particle burst played at the destination on arrival.
   arrival-particle: END_ROD
+  # Arrival particle color, "#RRGGBB" or "R,G,B". Color-capable particles only.
+  arrival-color: "#8354f2"
+  # Color DUST_COLOR_TRANSITION fades into. "" = no fade (stays arrival-color).
+  arrival-fade-color: ""
+  # Arrival particle scale, 0.1 - 4.0. DUST and DUST_COLOR_TRANSITION only.
+  arrival-size: 1.0
   # Sound played at the destination on arrival. "" = silent.
   arrival-sound: "ENTITY_ENDERMAN_TELEPORT 1.0 1.0"
 
@@ -143,6 +163,36 @@ worlds:
     cooldown-seconds: 60
     permission: ""
 ```
+
+### Colored particles
+
+Minecraft only lets some particles be tinted. The rest have a fixed vanilla look, so a color set on them does nothing.
+
+| Particle | Reads | Result |
+|----------|-------|--------|
+| `DUST` | color, size | A solid dot in your color. The one to pick for a custom-colored animation. |
+| `DUST_COLOR_TRANSITION` | color, fade-color, size | Fades from color into fade-color. Leave `fade-color: ""` to stay on one color. |
+| `ENTITY_EFFECT` | color | Tinted potion swirl. Ignores size. |
+| anything else (`PORTAL`, `END_ROD`, `FLAME`, ...) | nothing | Keeps its own vanilla colors. |
+
+Colors accept `"#RRGGBB"` or `"R,G,B"`. A malformed value logs a warning and keeps the default `#8354f2`.
+
+A purple warmup spiral and a matching arrival burst:
+
+```yaml
+effects:
+  enabled: true
+  style: spiral
+  warmup-particle: DUST
+  warmup-color: "#8354f2"
+  warmup-size: 1.0
+  arrival-particle: DUST_COLOR_TRANSITION
+  arrival-color: "#8354f2"
+  arrival-fade-color: "#ffffff"
+  arrival-size: 1.4
+```
+
+Particle names are matched leniently: case does not matter, a `minecraft:` prefix and `.`/`-` separators are accepted, and `DUST` / `REDSTONE` resolve to each other so one config works on both 1.20.x and 1.21.x. An unknown particle, or one needing data SnRTP cannot build (`BLOCK`, `ITEM`, ...), falls back to `PORTAL` / `END_ROD` and warns once in console.
 
 ## guis/menu.yml
 
