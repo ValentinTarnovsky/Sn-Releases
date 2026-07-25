@@ -418,8 +418,9 @@ Upgrades:
 ```yaml
 # ============================================================
 #  SnElementalGems - shop data
-#  Server-owned catalog (seedOnly): seeded once, then NEVER auto-updated, so
-#  deleted or edited categories and rewards stay exactly as you left them.
+#  The 'categories' section below is server-owned: a category or reward you
+#  delete stays deleted across reboots, and the ones you add are never touched.
+#  The settings outside it are plugin schema, so new ones still arrive on boot.
 #
 #  This is the shop DATA (categories and priced rewards). The menu LAYOUT lives
 #  in guis/shop.yml (the category hub) and guis/shop-category.yml (the paged

@@ -119,6 +119,7 @@ effects:
 #
 #  To add a world: add a block here AND a button in guis/menu.yml with the same key.
 # ------------------------------------------------------------
+# sn:extensible
 worlds:
   overworld:
     enabled: true
@@ -164,6 +165,27 @@ worlds:
     permission: ""
 ```
 
+### Adding and removing worlds
+
+The `worlds:` block carries a `# sn:extensible` marker, which tells SnLib the entries are yours
+rather than plugin schema. In practice:
+
+| You do | Result on the next boot |
+|--------|--------------------------|
+| Delete a world (say `end:`) | It stays deleted. Delete its button in `guis/menu.yml` too. |
+| Add a world | It is kept, never pruned. |
+| Delete the whole `worlds:` block | The three shipped defaults come back. |
+| Leave `worlds: {}` | Preserved as "no random teleport worlds". |
+
+{% hint style="info" %}
+Before SnRTP 1.3.0 a deleted world was re-inserted on every restart, so a server with no End kept
+getting `end:` and its menu icon back. Updating fixes that; you only need to delete them once more.
+{% endhint %}
+
+Because a marked section never receives new sub-keys, any per-world option added by a future
+SnRTP version applies to your existing worlds through its built-in default. Add the key by hand
+only if you want a value other than that default.
+
 ### Colored particles
 
 Minecraft only lets some particles be tinted. The rest have a fixed vanilla look, so a color set on them does nothing.
@@ -197,6 +219,10 @@ Particle names are matched leniently: case does not matter, a `minecraft:` prefi
 ## guis/menu.yml
 
 The single random-teleport menu. Each world button routes through a `[custom] <key>` action whose key matches a `worlds.<key>` entry in `config.yml`. Edit icons, slots and the layout mask here; add a button with a matching key to add a world.
+
+The `items:` block is marked `# sn:extensible` for the same reason as `worlds:`: a button you
+delete stays deleted and a button you add is never pruned, so a world and its icon can be removed
+as a pair. Deleting the whole `items:` block restores the shipped set.
 
 ## lang/messages_en.yml
 

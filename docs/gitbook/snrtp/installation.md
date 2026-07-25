@@ -5,7 +5,9 @@
 3. Restart the server.
 
 {% hint style="warning" %}
-Requires **SnLib** installed (`depend: [SnLib]`), version 1.12.0 or later.
+Requires **SnLib** installed (`depend: [SnLib]`), version 1.15.0 or later. SnRTP 1.3.0 needs
+API level 10 and disables itself with a console notice on an older SnLib, so update both jars
+together. `SnLib-1.15.0.jar` is attached to the release.
 {% endhint %}
 
 ## Dependencies
