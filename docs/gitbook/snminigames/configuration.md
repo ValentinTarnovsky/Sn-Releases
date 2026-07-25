@@ -4,6 +4,16 @@ SnMiniGames ships with the following YAML files. `config.yml` and `lang/messages
 
 Every minigame gets its own `games/<game>.yml` holding its `enabled` flag, queue settings, maps and rewards. Settings shared by every game, such as the leave item appearance and the two setup wands, live in `config.yml` instead.
 
+## Translating the command help
+
+On first boot SnLib adds a top-level `commands:` block to `lang/messages_en.yml`. It holds the description of every command and the visible label of every argument, so you translate the whole help without touching the source. It covers the per-game setup commands too, which is what `/mg admin <game> help` prints.
+
+Editing an entry is permanent: your value is never overwritten. Delete an entry to restore the default on the next boot. Renaming an argument label, such as `<map>` to `<mapa>`, changes only what players see. The command is still typed the same way.
+
+{% hint style="info" %}
+The block is generated from the commands actually registered, so a game disabled in its `games/<game>.yml` contributes no entries.
+{% endhint %}
+
 ## config.yml
 
 ```yaml
@@ -413,7 +423,7 @@ sounds:
 # Prefix prepended to every single-line message sent via sn.lang().send(...)
 prefix: "&#8354f2&lSnMiniGames &8| &7"
 
-# snlib.* is SnLib's shared command contract (11 keys). Every Sn plugin ships
+# snlib.* is SnLib's shared command contract (12 keys). Every Sn plugin ships
 # this block UNCHANGED: SnLib bundles NEUTRAL defaults for any key you omit and
 # merges them in on boot, so an incomplete block leaks unbranded lines. Shipping
 # the FULL block is what keeps the whole fleet visually identical. Placeholders
@@ -425,6 +435,9 @@ snlib:
   invalid-number: "&cInvalid number: &e{value}"
   invalid-value: "&cInvalid value: &e{value}"
   out-of-range: "&cValue must be between &e{min} &cand &e{max}&c: &e{value}"
+  # Only for open-ended numeric arguments (a minimum with no maximum). This plugin
+  # uses bounded ranges, so it is shipped for fleet consistency, not because it fires.
+  number-too-small: "&cValue must be at least &e{min}&c: &e{value}"
   player-not-found: "&cPlayer not found: &e{value}"
   unknown-subcommand: "&cUnknown subcommand: &e{value}"
   reload-done: "&aConfiguration reloaded."
@@ -487,14 +500,18 @@ messages:
       # hides its own setup subcommands from the root help and exposes only that one
       # command, so /minigames help stays readable as more minigames ship.
       # Placeholders: {game} display name, {id} game id, {page}, {total}, {usage},
-      # {description}.
+      # {description}, {label} the root alias the sender typed (mg or minigames).
+      # The {usage} and {description} of each entry follow the top-level commands
+      # block SnLib seeds into this file, so translating a subcommand there also
+      # translates it here.
       game-help:
         # Header printed before the entries.
         header: "&8&m---------&r &#8354f2&l{game} &7setup &8(&7{page}&8/&7{total}&8)"
         # One line per setup subcommand.
         entry: "&e{usage} &7{description}"
-        # Footer, sent only when there is more than one page.
-        footer: "&7Page &f{page}&7/&f{total} &8- &7/minigames admin {id} help <page>"
+        # Footer, sent only when there is more than one page. Use {label} rather than a
+        # literal root name so the line echoes the alias the sender actually typed.
+        footer: "&7Page &f{page}&7/&f{total} &8- &7/{label} admin {id} help <page>"
         # Sent when the game declares no setup subcommands at all.
         empty: "&7{game}&7 has no setup commands."
 
@@ -607,6 +624,8 @@ messages:
       elimy-set: "&aElimination height of &f{map}&a set to &f{y}&a."
       # Sent when the block removal delay is set.
       delay-set: "&aRemoval delay of &f{map}&a set to &f{ticks}&a ticks."
+      # Sent when the block removal depth is set.
+      depth-set: "&aRemoval depth of &f{map}&a set to &f{depth}&a blocks."
       # Sent when the survivor count is set.
       winners-set: "&aSurvivors of &f{map}&a set to &f{winners}&a."
       # Sent when the round time limit is set.
@@ -631,7 +650,11 @@ messages:
     # The pos1/pos2/too-big feedback itself is emitted by SnLib (snlib.selection.*).
     region-wand-given: "&aReceived the region wand. Left-click for &fpos1&a, right-click for &fpos2&a; run the command again to remove it."
     # Sent when the region wand command removes the wand the admin already had.
-    region-wand-removed: "&aRegion wand removed from your inventory."
+    # It also closes any open selection, so the edge particles stop.
+    region-wand-removed: "&aRegion wand removed; your selection was cleared."
+    # Sent when the same command finds no wand to take back but an open selection
+    # (the wand was dropped or stored): the selection is closed and its particles stop.
+    region-selection-cleared: "&aSelection cleared; the edge particles are gone."
     # Sent when a block is selected with the wand.
     block-selected: "&7Selected block &f{x}&7, &f{y}&7, &f{z}&7 in &f{world}&7."
     # Sent when a wand-consuming command runs with no block selected yet.

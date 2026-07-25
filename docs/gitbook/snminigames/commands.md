@@ -2,6 +2,8 @@
 
 The root command is `/minigames`, alias `/mg` (configurable via `command.aliases` in `config.yml`). `help`, `reload` and `debug` are provided by SnLib on the same root.
 
+Every help listing echoes the alias you typed. `/mg help` lists `/mg ...` and `/minigames help` lists `/minigames ...`, down to the per-game setup help. The descriptions and argument labels below are translatable: see [Configuration](configuration.md).
+
 {% hint style="info" %}
 Each minigame keeps its map setup commands out of `/mg help` and lists them behind its own
 `/mg admin <game> help` instead. That way the root help grows by one line per minigame rather

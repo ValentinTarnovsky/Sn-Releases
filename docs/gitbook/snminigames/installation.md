@@ -7,7 +7,7 @@
 5. Restart the server; the plugin validates the key at startup.
 
 {% hint style="warning" %}
-Requires **SnLib** installed (`depend: [SnLib]`), version 1.10.0 or later. Update SnLib before
+Requires **SnLib** installed (`depend: [SnLib]`), version 1.15.0 or later. Update SnLib before
 this plugin: on an older SnLib it refuses to enable, because the API level handshake fails.
 {% endhint %}
 
