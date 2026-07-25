@@ -2,6 +2,10 @@
 
 The root command is `/clan`. It ships with the alias `/c`, which you can change under `command.aliases` in `config.yml`. That alias list is authoritative and is re-read on `/clan reload`. Run `/clan` alone to open the main menu, or `/clan help` to list every subcommand. Most member actions are gated by your clan's permission matrix, which the leader edits with `/clan permissions`.
 
+Help and usage lines render under the alias you actually typed, so `/c help` lists everything as `/c ...` rather than `/clan ...`. The description of every command and the visible label of every argument are translatable: see [Language file](configuration.md#language-file).
+
+Any argument that takes a number also accepts the suffixes `k`, `m`, `b`, `t`, `qa`, and `qi`, so `/clan givepoint kills 10k` grants 10000.
+
 ## Player commands
 
 | Command | Description |

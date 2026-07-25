@@ -334,8 +334,18 @@ The `guis/` files are seeded on first boot, so every menu opens correctly the fi
 
 ## Language file
 
-`lang/messages_en.yml` holds the message prefix, the shared `snlib` command contract, your own `messages`, and the chat `lists`.
+`lang/messages_en.yml` holds the message prefix, the shared `snlib` command contract, the translatable `commands` block, your own `messages`, and the chat `lists`.
 
 The `prefix` value at the top of the file is prepended automatically by SnLib to every single-line message sent through it. Do not write a literal prefix token inside any message value: SnLib adds the configured prefix for you, and a hardcoded one would render twice.
 
 The `snlib` block is SnLib's shared command contract: 11 keys covering permission errors, usage, number and value validation, unknown subcommands, reload confirmation, and the help header, entry, and footer. Ship the full block so SnClans matches the rest of the Sn fleet. SnLib fills any omitted key with a neutral default, which leaves an unbranded line. Placeholders such as `{plugin}`, `{usage}`, `{value}`, and `{command}` are substituted by SnLib.
+
+### The `commands` block
+
+The `commands` block makes the generated help translatable. It is written into the file automatically on the first boot and refreshed on every `/clan reload`, built from the commands the plugin declares, so you never have to create it by hand.
+
+Each entry carries a `description`, shown in `/clan help`, and an optional `args` section holding the **visible label** of each argument. Translating a label only changes the `<name>` hint in the usage line and in tab completion. It never changes how the command is typed, the order of the arguments, or how they are parsed.
+
+{% hint style="info" %}
+Your edits are permanent: the merge never overwrites a value that is already in the file. Delete an entry instead of blanking it to restore the default, and it will be rewritten on the next boot.
+{% endhint %}
