@@ -4,7 +4,8 @@ SnRTP is a lightweight, fully asynchronous, per-world random teleport for Paper.
 
 ## Features
 
-- One GUI menu with a block-icon per world (overworld, nether and end by default).
+- One GUI menu with a block-icon per world (overworld, nether and end by default), and it is the
+  only player entry point: `/rtp` opens it, every destination is picked from a button.
 - Configure any world: ring radius, center, warmup, cooldown and optional permission.
 - Fully async safe-location search that never freezes the server.
 - Never lands players inside protected regions (WorldGuard and ProtectionStones claims).

@@ -105,7 +105,7 @@ effects:
 #  the MECHANICS of each world's RTP live here, keyed by the SAME id used in that
 #  menu button's "[custom] <key>" action.
 #
-#  enabled      : false disables this world's RTP (menu button and /rtp <key>).
+#  enabled      : false disables this world's RTP (its menu button stops working).
 #  world        : the Bukkit world name (as in the server's level folders).
 #  center       : SPAWN uses the world spawn as the ring centre; ORIGIN uses 0,0;
 #                 FIXED uses center-x / center-z below.
