@@ -29,7 +29,10 @@ Because a marked section is never written to again, a drop type or reward added 
 #  SnElementalGems - configuration
 #  Managed by SnLib: new keys are auto-merged on boot; your values and
 #  comments are preserved. Do NOT add a config-version key (retired).
-#  Set update-configs: false to freeze this file.
+#  Set update-configs: false to freeze this file (SnLib only warns about
+#  missing keys instead of inserting them).
+#  Sections marked "# sn:extensible" are yours: entries you delete there
+#  stay deleted.
 # ============================================================
 
 # Active language code; loads lang/messages_<code>.yml (falls back to en).
@@ -40,7 +43,12 @@ update-configs: true
 
 # Runtime debug output (also toggleable live via /gems debug).
 debug:
+  # Master toggle of the debug output.
   enabled: false
+  # Verbosity threshold: OFF, INFO, DEBUG or TRACE.
+  level: DEBUG
+  # Category filter; an empty list lets every category through.
+  categories: []
 
 # ------------------------------------------------------------
 #  Main command.
@@ -63,22 +71,21 @@ database:
   password: ""
 
 # ------------------------------------------------------------
+#  Public developer API
+# ------------------------------------------------------------
+# Custom Bukkit events other plugins can listen to (drop / pay / purchase /
+# upgrade / balance-change). When false, no API event is dispatched (zero cost)
+# and cancellable hooks report "not cancelled" so gameplay always proceeds. The
+# read-only query facade (SnElementalGemsAPI) stays available either way.
+api-events:
+  enabled: true
+
+# ------------------------------------------------------------
 #  Presentation. Controls what the bare /gems command does.
 # ------------------------------------------------------------
 presentation:
   # Bare /gems: gui opens the shop, chat prints the generated help.
   main: gui
-
-# ------------------------------------------------------------
-#  Shop
-# ------------------------------------------------------------
-shop:
-  # Enable /gems shop and the bare-command shop GUI. false blocks it with
-  # messages.shop-disabled.
-  enabled: true
-  # Label shown in place of an upgrade's price in the upgrades menu when the
-  # upgrade is already at its maximum level.
-  max-level-label: "&aMAX"
 
 # ------------------------------------------------------------
 #  Economy
@@ -114,6 +121,26 @@ gem-item:
   allow-crafting: false
 
 # ------------------------------------------------------------
+#  Shop
+# ------------------------------------------------------------
+shop:
+  # Enable /gems shop and the bare-command shop GUI. false blocks it with
+  # messages.shop-disabled.
+  enabled: true
+  # Label shown in place of an upgrade's price in the upgrades menu when the
+  # upgrade is already at its maximum level.
+  max-level-label: "&aMAX"
+
+# ------------------------------------------------------------
+#  Vault economy provider
+# ------------------------------------------------------------
+vault:
+  # Register gems as the server's Vault economy.
+  hook: false
+  # Register even if another Vault economy already exists, displacing it.
+  override-existing: false
+
+# ------------------------------------------------------------
 #  Drop notifications
 # ------------------------------------------------------------
 notifications:
@@ -133,15 +160,6 @@ sounds:
   open-upgrades:  { sound: BLOCK_CHEST_OPEN,             volume: 1.0, pitch: 1.0 }
   purchase:       { sound: ENTITY_PLAYER_LEVELUP,        volume: 1.0, pitch: 1.0 }
   upgrade:        { sound: ENTITY_PLAYER_LEVELUP,        volume: 1.0, pitch: 1.2 }
-
-# ------------------------------------------------------------
-#  Vault economy provider
-# ------------------------------------------------------------
-vault:
-  # Register gems as the server's Vault economy.
-  hook: false
-  # Register even if another Vault economy already exists, displacing it.
-  override-existing: false
 
 # ------------------------------------------------------------
 #  Leaderboard
