@@ -8,7 +8,7 @@ Scalable minigame framework for Paper servers. Adding a new game costs one game 
 - Crash-safe player state: inventory, armor, XP, effects, health, food, location and more are snapshotted to disk before a game touches them, and restored exactly.
 - Full in-game protection: block changes, damage, drops, pickups, inventory clicks and commands are blocked; chat and leaving always work.
 - **Parkour** with multi-map rotation, ordered checkpoints, fall respawn, and single or multi-winner finishes with a finish-hold wait.
-- **TNT Run** with cuboid arenas: block layers vanish behind the runners, falling below the arena eliminates you, and the last player standing wins. The arena restores itself completely at the end of the round, on reload and on shutdown.
+- **TNT Run** with cuboid arenas: a one-block-wide trail vanishes behind each runner, falling below the arena eliminates you, and the last player standing wins. The arena restores itself completely at the end of the round, on reload and on shutdown.
 - Per-position rewards as action lists (console commands, broadcasts) with placeholders.
 - In-game map setup: a single-block selection wand, a cuboid region wand and per-game `/minigames admin <game> ...` subcommands, no file editing required.
 
