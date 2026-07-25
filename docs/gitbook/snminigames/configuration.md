@@ -33,7 +33,12 @@ update-configs: true
 
 # Runtime debug output (also toggleable live via /minigames debug).
 debug:
+  # Master toggle of the debug output.
   enabled: false
+  # Verbosity threshold: OFF, INFO, DEBUG or TRACE.
+  level: DEBUG
+  # Category filter; an empty list lets every category through.
+  categories: []
 
 # ------------------------------------------------------------
 #  Main command.
