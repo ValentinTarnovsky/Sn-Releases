@@ -21,7 +21,12 @@ update-configs: true
 
 # Runtime debug output (also toggleable live via /clan debug).
 debug:
+  # Master toggle of the debug output.
   enabled: false
+  # Verbosity threshold: OFF, INFO, DEBUG or TRACE.
+  level: DEBUG
+  # Category filter; an empty list lets every category through.
+  categories: []
 
 # ------------------------------------------------------------
 #  Main command. The alias list is re-read on /clan reload.
@@ -42,6 +47,18 @@ database:
   database: snclans
   username: root
   password: ""
+
+# ------------------------------------------------------------
+#  Public developer API
+# ------------------------------------------------------------
+# SnClans exposes a service facade and fires custom Bukkit events (create /
+# disband / member-join / member-leave / ally-form / ally-break / points-change /
+# role-change) that other plugins can listen to. When false, no API event is
+# dispatched (zero cost) and cancellable hooks report "not cancelled" so gameplay
+# proceeds. The query facade (SnClansProvider#get) and the point-modifier SPI
+# stay available either way.
+api-events:
+  enabled: true
 
 # ------------------------------------------------------------
 #  Presentation: how each interactive feature is shown.
@@ -132,6 +149,9 @@ roles:
   member:
     display: "&7Member"
 
+# ------------------------------------------------------------
+#  Action thresholds
+# ------------------------------------------------------------
 # Minimum role required to perform each managed action. These thresholds seed a
 # clan's editable permission matrix on creation. disband and transfer are always
 # leader-only and are not part of the matrix.
@@ -149,15 +169,6 @@ action-roles:
   description: co-leader
   open-close: co-leader
   ally: co-leader
-
-# ------------------------------------------------------------
-#  Cooldowns (seconds). 0 disables a cooldown.
-# ------------------------------------------------------------
-cooldowns:
-  # Between clan-home teleports per player.
-  home: 60
-  # Between clan renames per player.
-  rename: 300
 
 # ------------------------------------------------------------
 #  Clan home teleport
@@ -249,6 +260,15 @@ points:
     triggers:
       # Award to the killer's clan on a mob kill.
       mob-kill: 1
+
+# ------------------------------------------------------------
+#  Cooldowns (seconds). 0 disables a cooldown.
+# ------------------------------------------------------------
+cooldowns:
+  # Between clan-home teleports per player.
+  home: 60
+  # Between clan renames per player.
+  rename: 300
 
 # ------------------------------------------------------------
 #  Region / world restrictions. WorldGuard is a soft dependency; if it is
