@@ -2,6 +2,26 @@
 
 SnElementalGems ships with the following YAML files. New keys are auto-merged on boot; your edits and comments are preserved.
 
+## Sections you own
+
+Most keys are plugin schema: delete one and it comes back on the next boot, which is how your server keeps receiving new settings. The catalogue sections are the exception - their entries are your data, not schema:
+
+| File | Section |
+|------|---------|
+| `droprates.yml` | `entity-drops`, `block-drops`, `fish-drops`, `automated-drops` |
+| `shops.yml` | `categories` |
+| `upgrades.yml` | each `levels` table |
+
+Inside those sections an entry you delete **stays deleted** across restarts and updates, and an entry you add is never touched. The section key itself is still schema, so deleting the whole block restores the shipped defaults.
+
+{% hint style="info" %}
+To keep a section empty rather than restore the defaults, leave it as an empty map: `categories: {}`.
+{% endhint %}
+
+{% hint style="warning" %}
+Because a marked section is never written to again, a drop type or reward added in a future version will not appear in a file you already have. Check the release notes and add new entries by hand if you want them.
+{% endhint %}
+
 ## config.yml
 
 ```yaml
@@ -193,6 +213,8 @@ drop-sources:
 # ------------------------------------------------------------
 #  Entity kills: a player kills a mob. Keys are EntityType names (1.21).
 # ------------------------------------------------------------
+# sn:extensible
+# The entries below are yours: a type you delete stays deleted across reboots.
 entity-drops:
   ZOMBIE:
     chance: 5
@@ -213,6 +235,7 @@ entity-drops:
 # ------------------------------------------------------------
 #  Block breaks. Keys are Material names (1.21).
 # ------------------------------------------------------------
+# sn:extensible
 block-drops:
   EMERALD_ORE:
     chance: 30
@@ -243,6 +266,7 @@ block-drops:
 # ------------------------------------------------------------
 #  Fishing catches. Keys are the Material of the caught item (1.21).
 # ------------------------------------------------------------
+# sn:extensible
 fish-drops:
   COD:
     chance: 50
@@ -269,6 +293,7 @@ fish-drops:
 #  Automated deaths (mob grinders): a mob dies WITHOUT a player kill, by one of
 #  the listed death-reasons. Keys are EntityType names (1.21).
 # ------------------------------------------------------------
+# sn:extensible
 automated-drops:
   VILLAGER:
     chance: 50
@@ -316,6 +341,7 @@ Upgrades:
   Fortune:
     enabled: true
     max-level: 3
+    # sn:extensible
     levels:
       '1':
         price: 5000
@@ -331,6 +357,7 @@ Upgrades:
   Luck:
     enabled: true
     max-level: 3
+    # sn:extensible
     levels:
       '1':
         price: 5000
@@ -346,6 +373,7 @@ Upgrades:
   Discount:
     enabled: true
     max-level: 3
+    # sn:extensible
     levels:
       '1':
         price: 5000
@@ -361,6 +389,7 @@ Upgrades:
   Charity:
     enabled: true
     max-level: 3
+    # sn:extensible
     levels:
       '1':
         price: 5000
@@ -383,6 +412,7 @@ Upgrades:
   Execution:
     enabled: true
     max-level: 3
+    # sn:extensible
     levels:
       '1':
         price: 25000
@@ -451,6 +481,8 @@ Upgrades:
 # The atomic balance withdrawal is the real double-buy guard, this is only UX.
 purchase-cooldown-seconds: 2
 
+# sn:extensible
+# Your catalogue: deletions stick, additions survive.
 categories:
 
   # ----- Crate keys -----
