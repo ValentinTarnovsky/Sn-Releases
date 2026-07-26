@@ -28,6 +28,26 @@ remembered for the rest of their session. Chunks resent later still carry the re
 Check that PacketEvents is installed. It is a hard dependency on purpose, because the alternative is
 a server that starts happily with every protection layer silently switched off.
 
+### Players can still see ores with an X-Ray client. Why?
+
+Update to **1.0.1 or later** first. Every earlier version shipped the chunks a player receives while
+joining without filtering them, because it identified the receiver by an object PacketEvents only
+attaches once the join event runs. That is exactly the terrain a player loads into, so an X-Ray
+client saw it in full.
+
+If you are already on 1.0.1 or later, check in this order:
+
+- **Chunks the client already holds are not re-filtered.** The plugin rewrites a chunk on its way
+  out, so anything delivered before it was installed or enabled stays as the client received it.
+  Test by relogging and walking into fresh terrain, not from where you were standing.
+- **`/antixray stats`.** If `Chunks rewritten` stays at zero, no chunk is reaching the engine at
+  all. If it climbs, the rewrite is running and the ores you are seeing came from somewhere else.
+- **The startup log.** A licence failure disables the plugin before any layer is built, and the only
+  visible symptom is that nothing is filtered. The log says `License: FAIL` when that happens.
+- **Bypass.** `/antixray check <player>` shows the stored bypass flag. It does not show the
+  `snantixray.bypass` permission, so check that separately: either one alone makes a player skip
+  every layer.
+
 ### Detection never flags anyone. Is it broken?
 
 Check `worlds.yml` first. Decoy veins are the only signal the detection layer scores, so detection
