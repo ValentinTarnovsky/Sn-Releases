@@ -18,6 +18,7 @@
 * [Commands](snbans/commands.md)
 * [Permissions](snbans/permissions.md)
 * [Configuration](snbans/configuration.md)
+* [Developer API](snbans/api.md)
 * [FAQ](snbans/faq.md)
 
 ## SnClans
