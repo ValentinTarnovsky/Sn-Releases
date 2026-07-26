@@ -11,6 +11,15 @@
 * [Configuration](snantixray/configuration.md)
 * [FAQ](snantixray/faq.md)
 
+## SnBans
+
+* [Overview](snbans/README.md)
+* [Installation](snbans/installation.md)
+* [Commands](snbans/commands.md)
+* [Permissions](snbans/permissions.md)
+* [Configuration](snbans/configuration.md)
+* [FAQ](snbans/faq.md)
+
 ## SnClans
 
 * [Overview](snclans/README.md)
