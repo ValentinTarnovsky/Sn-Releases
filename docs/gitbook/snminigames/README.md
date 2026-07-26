@@ -1,6 +1,6 @@
 # SnMiniGames
 
-Scalable minigame framework for Paper servers. Adding a new game costs one game class plus one YAML file. The framework provides the queue and waiting lobby, countdowns, teleports, crash-safe player-state snapshots, full event protection, rewards and commands. It ships with two games: Parkour and TNT Run.
+Scalable minigame framework for Paper servers. Adding a new game costs one game class plus one YAML file. The framework provides the queue and waiting lobby, countdowns, teleports, crash-safe player-state snapshots, full event protection, rewards and commands. It ships with three games: Parkour, TNT Run and TNT Tag.
 
 ## Features
 
@@ -9,6 +9,7 @@ Scalable minigame framework for Paper servers. Adding a new game costs one game 
 - Full in-game protection: block changes, damage, drops, pickups, inventory clicks and commands are blocked; chat and leaving always work.
 - **Parkour** with multi-map rotation, ordered checkpoints, fall respawn, and single or multi-winner finishes with a finish-hold wait.
 - **TNT Run** with cuboid arenas: a one-block-wide trail vanishes behind each runner, falling below the arena eliminates you, and the last player standing wins. The arena restores itself completely at the end of the round, on reload and on shutdown.
+- **TNT Tag**: one or more players start each round holding the TNT, and whoever still holds it when the round counter hits zero explodes and is out. Pass it by hitting another player. Rounds get shorter until only the winners are left. The counter draws on a boss bar or the action bar, and the "explosion" is a particle plus a sound: it never damages a single block.
 - Per-position rewards as action lists (console commands, broadcasts) with placeholders.
 - In-game map setup: a single-block selection wand, a cuboid region wand and per-game `/minigames admin <game> ...` subcommands, no file editing required.
 

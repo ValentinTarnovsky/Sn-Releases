@@ -1,6 +1,6 @@
 # Configuration
 
-SnMiniGames ships with the following YAML files. `config.yml` and `lang/messages_en.yml` are managed: new keys are auto-merged on boot and your edits and comments are preserved. `games/parkour.yml` and `games/tntrun.yml` are seeded once and never auto-merged, so the setup commands and your edits fully own them.
+SnMiniGames ships with the following YAML files. `config.yml` and `lang/messages_en.yml` are managed: new keys are auto-merged on boot and your edits and comments are preserved. `games/parkour.yml`, `games/tntrun.yml` and `games/tnttag.yml` are seeded once and never auto-merged, so the setup commands and your edits fully own them.
 
 Every minigame gets its own `games/<game>.yml` holding its `enabled` flag, queue settings, maps and rewards. Settings shared by every game, such as the leave item appearance and the two setup wands, live in `config.yml` instead.
 
@@ -416,6 +416,189 @@ sounds:
   win: "UI_TOAST_CHALLENGE_COMPLETE 1.0 1.0"
 ```
 
+## games/tnttag.yml
+
+{% hint style="warning" %}
+`particles.explode` is a **list of names tried in order**, not a single value, and that is deliberate: Bukkit renamed the explosion particles in 1.20.5, so the two shipped names are the 1.21+ and the 1.20.x spelling of the same particle. The first one that exists on your server wins. If you replace them, keep both spellings when you care about running on both branches.
+{% endhint %}
+
+```yaml
+# ============================================================
+#  SnMiniGames - TNT Tag game
+#  Seeded once by SnLib and NEVER auto-merged: your structure and values
+#  are kept. The setup commands (/minigames admin tnttag ...) write maps
+#  back into this file.
+# ============================================================
+
+# Whether the TNT Tag game is active. When false it is not registered:
+# it will not appear in /minigames list, /minigames join or PlaceholderAPI.
+enabled: true
+
+# Display name of the game, shown wherever {game} appears. Supports color
+# codes and the full SnLib text pipeline.
+display-name: "&#f2b705&lTNT Tag"
+
+# ------------------------------------------------------------
+#  Queue and round staging (shared framework settings).
+# ------------------------------------------------------------
+queue:
+  # Seconds between automatic rounds. 0 disables auto-start (rounds then open
+  # only via /minigames admin start tnttag).
+  auto-start-interval: 120
+  # Seconds the queue stays open before the round begins.
+  countdown: 30
+  # Minimum queued players for the round to begin; below this at countdown end
+  # the round is cancelled.
+  min-players: 2
+  # Maximum queued players; reaching it starts the round early.
+  max-players: 12
+  # Broadcast the "starts in" line every N seconds while the queue counts down.
+  announce-interval: 10
+  # Mini-lobby players are teleported to while they wait (world;x;y;z;yaw;pitch).
+  # Set it in-game with /minigames admin tnttag setwaiting <map>.
+  waiting-spawn: ""
+  # Seconds a player must wait before rejoining after leaving or losing. 0 = none.
+  rejoin-cooldown: 15
+
+# ------------------------------------------------------------
+#  Join gate.
+# ------------------------------------------------------------
+join:
+  # Require an empty inventory, armor and hands to join (prevents item smuggling).
+  require-empty-inventory: true
+
+# ------------------------------------------------------------
+#  Start countdown (the 3-2-1 GO freeze before the round).
+# ------------------------------------------------------------
+start-countdown:
+  # Seconds of the pre-round freeze. 0 skips the freeze.
+  seconds: 3
+
+# ------------------------------------------------------------
+#  Leave item (hotbar item that leaves the round on right-click).
+#  Material and name are framework-level and live in config.yml under
+#  leave-item; here you only choose whether this game hands it out and where.
+# ------------------------------------------------------------
+leave-item:
+  # Whether to give the leave item while in the round.
+  enabled: true
+  # Hotbar slot (0-8) the leave item occupies.
+  slot: 8
+
+# ------------------------------------------------------------
+#  Map rotation across rounds: RANDOM (a random map each round) or
+#  SEQUENTIAL (maps picked in file order).
+# ------------------------------------------------------------
+map-rotation: RANDOM
+
+# ------------------------------------------------------------
+#  Where the round counter is drawn: BOSSBAR (a bar at the top of the screen)
+#  or ACTIONBAR (one line above the hotbar). Anything else falls back to
+#  BOSSBAR. The line itself is messages.tnttag.counter in the lang file.
+# ------------------------------------------------------------
+counter-display: BOSSBAR
+
+# Milliseconds of grace after RECEIVING the tag, before its holder can pass it
+# on. Stops the instant tag-back. 0 disables the grace.
+tag-cooldown: 1000
+
+# Seconds left on the counter at which the tick sound starts playing every
+# second (sounds.tick). 0 silences it.
+counter-tick-from: 5
+
+# ------------------------------------------------------------
+#  Maps. Each entry is one TNT Tag arena, created in-game with
+#  /minigames admin tnttag create <name>.
+#  Region command (select a cuboid with /minigames admin wand region first):
+#    /minigames admin tnttag setregion <map>
+#  Standing-position commands (run where you stand):
+#    /minigames admin tnttag setstart|setwaiting|setend <map>
+#  Also: delete <map>, list, settaggers, setroundtime, setdecrement,
+#        setminroundtime, setgrace, setwinners, settimelimit.
+#    Full command list: /minigames admin tnttag help
+#
+#  TNT Tag NEVER modifies a block: the region is only the arena boundary, and
+#  the explosion is a particle plus a sound.
+# ------------------------------------------------------------
+maps:
+  arena1:
+    # Arena cuboid (world;minX;minY;minZ;maxX;maxY;maxZ). A player who steps
+    # outside it is teleported back to the start spawn (never eliminated).
+    # Set it with the region wand + setregion.
+    region: ""
+    # Where players are teleported when the round starts (world;x;y;z;yaw;pitch).
+    # Its world MUST be the region's world AND the spot MUST be inside the
+    # region, or the round is aborted (it is also the re-pin target).
+    start-spawn: ""
+    # How many players start each round tagged (holding the TNT).
+    taggers: 1
+    # Seconds of the FIRST round.
+    round-seconds: 30
+    # Seconds subtracted from each following round.
+    round-decrement: 5
+    # Floor of a round's length; round-decrement never takes it below this.
+    min-round-seconds: 10
+    # When the ONLY tagged player leaves mid-round the tag moves to a random
+    # survivor; if the counter had less than this many seconds left it is raised
+    # to this value, so the new holder gets a fair chance. 0 disables the floor.
+    reassign-grace: 5
+    # Survivors the round ends with (1 = last one standing).
+    winners: 1
+    # Maximum match length in seconds; 0 disables the limit.
+    time-limit: 300
+    # Where the SURVIVORS are teleported when the match ends. Leave blank to
+    # send each player back to where they were before joining. Exploded players
+    # are restored the instant they blow up (there is no spectator hold), so
+    # this spot only applies to whoever was still standing at the end.
+    end-teleport: ""
+    # Rewards by finish position (1 = the winner). Each position is a list of
+    # action strings run for that finisher, with placeholders {player},
+    # {position}, {game} and {map}. Rewards do NOT fire for a player who left
+    # before the match ended (offline finishers are skipped).
+    # Use CONSOLE/economy actions, not [give]: rewards run while the player is
+    # still in the round, so the pre-game inventory restore right afterwards
+    # would wipe any item handed out here.
+    rewards:
+      1:
+        - "[console] eco give {player} 1000"
+        - "[broadcastmessage] &a{player}&a won TNT Tag!"
+      2:
+        - "[console] eco give {player} 500"
+      3:
+        - "[console] eco give {player} 250"
+
+# ------------------------------------------------------------
+#  Particles. Each entry is a LIST of org.bukkit.Particle names tried in
+#  order; the FIRST one that exists on this server wins. That is not
+#  decoration: Bukkit renamed the explosion particles in 1.20.5, so the two
+#  shipped names are the 1.21+ and the 1.20.x spelling of the SAME particle.
+#  An empty list (or no name that resolves) just skips the particle and keeps
+#  the sound.
+# ------------------------------------------------------------
+particles:
+  # Spawned at an exploding player's feet.
+  explode:
+    - "EXPLOSION"        # 1.20.5+
+    - "EXPLOSION_LARGE"  # 1.20.1 - 1.20.4
+
+# ------------------------------------------------------------
+#  Sounds for TNT Tag events. Format: "SOUND_ID [volume] [pitch]"
+#  (blank or "none" = silent). The 3-2-1 start countdown sound is
+#  configured globally in config.yml (queue.countdown-sound).
+# ------------------------------------------------------------
+sounds:
+  # Played when a player joins the TNT Tag queue.
+  join: "ENTITY_EXPERIENCE_ORB_PICKUP 1.0 1.0"
+  # Played to a player the moment they receive the tag.
+  tagged: "ENTITY_TNT_PRIMED 1.0 1.0"
+  # Played at an exploding player's position (everyone nearby hears it).
+  explode: "ENTITY_GENERIC_EXPLODE 1.0 1.0"
+  # Played to every participant on each of the last counter-tick-from seconds.
+  tick: "BLOCK_NOTE_BLOCK_HAT 1.0 1.0"
+  # Played to each winner when the match ends.
+  win: "UI_TOAST_CHALLENGE_COMPLETE 1.0 1.0"
+```
+
 ## lang/messages_en.yml
 
 ```yaml
@@ -641,6 +824,82 @@ messages:
       list-header: "&8&m---------&r &#f25c05&lTNT Run maps &8(&7{count}&8)"
       # One line per map.
       list-entry: "&8- &#f25c05{map} &8- region &7{region}&8, &7{winners}&8 survivors"
+
+  # TNT Tag game feedback. Placeholders: {player} a player's name, {from}/{to} the
+  # two sides of a tag pass, {remaining} survivors left, {time} seconds on the
+  # counter, {round} the round number, {tagged}/{alive} tagged and living players,
+  # {game} display name, {map} map id.
+  tnttag:
+    # The round counter, drawn on the bossbar or the actionbar per counter-display
+    # in games/tnttag.yml. Keep it SHORT: it has to fit a bossbar title.
+    counter: "&c&lTNT &f{time}s &8| &7Round &f{round} &8| &7IT: &c{tagged}&8/&f{alive}"
+    # Sent to every participant when a new, shorter round begins.
+    round-start: "&#f2b705Round &f{round}&#f2b705 - &f{time}s&#f2b705 on the clock!"
+    # Sent to a player the moment they receive the tag.
+    tagged-self: "&cYou are IT! Hit another player to pass the TNT."
+    # Title shown to a player who just received the tag (title;subtitle;fadeIn;stay;fadeOut in ticks).
+    tagged-title: "&c&lYOU ARE IT;&7Pass the TNT!;0;30;10"
+    # Sent to everyone else when a player is tagged at the start of a round.
+    tagged-other: "&f{player}&7 is now &cIT&7!"
+    # Sent to everyone else when the tag is handed over because its holder left.
+    tag-reassigned: "&f{player}&7 picked up the loose TNT and is now &cIT&7!"
+    # Sent to the player who successfully passed the tag.
+    tag-passed: "&aYou passed the TNT to &f{player}&a!"
+    # Sent to the bystanders when the tag changes hands.
+    tag-moved: "&f{from}&7 passed the TNT to &f{to}&7!"
+    # Sent to a player the moment they explode.
+    exploded-self: "&cYou exploded! You are out of the round."
+    # Title shown to a player who just exploded.
+    exploded-title: "&c&lBOOM;&7You were holding the TNT;0;40;10"
+    # Sent to the survivors when someone explodes.
+    exploded: "&f{player}&7 exploded &8- &f{remaining}&7 left"
+    # Sent to a player who walked out of the arena and was put back inside.
+    out-of-arena: "&cStay inside the arena!"
+    # Title shown to each winner when the match ends.
+    win-title: "&6&lWINNER;&eLast one standing!;0;40;10"
+    # Broadcast when the match ends with a winner.
+    winner-broadcast: "&f{player}&7 won &6{game}&7!"
+    # Broadcast when the match ends because it hit its time limit.
+    time-limit: "&c{game}&c round ended - the time limit was reached."
+
+    # Map setup feedback for /minigames admin tnttag ... The generic setup lines
+    # (invalid-map-name, map-exists, map-not-found, cannot-delete-active,
+    # map-deleted, waiting-set) are shared and live under messages.setup.
+    # Placeholders: {map} map id, {count} map count, {volume} arena block count,
+    # {world} arena world, {taggers}/{seconds}/{winners} the value that was set.
+    setup:
+      # Sent when a map is created; names the follow-up commands.
+      map-created: "&aCreated the map &f{map}&a. Select the arena with &f/minigames admin wand region&a, then &f/minigames admin tnttag setregion {map}&a; where you stand: &fsetstart&a, &fsetwaiting&a, &fsetend&a. Full list: &f/minigames admin tnttag help&a."
+      # Sent by setregion when the admin has no complete cuboid selected.
+      no-region-selection: "&cSelect the arena first: &f/minigames admin wand region&c, then left- and right-click the two corners."
+      # Sent when the arena region is set.
+      region-set: "&aArena of &f{map}&a set &8(&7{volume}&8 blocks in &7{world}&8)&a."
+      # Sent when the selection exceeds region-wand.max-volume in config.yml.
+      region-too-big: "&cThat selection is &e{volume}&c blocks; the arena cap is &e{max}&c. Select a smaller region or raise &fregion-wand.max-volume&c in config.yml."
+      # Sent when the start spawn is set. It MUST be inside the arena region.
+      start-set: "&aStart spawn of &f{map}&a set to your location."
+      # Sent when the end teleport is set.
+      end-set: "&aEnd teleport of &f{map}&a set to your location."
+      # Sent when the tagger count is set.
+      taggers-set: "&aTaggers of &f{map}&a set to &f{taggers}&a."
+      # Sent when the first round's length is set.
+      roundtime-set: "&aFirst round of &f{map}&a set to &f{seconds}&a seconds."
+      # Sent when the per-round decrement is set.
+      decrement-set: "&aRound decrement of &f{map}&a set to &f{seconds}&a seconds."
+      # Sent when the round-length floor is set.
+      minroundtime-set: "&aShortest round of &f{map}&a set to &f{seconds}&a seconds."
+      # Sent when the reassign grace floor is set.
+      grace-set: "&aReassign grace of &f{map}&a set to &f{seconds}&a seconds."
+      # Sent when the survivor count is set.
+      winners-set: "&aSurvivors of &f{map}&a set to &f{winners}&a."
+      # Sent when the match time limit is set.
+      timelimit-set: "&aTime limit of &f{map}&a set to &f{seconds}&a seconds."
+      # Sent by list when no maps exist yet.
+      list-empty: "&7No TNT Tag maps yet. Create one with &f/minigames admin tnttag create <name>&7."
+      # List header, printed before the per-map entries.
+      list-header: "&8&m---------&r &#f2b705&lTNT Tag maps &8(&7{count}&8)"
+      # One line per map.
+      list-entry: "&8- &#f2b705{map} &8- region &7{region}&8, &7{taggers}&8 IT, &7{winners}&8 survivors"
 
   # Map setup feedback (the /mg admin wand + /mg admin parkour ... commands).
   # Placeholders: {map} map id, {x}/{y}/{z}/{world} selected block, {count} map

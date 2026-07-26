@@ -1,7 +1,7 @@
 # FAQ
 
 ### How do I update SnMiniGames?
-Download the newer `snminigames-v*` release and replace the jar. Update SnLib first if the release notes ask for a newer version. Configs auto-merge on restart; the per-game files (`games/parkour.yml`, `games/tntrun.yml`) are never touched.
+Download the newer `snminigames-v*` release and replace the jar. Update SnLib first if the release notes ask for a newer version. Configs auto-merge on restart; the per-game files (`games/parkour.yml`, `games/tntrun.yml`, `games/tnttag.yml`) are never touched.
 
 ### Why are the map setup commands missing from `/mg help`?
 They are hidden from the root help on purpose. Every minigame ships its own set of setup commands, so listing them all would make `/mg help` unreadable once several games are installed. Each game exposes one entry instead, `/mg admin <game> help`, which lists that game's commands on its own page. The commands themselves are unchanged: they still run, and they still tab-complete under `/mg admin <game> `.
@@ -14,6 +14,21 @@ Create it with `/mg admin parkour create <name>`, then get the wand with `/mg ad
 
 ### How do I build a TNT Run arena?
 Create it with `/mg admin tntrun create <name>`. Get the cuboid wand with `/mg admin wand region`, left-click one corner of the arena and right-click the opposite one (the edges are drawn with particles while you select), then run `/mg admin tntrun setregion <map>` (the particles stop once the arena is saved). Stand on the top layer and run `setstart <map>`, stand in the mini-lobby and run `setwaiting <map>`, and set the elimination height with `setelimy <map> <y>`. `/mg admin tntrun help` lists everything else (`setdelay`, `setdepth`, `setwinners`, `settimelimit`, `setend`).
+
+### How do I build a TNT Tag arena?
+Create it with `/mg admin tnttag create <name>`. Get the cuboid wand with `/mg admin wand region`, left-click one corner and right-click the opposite one, then run `/mg admin tnttag setregion <map>`. Stand inside the arena and run `setstart <map>` - the start spawn **must be inside the region**, because it is also where an escapee gets sent back to, and a spawn outside it would loop forever (the plugin refuses to open such a round and logs why). Stand in the mini-lobby and run `setwaiting <map>`. `/mg admin tnttag help` lists the rest (`settaggers`, `setroundtime`, `setdecrement`, `setminroundtime`, `setgrace`, `setwinners`, `settimelimit`, `setend`).
+
+### Does TNT Tag damage blocks or players?
+Neither. The "explosion" is a particle plus a sound - the plugin never calls the vanilla explosion, so not a single block is touched and nobody takes damage from it. Hitting someone to pass the tag deals no damage either: the tag is read off a hit that the in-game protection has already cancelled, so no participant ever loses a heart. An exploded player is simply removed from the round with their pre-game state restored.
+
+### Nobody explodes in my TNT Tag round, or the counter never appears. Why?
+The round most likely never started. TNT Tag refuses to open a round whose map has no region, no start spawn, a start spawn in a different world from the region, or a start spawn outside the region - each case is logged as a warning when the round would have begun. Check `/mg admin tnttag list` to confirm the region is set. If the counter is invisible but the round is running, check `counter-display` in `games/tnttag.yml`: `BOSSBAR` draws a bar at the top of the screen, `ACTIONBAR` draws a line above the hotbar.
+
+### What happens in TNT Tag if the tagged player just logs off?
+The tag moves to a random survivor, so a round can never be left with nobody holding it. To keep that fair, if the counter had less than `reassign-grace` seconds left (5 by default) it is raised back to that value, so whoever inherits the TNT gets a real chance to pass it on. Set `reassign-grace: 0` to disable the floor and let the clock run down untouched.
+
+### Can I have more than one player tagged at once in TNT Tag?
+Yes, set `taggers` above 1 on the map - every tagged player explodes when the counter hits zero. The number is clamped at runtime to `survivors - winners`, so a round can never blow up its own last survivors and end with no winner; with 3 players left, `winners: 1` and `taggers: 5`, only 2 are tagged.
 
 ### The region wand particles will not go away. How do I clear the selection?
 Run `/mg admin wand region` again. It takes the wand back and closes the selection, so the edges stop rendering - and it closes the selection even when you dropped or stored the wand, so there is always a way out without relogging. `setregion` also closes the selection by itself once the arena is saved, since it has consumed it. If you would rather have selections expire on their own, set `region-wand.timeout-ticks` in `config.yml` to a number of ticks (`0`, the default, means never).
@@ -40,7 +55,7 @@ No. Movement is frozen at the start point until the GO title: position changes a
 Nothing is lost. The full player state is written to disk before the game touches it, and it restores on the next start or when the player reconnects.
 
 ### Can more than one player win?
-Yes. In Parkour, set `winners` above 1 on a map: each finisher waits frozen at the `finish-hold` spot until enough players finish or the time limit ends the round. In TNT Run, `winners` is the number of players still standing that ends the round; all of them are announced as winners. Note that TNT Run has no score to rank survivors by, so with `winners` above 1 their relative positions are stable but not earned - keep the reward difference between those positions small, or leave `winners` at 1.
+Yes. In Parkour, set `winners` above 1 on a map: each finisher waits frozen at the `finish-hold` spot until enough players finish or the time limit ends the round. In TNT Run and TNT Tag, `winners` is the number of players still standing that ends the round; all of them are announced as winners. Note that neither of those two has a score to rank survivors by, so with `winners` above 1 their relative positions are stable but not earned - keep the reward difference between those positions small, or leave `winners` at 1.
 
 ### Does it support Folia?
 No, SnMiniGames targets Paper 1.20.x and 1.21.x.

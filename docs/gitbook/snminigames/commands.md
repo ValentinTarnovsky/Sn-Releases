@@ -55,8 +55,27 @@ than one line per subcommand. The setup commands still run and still tab-complet
 | `/mg admin tntrun setdepth <map> <blocks>` | `snminigames.admin.setup` | Set how many blocks deep to remove (1-16; a sand+TNT layer clears both at 2) |
 | `/mg admin tntrun setwinners <map> <n>` | `snminigames.admin.setup` | Set how many survivors end the round |
 | `/mg admin tntrun settimelimit <map> <s>` | `snminigames.admin.setup` | Set the round time limit (0 disables it) |
+| `/mg admin tnttag help [page]` | `snminigames.admin.setup` | List every TNT Tag setup command with its usage, paginated |
+| `/mg admin tnttag create <name>` | `snminigames.admin.setup` | Create a new TNT Tag map |
+| `/mg admin tnttag delete <map>` | `snminigames.admin.setup` | Delete a map (not while a round plays it) |
+| `/mg admin tnttag list` | `snminigames.admin.setup` | List maps with their region, tagger and survivor counts |
+| `/mg admin tnttag setregion <map>` | `snminigames.admin.setup` | Save your region-wand selection as the arena boundary |
+| `/mg admin tnttag setstart <map>` | `snminigames.admin.setup` | Set the round start to where you stand (must be INSIDE the region) |
+| `/mg admin tnttag setwaiting <map>` | `snminigames.admin.setup` | Set the queue waiting lobby to where you stand |
+| `/mg admin tnttag setend <map>` | `snminigames.admin.setup` | Set the survivors' end teleport to where you stand |
+| `/mg admin tnttag settaggers <map> <n>` | `snminigames.admin.setup` | Set how many players start each round holding the TNT (1-16) |
+| `/mg admin tnttag setroundtime <map> <s>` | `snminigames.admin.setup` | Set the first round's length in seconds (5-600) |
+| `/mg admin tnttag setdecrement <map> <s>` | `snminigames.admin.setup` | Set how many seconds each following round loses (0-60) |
+| `/mg admin tnttag setminroundtime <map> <s>` | `snminigames.admin.setup` | Set the shortest a round may get (1-600) |
+| `/mg admin tnttag setgrace <map> <s>` | `snminigames.admin.setup` | Set the counter floor applied when a loose tag is reassigned (0-60) |
+| `/mg admin tnttag setwinners <map> <n>` | `snminigames.admin.setup` | Set how many survivors end the match |
+| `/mg admin tnttag settimelimit <map> <s>` | `snminigames.admin.setup` | Set the match time limit (0 disables it) |
 | `/mg reload` | `snminigames.admin.reload` | Reload configuration |
 
+{% hint style="info" %}
+Each game hides its setup commands behind its own `help` leaf, so `/mg help` stays short: it shows one line per game (`/mg admin tntrun help`, `/mg admin tnttag help`) instead of one line per subcommand. The hidden leaves still tab-complete.
+{% endhint %}
+
 {% hint style="danger" %}
-These commands are destructive and cannot be undone: `/mg admin parkour delete`, `/mg admin parkour clearwaypoints`, `/mg admin tntrun delete`.
+These commands are destructive and cannot be undone: `/mg admin parkour delete`, `/mg admin parkour clearwaypoints`, `/mg admin tntrun delete`, `/mg admin tnttag delete`.
 {% endhint %}
