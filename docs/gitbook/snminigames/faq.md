@@ -32,6 +32,9 @@ That is `tag-speed` in `games/tnttag.yml`, `1` (Speed I) by default: the chaser 
 ### Why is there a pause after the explosion before the next round?
 That is the observation break, `round-break` on the map (3 seconds by default). It gives the survivors a moment to see who blew up instead of being tagged again the same tick, and the counter shows "next round in ..." while it runs. Nobody holds the TNT during the break, so it can never eliminate anyone. Set it with `/mg admin tnttag setbreak <map> <seconds>`, or `0` to chain the rounds back to back like earlier versions did.
 
+### Where do players go between rounds?
+Back to the map's `start-spawn`. From v1.8.2 every round change teleports the survivors there (velocity and fall distance cleared), so a chase never carries over and nobody keeps the position they earned in the previous round. It happens at the start of the round change, so the observation break is the window the players use to spread out again before the next TNT is dealt; maps with `round-break: 0` are teleported too, they just get no pause.
+
 ### Nobody explodes in my TNT Tag round, or the counter never appears. Why?
 The round most likely never started. TNT Tag refuses to open a round whose map has no region, no start spawn, a start spawn in a different world from the region, or a start spawn outside the region - each case is logged as a warning when the round would have begun. Check `/mg admin tnttag list` to confirm the region is set. If the counter is invisible but the round is running, check `counter-display` in `games/tnttag.yml`: `BOSSBAR` draws a bar at the top of the screen, `ACTIONBAR` draws a line above the hotbar.
 

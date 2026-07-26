@@ -567,6 +567,9 @@ maps:
     # Seconds of observation after a detonation before the next round starts, so
     # the survivors get to see who blew up instead of being tagged again the same
     # tick. Nobody holds the TNT while it runs. 0 chains the rounds back to back.
+    # Every round change also teleports the survivors back to start-spawn (that
+    # happens with or without a break), so the break is their window to spread out
+    # again before the next TNT is handed out.
     round-break: 3
     # Survivors the round ends with (1 = last one standing).
     winners: 1
@@ -869,9 +872,10 @@ messages:
     # detonation (round-break in games/tnttag.yml). {round} is the round ABOUT to
     # start. Keep it SHORT: it has to fit a bossbar title.
     break-counter: "&7Next round in &f{time}s &8| &7Round &f{round} &8| &7Alive &f{alive}"
-    # Sent once to every survivor the moment the observation break starts.
+    # Sent once to every survivor the moment the observation break starts, which is
+    # also when everyone is teleported back to the map's start spawn.
     # Placeholders: {time} break length, {round} the round about to start.
-    break-start: "&7Round over. Round &f{round}&7 starts in &f{time}s&7."
+    break-start: "&7Round over - everyone back to the start. Round &f{round}&7 begins in &f{time}s&7."
     # Sent to a player the moment they receive the tag.
     tagged-self: "&cYou are IT! Hit another player to pass the TNT."
     # Title shown to a player who just received the tag (title;subtitle;fadeIn;stay;fadeOut in ticks).
