@@ -510,6 +510,20 @@ tag-cooldown: 1000
 # that hits do not register; too high makes near-misses count. Clamped to 1-6.
 tag-reach: 3.5
 
+# Speed LEVEL of whoever is holding the TNT (1 = Speed I, the chaser runs faster
+# than the runners). 0 gives no speed at all. Clamped to 0-5.
+tag-speed: 1
+
+# Knockback applied to a player who is hit, ONLY on a world where the server has
+# PvP off. Nobody ever loses health in a round: with PvP ON the hit keeps its
+# vanilla knockback (the damage is zeroed, not the hit), and with PvP OFF the
+# server drops the hit entirely, so the plugin reproduces the push itself and
+# this is its strength. 0.4 is what vanilla uses for a melee hit; 0 disables it.
+# Note: if PvP is blocked by a REGION plugin instead of the world flag, the
+# server still refuses the hit while this fallback stays off - disable PvP at the
+# world level for the arena world.
+hit-knockback: 0.4
+
 # Seconds left on the counter at which the tick sound starts playing every
 # second (sounds.tick). 0 silences it.
 counter-tick-from: 5
@@ -603,6 +617,10 @@ sounds:
   join: "ENTITY_EXPERIENCE_ORB_PICKUP 1.0 1.0"
   # Played to a player the moment they receive the tag.
   tagged: "ENTITY_TNT_PRIMED 1.0 1.0"
+  # Played at a player who is hit, ONLY where the plugin had to resolve the hit
+  # itself (PvP off). A hit the server resolves already plays vanilla's own hurt
+  # sound, so this one is not used there and would only double it.
+  hit: "ENTITY_PLAYER_HURT 1.0 1.0"
   # Played at an exploding player's position (everyone nearby hears it).
   explode: "ENTITY_GENERIC_EXPLODE 1.0 1.0"
   # Played to every participant on each of the last counter-tick-from seconds.
