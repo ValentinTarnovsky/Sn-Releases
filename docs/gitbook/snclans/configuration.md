@@ -355,6 +355,32 @@ These files are also auto-merged on boot, so your edits and comments survive upd
 
 The `guis/` files are seeded on first boot, so every menu opens correctly the first time you start the plugin.
 
+### Moving the clan info elements
+
+The clan info menu fills five elements from live clan data: the clan banner, the member counter, the stats block, the points block, and the description. Their contents come from the plugin, but their position is yours to choose.
+
+Each of the five is declared under `templates:` in `guis/info.yml` with a `key` that points at a character of the `layout:` mask:
+
+```yaml
+layout:
+  - "fffffffff"
+  - "ffabcdeff"
+  - "ffffxffff"
+
+templates:
+  banner:   # key: a
+  members:  # key: b
+  stats:    # key: c
+  points:   # key: d
+  motd:     # key: e
+```
+
+To move an element, move its letter in the mask. To swap two elements, swap their `key` values. Give a template a `slots:` list instead of a `key` to place it by raw slot number, which wins over `key`. A letter used more than once renders the same element in every matching cell.
+
+{% hint style="info" %}
+The five `key` entries are added to your existing `guis/info.yml` automatically on the first boot after the update, alongside your own edits.
+{% endhint %}
+
 ## Language file
 
 `lang/messages_en.yml` holds the message prefix, the shared `snlib` command contract, the translatable `commands` block, your own `messages`, and the chat `lists`.
