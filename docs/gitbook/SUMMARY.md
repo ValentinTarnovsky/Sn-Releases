@@ -33,6 +33,16 @@
 * [Developer API](snelementalgems/api.md)
 * [FAQ](snelementalgems/faq.md)
 
+## SnKillEffects
+
+* [Overview](snkilleffects/README.md)
+* [Installation](snkilleffects/installation.md)
+* [Commands](snkilleffects/commands.md)
+* [Permissions](snkilleffects/permissions.md)
+* [Configuration](snkilleffects/configuration.md)
+* [Placeholders](snkilleffects/placeholders.md)
+* [FAQ](snkilleffects/faq.md)
+
 ## SnMiniGames
 
 * [Overview](snminigames/README.md)
