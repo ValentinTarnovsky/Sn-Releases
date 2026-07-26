@@ -244,7 +244,10 @@ chat:
 #    player-kill  = points to the killer's clan per player kill
 #    mob-kill     = points to the killer's clan per mob kill
 #    death        = points removed from the victim's clan per death
+#  This section is owner-extensible: add, rename or delete point
+#  types freely; entries you delete are never re-added on boot.
 # ------------------------------------------------------------
+# sn:extensible
 points:
   kills:
     # Name shown in menus and leaderboards.
