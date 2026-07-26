@@ -68,6 +68,7 @@ than one line per subcommand. The setup commands still run and still tab-complet
 | `/mg admin tnttag setdecrement <map> <s>` | `snminigames.admin.setup` | Set how many seconds each following round loses (0-60) |
 | `/mg admin tnttag setminroundtime <map> <s>` | `snminigames.admin.setup` | Set the shortest a round may get (1-600) |
 | `/mg admin tnttag setgrace <map> <s>` | `snminigames.admin.setup` | Set the counter floor applied when a loose tag is reassigned (0-60) |
+| `/mg admin tnttag setbreak <map> <s>` | `snminigames.admin.setup` | Set the observation break between a detonation and the next round (0-30, 0 = none) |
 | `/mg admin tnttag setwinners <map> <n>` | `snminigames.admin.setup` | Set how many survivors end the match |
 | `/mg admin tnttag settimelimit <map> <s>` | `snminigames.admin.setup` | Set the match time limit (0 disables it) |
 | `/mg reload` | `snminigames.admin.reload` | Reload configuration |

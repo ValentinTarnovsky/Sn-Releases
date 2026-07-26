@@ -502,6 +502,14 @@ counter-display: BOSSBAR
 # on. Stops the instant tag-back. 0 disables the grace.
 tag-cooldown: 1000
 
+# How far (in blocks) a tagged player's swing looks for the player they hit.
+# The tag is read two ways: from the damage event when the server has PvP ON,
+# and - so the game also works with PvP OFF, where the server drops a
+# player-on-player hit before any plugin sees it - from the swing animation,
+# which is what this reach applies to. Raise it slightly if players complain
+# that hits do not register; too high makes near-misses count. Clamped to 1-6.
+tag-reach: 3.5
+
 # Seconds left on the counter at which the tick sound starts playing every
 # second (sounds.tick). 0 silences it.
 counter-tick-from: 5
@@ -514,7 +522,7 @@ counter-tick-from: 5
 #  Standing-position commands (run where you stand):
 #    /minigames admin tnttag setstart|setwaiting|setend <map>
 #  Also: delete <map>, list, settaggers, setroundtime, setdecrement,
-#        setminroundtime, setgrace, setwinners, settimelimit.
+#        setminroundtime, setgrace, setbreak, setwinners, settimelimit.
 #    Full command list: /minigames admin tnttag help
 #
 #  TNT Tag NEVER modifies a block: the region is only the arena boundary, and
@@ -542,6 +550,10 @@ maps:
     # survivor; if the counter had less than this many seconds left it is raised
     # to this value, so the new holder gets a fair chance. 0 disables the floor.
     reassign-grace: 5
+    # Seconds of observation after a detonation before the next round starts, so
+    # the survivors get to see who blew up instead of being tagged again the same
+    # tick. Nobody holds the TNT while it runs. 0 chains the rounds back to back.
+    round-break: 3
     # Survivors the round ends with (1 = last one standing).
     winners: 1
     # Maximum match length in seconds; 0 disables the limit.
@@ -835,6 +847,13 @@ messages:
     counter: "&c&lTNT &f{time}s &8| &7Round &f{round} &8| &7IT: &c{tagged}&8/&f{alive}"
     # Sent to every participant when a new, shorter round begins.
     round-start: "&#f2b705Round &f{round}&#f2b705 - &f{time}s&#f2b705 on the clock!"
+    # Drawn on the counter surface during the observation break that follows a
+    # detonation (round-break in games/tnttag.yml). {round} is the round ABOUT to
+    # start. Keep it SHORT: it has to fit a bossbar title.
+    break-counter: "&7Next round in &f{time}s &8| &7Round &f{round} &8| &7Alive &f{alive}"
+    # Sent once to every survivor the moment the observation break starts.
+    # Placeholders: {time} break length, {round} the round about to start.
+    break-start: "&7Round over. Round &f{round}&7 starts in &f{time}s&7."
     # Sent to a player the moment they receive the tag.
     tagged-self: "&cYou are IT! Hit another player to pass the TNT."
     # Title shown to a player who just received the tag (title;subtitle;fadeIn;stay;fadeOut in ticks).
@@ -890,6 +909,8 @@ messages:
       minroundtime-set: "&aShortest round of &f{map}&a set to &f{seconds}&a seconds."
       # Sent when the reassign grace floor is set.
       grace-set: "&aReassign grace of &f{map}&a set to &f{seconds}&a seconds."
+      # Sent when the between-rounds observation break is set.
+      break-set: "&aObservation break of &f{map}&a set to &f{seconds}&a seconds."
       # Sent when the survivor count is set.
       winners-set: "&aSurvivors of &f{map}&a set to &f{winners}&a."
       # Sent when the match time limit is set.
