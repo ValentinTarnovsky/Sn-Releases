@@ -2,6 +2,15 @@
 
 * [Sn Plugins Documentation](README.md)
 
+## SnAntiXray
+
+* [Overview](snantixray/README.md)
+* [Installation](snantixray/installation.md)
+* [Commands](snantixray/commands.md)
+* [Permissions](snantixray/permissions.md)
+* [Configuration](snantixray/configuration.md)
+* [FAQ](snantixray/faq.md)
+
 ## SnClans
 
 * [Overview](snclans/README.md)
