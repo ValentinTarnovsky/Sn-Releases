@@ -17,3 +17,6 @@ In SQLite by default. Switch to MySQL under the `database` section of `config.ym
 
 ### Can I show clan features in chat instead of GUIs?
 Yes. Set each entry under the `presentation` section of `config.yml` to `chat` instead of `gui`.
+
+### How do I change the "Open" / "Closed" or "Allowed" / "Denied" wording?
+In `lang/messages_en.yml`, under the `lists` block: `status-open`, `status-closed`, `status-allowed`, `status-denied`, and the rest of the `status-*` keys. Each one is shared by the chat commands, the menus, and the placeholders, so editing it once changes every place that word appears. The permission names next to them come from the `actions` block in the same file. See [State words and action names](configuration.md#state-words-and-action-names).

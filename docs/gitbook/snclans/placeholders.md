@@ -11,11 +11,12 @@ Every placeholder resolves against the requesting player's clan. A player withou
 | `%snclans_leader%` | Clan leader name |
 | `%snclans_description%` | Clan description |
 | `%snclans_motd%` | Legacy alias of `description`; still resolves |
-| `%snclans_status%` | Join status, `open` or `closed` |
+| `%snclans_status%` | Join status as a fixed token, `open` or `closed`. Never changes, so a scoreboard condition can compare against it |
+| `%snclans_status_display%` | Join status as the wording from `lists.status-open` / `lists.status-closed`, colors included |
 | `%snclans_members%` | Total member count |
 | `%snclans_online%` | Online member count |
 | `%snclans_max%` | Maximum members allowed |
-| `%snclans_role%` | Your role in the clan |
+| `%snclans_role%` | Your role in the clan, or `lists.status-none` when you are in none |
 | `%snclans_kdr%` | Clan kill/death ratio |
 | `%snclans_kills%` | Clan total kills |
 | `%snclans_deaths%` | Clan total deaths |
@@ -24,4 +25,7 @@ Every placeholder resolves against the requesting player's clan. A player withou
 | `%snclans_pvp%` | Whether clan friendly fire is on (true or false) |
 | `%snclans_allies%` | Number of allied clans |
 | `%snclans_points_<id>%` | Clan points for point type `<id>`, for example `%snclans_points_kills%` |
-| `%snclans_rank_<id>%` | Clan leaderboard rank for point type `<id>`, for example `%snclans_rank_kills%` |
+| `%snclans_rank_<id>%` | Clan leaderboard rank for point type `<id>`, for example `%snclans_rank_kills%`. A player without a clan gets `lists.status-no-rank` |
+
+The wording of every state word above lives in `lang/messages_en.yml`; see
+[Configuration](configuration.md#state-words-and-action-names).

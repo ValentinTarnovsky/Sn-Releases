@@ -77,6 +77,9 @@ presentation:
   members: gui
   # Bare /clan and /clan menu. gui = open the main menu; chat = show command help.
   main: gui
+  # Date pattern for the creation and join dates shown in the menus.
+  # Java SimpleDateFormat syntax; an invalid pattern falls back to yyyy-MM-dd.
+  date-format: "yyyy-MM-dd"
 
 # ------------------------------------------------------------
 #  Clan creation limits and validation
@@ -346,6 +349,10 @@ The hologram text, one entry per line. Two placeholders are available: `{clan}` 
 
 The remaining banner cooldown is recomputed against the live value on every check. Editing it and running `/clan reload` retimes cooldowns that are already running, with no restart needed.
 
+### presentation.date-format
+
+The pattern used for the clan creation date and the member join date in the menus, in Java `SimpleDateFormat` syntax. Set `dd/MM/yyyy` for a day-first layout or `MMM d, yyyy` for a written month. A pattern that does not parse falls back to `yyyy-MM-dd` and notes it under `/clan debug`. The change applies on `/clan reload`.
+
 ## Other managed YAML
 
 These files are also auto-merged on boot, so your edits and comments survive updates.
@@ -383,11 +390,76 @@ The five `key` entries are added to your existing `guis/info.yml` automatically 
 
 ## Language file
 
-`lang/messages_en.yml` holds the message prefix, the shared `snlib` command contract, the translatable `commands` block, your own `messages`, and the chat `lists`.
+`lang/messages_en.yml` holds the message prefix, the shared `snlib` command contract, the translatable `commands` block, your own `messages`, the chat `lists` with the shared state words, and the `actions` names.
 
 The `prefix` value at the top of the file is prepended automatically by SnLib to every single-line message sent through it. Do not write a literal prefix token inside any message value: SnLib adds the configured prefix for you, and a hardcoded one would render twice.
 
 The `snlib` block is SnLib's shared command contract: 11 keys covering permission errors, usage, number and value validation, unknown subcommands, reload confirmation, and the help header, entry, and footer. Ship the full block so SnClans matches the rest of the Sn fleet. SnLib fills any omitted key with a neutral default, which leaves an unbranded line. Placeholders such as `{plugin}`, `{usage}`, `{value}`, and `{command}` are substituted by SnLib.
+
+### State words and action names
+
+Every short state word SnClans shows lives in the `lists` block, and every one of them
+is used in all three places the plugin can render it: the chat commands, the menus under
+`guis/`, and the PlaceholderAPI output. Restyle one here and it changes everywhere.
+
+```yaml
+lists:
+  status-online: "&aOnline"
+  status-offline: "&7Offline"
+  status-open: "&aOpen"
+  status-closed: "&7Closed"
+  status-pvp-on: "&aON"
+  status-pvp-off: "&cOFF"
+  status-allowed: "&aAllowed"
+  status-denied: "&cDenied"
+  status-none: "None"
+  status-unknown: "Unknown"
+  status-console: "Console"
+  status-no-rank: "-"
+```
+
+The last four ship without color on purpose. `status-none` and `status-no-rank` also reach
+`%snclans_role%` and `%snclans_rank_<id>%`, so leaving them plain keeps a scoreboard
+condition that compares against them working. `status-unknown` and `status-console` stand in
+for a player name, which is matched against typed input and offered in tab completion, so any
+color code you add to those two is stripped before use.
+
+`status-open` and `status-closed` fill the `{status}` slot of the clan info and clan list
+views in both chat and menu mode. `status-allowed` and `status-denied` fill the `{state}`
+slot of the two toggle templates in `guis/permissions.yml`. `status-none` is the stand-in
+for a clan that set no description and for the role of a player in no clan, `status-unknown`
+replaces a player name that no longer resolves, and `status-console` is the actor name in
+staff notices triggered from the console.
+
+The `actions` block names the clan permissions as players read them, in the permissions menu
+and in any message carrying `{action}`:
+
+```yaml
+actions:
+  invite: "Invite"
+  kick: "Kick"
+  ban: "Ban"
+  unban: "Unban"
+  promote: "Promote"
+  demote: "Demote"
+  rename: "Rename"
+  sethome: "Set Home"
+  banner: "Rally Banner"
+  pvp: "Friendly Fire"
+  ally: "Alliances"
+  description: "Description"
+  open-close: "Open / Close"
+```
+
+The ids on the left are fixed and match `action-roles` in `config.yml`. Only the wording on
+the right is yours. Deleting an entry falls back to showing its raw id.
+
+{% hint style="info" %}
+The `guis/permissions.yml` shipped with this version reads `&7State: {state}` instead of a
+fixed word. An install created before the update keeps the fixed word it already has on disk,
+since the merge never overwrites your values. Replace it with `{state}` by hand to pick up the
+language-file wording.
+{% endhint %}
 
 ### The `commands` block
 
