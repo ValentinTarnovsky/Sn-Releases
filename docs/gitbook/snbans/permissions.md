@@ -21,6 +21,8 @@ Every SnBans node defaults to `op`, because every command is staff-facing. There
 | `snbans.unmute` | op | Allows `/unmute` |
 | `snbans.blacklist` | op | Allows `/blacklist` |
 | `snbans.unblacklist` | op | Allows `/unblacklist` (console only at runtime) |
+| `snbans.kick` | op | Allows `/kick` |
+| `snbans.ipkick` | op | Allows `/ipkick` |
 | `snbans.alts` | op | Allows `/alts` |
 | `snbans.history` | op | Allows `/history` |
 | `snbans.staffhistory` | op | Allows `/staffhistory` |

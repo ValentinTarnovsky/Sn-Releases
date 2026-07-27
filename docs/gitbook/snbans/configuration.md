@@ -126,6 +126,15 @@ punishments:
   blacklist:
     # Issue blacklists silently, so only snbans.notify holders see them.
     silent-by-default: false
+  # /kick and /ipkick. A kick is NOT stored: it disconnects the player, announces
+  # and posts its webhook, and writes nothing to the database - so it never shows
+  # up in /history or /staffhistory and never counts towards a template ladder.
+  # There is no ip-by-default key here: /kick clears one account and /ipkick
+  # clears the address, and a kick you did not ask to be network-wide should not
+  # silently become one.
+  kick:
+    # Kick silently, so only snbans.notify holders see it.
+    silent-by-default: false
 
 # Staff hierarchy, read from the LuckPerms primary group weight.
 hierarchy:
@@ -199,6 +208,10 @@ broadcasts:
   blacklist: true
   # Announce unblacklists; false leaves them to snbans.notify holders.
   unblacklist: true
+  # Announce kicks; false leaves them to snbans.notify holders.
+  kick: true
+  # Announce IP kicks; false leaves them to snbans.notify holders.
+  ipkick: true
   # Announce rollbacks; false leaves them to snbans.notify holders.
   rollback: true
 ```
@@ -236,6 +249,12 @@ Both platforms re-source the list on `/snbans reload`, and Velocity unregisters 
 `ip-by-default: true` makes a plain `/ban` or `/mute` cover the target's last known IP, exactly as the explicit `/ipban` and `/ipmute` do. `silent-by-default: true` issues the type silently, so only `snbans.notify` holders see it.
 
 `punishments.blacklist` carries no `ip-by-default` key. A blacklist is always permanent and always covers the IP, so the flag would never be read.
+
+### punishments.kick
+
+`silent-by-default: true` makes `/kick` and `/ipkick` silent, so only `snbans.notify` holders see them. One key covers both commands, exactly as `punishments.ban` covers `/ban` and `/ipban`.
+
+There is no `ip-by-default` key. Reaching the whole address is what `/ipkick` is for, and a kick you did not ask to be address-wide should not silently become one. There is no `silent-by-default` per command either, and no duration anywhere: a kick cannot expire.
 
 ### hierarchy
 
@@ -571,6 +590,51 @@ unblacklist:
   # Also send when the revert was issued silently.
   include-silent: false
 
+kick:
+  # Send this webhook when a player is kicked.
+  enabled: false
+  # Discord webhook URL; an empty URL never sends.
+  url: ""
+  # Plain text posted above the embed; empty sends the embed alone.
+  content: ""
+  embed:
+    # Title line of the embed.
+    title: "Player kicked"
+    # Side color of the embed, as a hex string.
+    color: "#FFAA00"
+    # Body of the embed, one entry per line. A kick stores no punishment, so
+    # there is no {duration} and no {id} to report here.
+    description:
+      - "**Player:** {player}"
+      - "**Staff:** {staff}"
+      - "**Reason:** {reason}"
+      - "**Server:** {server}"
+  # Also send when the kick was issued silently.
+  include-silent: false
+
+ipkick:
+  # Send this webhook when every account on an address is kicked.
+  enabled: false
+  # Discord webhook URL; an empty URL never sends.
+  url: ""
+  # Plain text posted above the embed; empty sends the embed alone.
+  content: ""
+  embed:
+    # Title line of the embed.
+    title: "IP kicked"
+    # Side color of the embed, as a hex string.
+    color: "#FFAA00"
+    # Body of the embed, one entry per line. {total} is how many accounts were
+    # actually disconnected.
+    description:
+      - "**Player:** {player}"
+      - "**Staff:** {staff}"
+      - "**Accounts:** {total}"
+      - "**Reason:** {reason}"
+      - "**Server:** {server}"
+  # Also send when the kick was issued silently.
+  include-silent: false
+
 rollback:
   # Send this webhook when /snbans rollback reverts a batch of punishments.
   enabled: false
@@ -598,7 +662,7 @@ rollback:
 
 ### Enabling a webhook
 
-There are nine blocks, one per event: `ban`, `ipban`, `unban`, `mute`, `ipmute`, `unmute`, `blacklist`, `unblacklist` and `rollback`. Each carries `enabled`, `url`, `content`, an `embed` section and `include-silent`.
+There are eleven blocks, one per event: `ban`, `ipban`, `unban`, `mute`, `ipmute`, `unmute`, `blacklist`, `unblacklist`, `kick`, `ipkick` and `rollback`. Each carries `enabled`, `url`, `content`, an `embed` section and `include-silent`.
 
 A block sends nothing while `enabled` is `false` or `url` is empty, so the shipped file is inert until you paste a Discord webhook URL in. Set `include-silent: true` on a block to post silent punishments of that type too.
 
@@ -663,8 +727,8 @@ On Velocity, a `lang` code naming a file that is neither bundled nor already in 
 | `prefix` | The single value SnLib prepends to every single-line message. It ships as the SnBans brand tag. |
 | `snlib` | SnLib's shared command contract, 12 keys: permission, usage, number and value validation, out-of-range, number-too-small, player-not-found, unknown subcommand, reload confirmation, and the help header, entry and footer. |
 | `messages` (errors) | Refusals and errors: `console-only`, `unknown-player`, `hierarchy-denied`, `already-punished`, `not-punished`, `invalid-duration`, `internal-error`, `match-self`, `self-target`, `reload-busy`, plus `muted` and `muted-command` for a muted player. |
-| `messages.format` | The words other messages splice in as placeholder values: `permanent`, `no-template`, `no-reason`, `console`, the three `status-*` words behind `{status}`, and the nine `type-*` words behind `{type}`. `no-reason` is the odd one out: it is WRITTEN to the database as the reason of a punishment a `snbans.noreason` holder issued bare, so retranslating it changes what new punishments record and leaves the stored ones reading as they did. |
-| `messages.<event>` | One block per event (`ban`, `ipban`, `mute`, `ipmute`, `blacklist`, `unban`, `unmute`, `unblacklist`), each with `announce` for the public broadcast and `notify` for `snbans.notify` holders. `ban`, `ipban` and `blacklist` also carry `screen`, the disconnect screen the punished player sees. |
+| `messages.format` | The words other messages splice in as placeholder values: `permanent`, `no-template`, `no-reason`, `console`, the three `status-*` words behind `{status}`, and the eleven `type-*` words behind `{type}`. `no-reason` is the odd one out: it is WRITTEN to the database as the reason of a punishment a `snbans.noreason` holder issued bare, so retranslating it changes what new punishments record and leaves the stored ones reading as they did. |
+| `messages.<event>` | One block per event (`ban`, `ipban`, `mute`, `ipmute`, `blacklist`, `unban`, `unmute`, `unblacklist`, `kick`, `ipkick`), each with `announce` for the public broadcast and `notify` for `snbans.notify` holders. Five carry `screen`, the disconnect screen the player sees: `ban`, `ipban` and `blacklist` because they deny a login, plus `kick` and `ipkick` because they disconnect somebody already in. `kick` additionally carries `not-online`, the answer when the target is not connected to this server. A kick block has no `{duration}`, `{id}`, `{template}` or `{status}` to render, since a kick has no length, no row, no ladder and no state; `{total}` is how many accounts an `ipkick` disconnected and is not available in a `screen`. |
 | `messages.alts` | The `/alts` listing and the join scan: `header`, `scan-header`, `legend`, `entry`, `none`, `footer` and the five `status-*` color prefixes behind `{color}`. |
 | `messages.history` and `messages.staffhistory` | The two paged listings: `header`, `entry` and a `footer` carrying the clickable page arrows. |
 | `messages.match` | The `/snbans match` listing: `header`, `entry`, `none` and `footer`. |
@@ -677,7 +741,7 @@ Never write `{prefix}` in a value. SnLib prepends the configured prefix to every
 A value written as a YAML list is sent line by line without the prefix. The single exception is an `announce` list holding one line, which is broadcast as a message and so gets it. A `notify` list never does, which is why every shipped `notify` value carries its own inline tag. Keep that tag if you shorten one.
 
 {% hint style="danger" %}
-Do not delete or blank one of the three `screen` blocks. A screen key with nothing in it refuses the player with an empty disconnect screen and no log line saying why.
+Do not delete or blank one of the five `screen` blocks. A screen key with nothing in it disconnects the player with an empty screen and no log line saying why.
 {% endhint %}
 
 {% hint style="warning" %}

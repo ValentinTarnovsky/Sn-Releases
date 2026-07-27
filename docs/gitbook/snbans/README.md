@@ -11,6 +11,12 @@ shared SQL schema, so several servers pointed at the same MySQL share a single p
   `/unban`, `/unmute` and `/unblacklist`. Bans and mutes each have an explicit IP variant and a
   per-type `ip-by-default` switch, so a plain `/ban` can cover the address too. A blacklist is
   always permanent and always covers the IP, so it takes no duration argument at all.
+- **Two kick commands that store nothing**: `/kick` and `/ipkick` disconnect, announce and post
+  their webhook, and write no row - so a kick never appears in `/history`, has nothing to undo and
+  never counts towards a template ladder. `/ipkick` clears the target's last known address, which
+  reaches their online alts even when the target is offline. Having no row is also the one
+  limitation: on a multi-backend Paper install a kick reaches only the server it was run on, while
+  a Velocity install is network-wide.
 - **Escalating templates**: a reason matching a `templates.yml` id takes its duration from that
   template's ladder. The step is picked from how many punishments of that template the player
   already collected, and the last step repeats for every further offence. Offences reverted by a
@@ -24,7 +30,7 @@ shared SQL schema, so several servers pointed at the same MySQL share a single p
 - **Three-layer visibility**: a `snbans.silent` gated `-s` / `-p` flag on every issue and every
   revert, a per-type `silent-by-default`, and a per-event `broadcasts.*` toggle. A silent
   punishment is still reported to `snbans.notify` holders.
-- **Nine Discord webhook blocks**, one per event, each with its own URL, embed and `include-silent`
+- **Eleven Discord webhook blocks**, one per event, each with its own URL, embed and `include-silent`
   toggle. Staff-typed reasons arrive neutralized, so no reason can ping `@everyone` or restyle your
   embed. The shipped file is inert until you fill a URL in.
 - **Bulk staff rollback**: `/snbans rollback <staff> <time>` counts the matches first and prints the

@@ -20,6 +20,8 @@ Duration tokens are `30s`, `5m`, `2h`, `7d`, and the literal `permanent`. No dur
 | `/unmute <player> [-s\|-p]` | `snbans.unmute` | Removes an active mute |
 | `/blacklist <player> <reason...>` | `snbans.blacklist` | Blacklists a player permanently (account and IP) |
 | `/unblacklist <player> [-s\|-p]` | `snbans.unblacklist` | Removes a blacklist (console only) |
+| `/kick <player> <reason...>` | `snbans.kick` | Kicks a player from the server; stores nothing |
+| `/ipkick <player> <reason...>` | `snbans.ipkick` | Kicks every account connected from the player's IP |
 | `/alts <player>` | `snbans.alts` | Lists the accounts sharing the target's current IP |
 | `/history <player> [page]`<br>alias `/hist` | `snbans.history` | Shows a player's punishment history |
 | `/staffhistory <staff> [page]` | `snbans.staffhistory` | Shows the punishments issued by a staff member |
@@ -32,6 +34,14 @@ Duration tokens are `30s`, `5m`, `2h`, `7d`, and the literal `permanent`. No dur
 
 {% hint style="info" %}
 The `-s` (silent) and `-p` (public) flags work on every punishment and every revert, and both need `snbans.silent`. On an issuing command you type the flag inside the reason (`/ban Notch -s hacks`), anywhere in it, and the last flag wins. On a revert it is an explicit trailing token. Without a flag the per-type `silent-by-default` key decides. A silent punishment still reaches every holder of `snbans.notify`.
+{% endhint %}
+
+{% hint style="warning" %}
+**A kick stores nothing.** `/kick` and `/ipkick` disconnect the player, announce the action and post their webhook, and write no row at all: no id, no expiry, nothing to un-kick, nothing in `/history` or `/staffhistory`, and no contribution to a template ladder. They still obey the staff weight check, the `-s` / `-p` flags and `snbans.noreason`, and a kick that reaches nobody answers `messages.kick.not-online` instead of announcing a kick that never happened.
+
+Because there is no row, a kick cannot travel between servers the way a ban does. On a **multi-backend Paper** install `/kick` only reaches players connected to the server it was run on. On a **Velocity** install it is network-wide, because the proxy holds every player.
+
+`/ipkick` clears the target's LAST KNOWN address, so it reaches their online alts even when the target themselves is offline - which is what makes it useful against ban evasion. A kick takes no duration, so its whole tail is the reason and a reason may start with a digit here where a `/ban` reason may not.
 {% endhint %}
 
 {% hint style="info" %}
