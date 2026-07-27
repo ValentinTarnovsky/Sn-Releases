@@ -20,8 +20,24 @@ player to the true world immediately.
 
 ### Will players see ore disappear or reappear?
 
-No. A hidden block becomes real the moment a player legitimately exposes it, and that decision is
-remembered for the rest of their session. Chunks resent later still carry the real block.
+No. A hidden block becomes real the moment a player exposes it, and that decision is remembered for
+the rest of their session. Chunks resent later still carry the real block.
+
+### My players cannot see ore in caves, spawners in dungeons or chests in rooms
+
+Update to **1.0.2 or later**. Every earlier version hid a listed block whether or not it was in
+plain sight, and nothing put it back until somebody broke a block next to it - so cave-wall ore,
+dungeon spawners and every anti-ESP container were stone for an honest player who simply walked in.
+From 1.0.2 a block is only hidden while all six of its neighbours block vision, so anything already
+open to air, water or lava is sent exactly as it is. No configuration change is needed; the rule is
+always on.
+
+### Does that mean an X-Ray client can see ore now?
+
+Only the ore that is already exposed in caves - the same ore any player finds by walking into that
+cave. Everything buried, which is essentially every vein worth cheating for, is still invisible to
+it. This is the rule Paper's own obfuscation and Orebfuscator use, for the same reason: hiding what
+a player is looking straight at costs honest gameplay without protecting anything.
 
 ### Why does my server refuse to start after installing this?
 

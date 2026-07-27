@@ -320,6 +320,19 @@ worlds:
 
 ## Tuning notes
 
+### What "unexposed" means
+
+Both hiding layers share one rule, and it has no key because there is nothing to tune: a block is
+replaced by the filler only while **all six of its neighbours block vision**. Anything already open
+to air, water or lava is sent exactly as it really is, so an ore on a cave wall, a spawner in a
+dungeon room and a chest standing in a basement all look normal to the players who walk in on them.
+What stays hidden is everything buried, which is what a cheat client is actually looking for.
+
+The decoy layer follows the same rule from the other side: a decoy is only ever planted in a sealed
+position, and digging that position open makes the plugin send the real block at once, so the decoy
+disappears before it can be mined. That is what keeps the detection score meaningful - an honest
+player never gets to see one.
+
 ### Choosing decoy heights
 
 Mirror vanilla ore distribution. A decoy only works while it passes for real terrain. Diamonds at
