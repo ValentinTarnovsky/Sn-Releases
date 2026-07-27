@@ -7,7 +7,7 @@
 5. Restart the server. SnElementalGems validates the key at startup and then enables.
 
 {% hint style="warning" %}
-Requires **SnLib** installed (`depend: [SnLib]`), version 1.15.0 or later. The matching `SnLib.jar` is attached to every release. On an older SnLib the plugin reports the mismatch and disables itself cleanly instead of failing halfway through startup.
+Requires **SnLib** installed (`depend: [SnLib]`), version 1.20.0 or later. On an older SnLib the plugin reports the mismatch and disables itself cleanly instead of failing halfway through startup.
 {% endhint %}
 
 {% hint style="info" %}
