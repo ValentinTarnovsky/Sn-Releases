@@ -14,6 +14,7 @@ Player nodes default to `true` so everyone can use the catalogue out of the box.
 | `snkilleffects.admin.give` | op | Allows `/killeffects give` |
 | `snkilleffects.admin.take` | op | Allows `/killeffects take` |
 | `snkilleffects.admin.giveall` | op | Allows `/killeffects giveall` |
+| `snkilleffects.admin.unlockall` | op | Allows `/killeffects unlockall` |
 | `snkilleffects.admin.set` | op | Allows `/killeffects admin set` |
 | `snkilleffects.admin.clear` | op | Allows `/killeffects admin clear` |
 | `snkilleffects.admin.list` | op | Allows `/killeffects admin list` |

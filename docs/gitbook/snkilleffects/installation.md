@@ -7,7 +7,7 @@
 5. Restart the server. The plugin validates the key at startup.
 
 {% hint style="warning" %}
-Requires **SnLib** installed (`depend: [SnLib]`), version 1.18.0 or later. The matching `SnLib.jar` ships with every release.
+Requires **SnLib** installed (`depend: [SnLib]`), version 1.20.0 or later.
 {% endhint %}
 
 {% hint style="info" %}

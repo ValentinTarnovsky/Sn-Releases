@@ -15,11 +15,23 @@ Running `/killeffects` with no arguments opens the catalogue for a player, and p
 | `/killeffects give <player> <effect> [duration] [-s]` | `snkilleffects.admin.give` | Grant an effect, permanently or for a time. Works on offline players |
 | `/killeffects take <player> <effect> [-s]` | `snkilleffects.admin.take` | Remove one effect from a player |
 | `/killeffects giveall <effect> [duration] [-s]` | `snkilleffects.admin.giveall` | Grant an effect to every online player |
+| `/killeffects unlockall <player> [duration] [-s]` | `snkilleffects.admin.unlockall` | Grant every enabled effect to one player. Works on offline players |
 | `/killeffects admin set <player> <effect> [-s]` | `snkilleffects.admin.set` | Force a player's active effect, granting it first if needed |
 | `/killeffects admin clear <player> [-s]` | `snkilleffects.admin.clear` | Remove every effect from a player |
 | `/killeffects admin list <player>` | `snkilleffects.admin.list` | Inspect what an online player owns |
 | `/killeffects help` | `snkilleffects.use` | Show the help menu |
 | `/killeffects reload` | `snkilleffects.admin.reload` | Reload the configuration |
+
+## giveall vs unlockall
+
+The two bulk commands are transposes of each other, and the names are close enough to be worth stating plainly:
+
+| Command | Effects | Players |
+|---------|---------|---------|
+| `/killeffects giveall <effect>` | one | every online player |
+| `/killeffects unlockall <player>` | every enabled one | one player, online or not |
+
+`unlockall` skips effects turned off with `enabled: false` in `effects.yml`, exactly like `give` refuses them one at a time. Effects the player already owns are extended rather than granted twice, and the player receives a single notification for the whole batch instead of one line per effect.
 
 ## Durations
 
