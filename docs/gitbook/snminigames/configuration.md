@@ -374,6 +374,9 @@ maps:
     # (a sand+TNT layer clears both). Stops at the first air/non-removable block.
     remove-depth: 1
     # Materials that may disappear. Empty list = any non-air block of the region.
+    # A material left out of the list also PROTECTS the column under it: the trail
+    # is cut from the block being walked on downward, never below a surface it is
+    # not allowed to take, so nothing is ever left floating.
     removable-materials: []
     # Survivors the round ends with (1 = last one standing).
     winners: 1
