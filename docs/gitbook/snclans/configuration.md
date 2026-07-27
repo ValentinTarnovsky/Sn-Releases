@@ -388,6 +388,47 @@ To move an element, move its letter in the mask. To swap two elements, swap thei
 The five `key` entries are added to your existing `guis/info.yml` automatically on the first boot after the update, alongside your own edits.
 {% endhint %}
 
+### Reshaping the permissions matrix
+
+The permissions menu draws two groups that the plugin fills at runtime: the **role selector** (co-leader, officer, member) and one **switch per gated action**. Since v1.8.0 both are declared in `guis/permissions.yml` as regions, so their position, their size and their order are yours:
+
+```yaml
+layout:
+  - "fffffffff"
+  - "fffrrrfff"
+  - "ftttttttf"
+  - "ftttftttf"
+  - "ffffxffff"
+
+regions:
+  roles: r
+  toggles: t
+```
+
+Entries fill the cells left to right, top to bottom. Move the letters to reposition a group, add or remove letters to resize it, or take a letter out of the mask entirely to remove the group. Fewer cells than entries simply shows fewer switches - it is not an error.
+
+Row 4 is `"ftttftttf"` on purpose: its centre cell is a filler pane, giving 7 + 6 = 13 cells for the 13 gated actions. Type a `t` there the day a 14th action exists.
+
+To choose the cells and their order by hand, replace the letter with a slot list:
+
+```yaml
+regions:
+  toggles:
+    slots: ["19-25", "28-30", "32-34"]
+```
+
+Reordering the cells reorders the **picture** only. Every switch carries its own action with it, so it can never end up toggling a different permission no matter where you put it.
+
+The four templates below (`role-selected` / `role-unselected` and `toggle-allowed` / `toggle-denied`) carry no `key` and should not be given one: each pair is two appearances of the same cell, and the region already decides where that cell is. Style them freely.
+
+{% hint style="warning" %}
+**Upgrading from 1.7.0**: the `regions:` block is added to your existing file automatically, but your `layout:` rows are left exactly as you had them - and the old rows spell the role selector as `1`/`2`/`3`, letters the `roles` region does not use, so the selector will not render. Change row 2 to `"fffrrrfff"` and row 4 to `"ftttftttf"`, or delete `guis/permissions.yml` to reseed it. SnClans logs a one-line reminder on every boot until you do; the reminder is removed in 1.9.0.
+{% endhint %}
+
+{% hint style="info" %}
+Do not delete the `regions:` lines themselves - they are re-added on the next restart and the plugin warns that the region is missing. To turn a group off, take its letter out of the `layout` or leave its value blank; both are silent.
+{% endhint %}
+
 ## Language file
 
 `lang/messages_en.yml` holds the message prefix, the shared `snlib` command contract, the translatable `commands` block, your own `messages`, the chat `lists` with the shared state words, and the `actions` names.
