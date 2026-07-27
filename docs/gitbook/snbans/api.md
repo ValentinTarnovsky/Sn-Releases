@@ -88,7 +88,7 @@ Cancellable events fire before the action. Cancelling aborts it, with no partial
 |-------|-----------|---------------|
 | `PunishmentIssueEvent` | A punishment initiated on this server is about to be written, fully resolved | No row is inserted, nothing is enforced, nothing is announced and no webhook is sent |
 | `PunishmentRevokeEvent` | A single revert on this server is about to be recorded: `/unban`, `/unmute` or `/unblacklist` | The punishment stays exactly as it is, no mute is released and nothing is announced |
-| `PunishmentRollbackEvent` | A confirmed rollback sweep on this server is about to revert one staff member's punishments in a window | Not one matched punishment is lifted, no mute is released and nothing is announced |
+| `PunishmentRollbackEvent` | A confirmed rollback sweep on this server is about to DELETE one staff member's punishments in a window | Not one matched punishment is erased, no mute is released and nothing is announced |
 
 Notification events fire after the fact. They cannot be cancelled.
 
@@ -144,9 +144,18 @@ On several backends the same punishment is reported once per backend: once as `L
 {% endhint %}
 
 A rollback is one bulk action, so it is vetoed as one. `PunishmentRevokeEvent` does not fire per
-swept punishment, and neither does `PunishmentRevokedEvent` on the sweeping server. A peer's sweep
-does reach you row by row, as individual `PunishmentRevokedEvent` dispatches with a `REMOTE`
-origin.
+swept punishment, and neither does `PunishmentRevokedEvent` on the sweeping server.
+
+{% hint style="warning" %}
+**A peer's rollback reaches you as nothing at all, since v1.2.0.** A confirmed sweep now DELETEs
+the punishments it undoes rather than stamping them as removed, and the cross-server revert feed
+reads rows whose removal was just recorded - so an erased row is in no feed. `PunishmentRollbackEvent`
+and `PunishmentRevokedEvent` therefore fire only on the server that ran the sweep. On other backends
+the rows simply stop existing: `getHistory` and `getActivePunishments` stop returning them, and a
+consumer that mirrors punishments elsewhere should reconcile against the facade rather than rely on
+a revoke event for this one case. Ordinary `/unban` and `/unmute` reverts still propagate row by row
+with a `REMOTE` origin, unchanged.
+{% endhint %}
 
 `AltScanCompletedEvent` covers the automatic join warning only. It never fires for a clean join,
 for a manual `/alts` lookup, or for `scanAlts` on the facade. It is off entirely while

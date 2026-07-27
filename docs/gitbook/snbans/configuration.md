@@ -306,6 +306,13 @@ SnLib merges by key, so no version marker is needed. Do not add one.
 #  A template turns a reason into an escalating punishment:
 #    - The template id is matched against the FULL reason of the command,
 #      case-insensitively, so "/ban Notch hacks" uses the "hacks" template.
+#      The ids of the matching type are also offered on TAB, so staff can see
+#      which words this server has ladders for without leaving the chat box.
+#    - reason is the text actually STORED on the punishment and shown by every
+#      broadcast, history line, Discord embed and disconnect screen. The id is
+#      the short word staff type; the reason is the sentence the player reads.
+#      Leave it out and the id is used as the reason, which is how templates
+#      behaved before this key existed.
 #    - type is ban, mute or blacklist.
 #    - THE TYPE HAS TO MATCH THE COMMAND. A template only applies to a command
 #      that issues the same type, so the "spam" template below (type: mute) is
@@ -318,8 +325,9 @@ SnLib merges by key, so no version marker is needed. Do not add one.
 #    - ladder is the escalation list. Step 1 is the first offence, step 2 the
 #      second, and the last step repeats for every further offence.
 #    - Each step is a duration token (30s, 30m, 12h, 5d) or permanent.
-#    - Offences reverted by /snbans rollback do not count; expired and
-#      manually removed ones do.
+#    - Offences reverted by /snbans rollback do not count: a rollback DELETES
+#      the punishments it undoes, so they leave the player's history entirely.
+#      Expired and manually removed ones do count.
 #    - A reason matching no template - or matching one of another type - is a
 #      manual punishment: the duration typed on the command, or permanent when
 #      none was given.
@@ -329,6 +337,8 @@ SnLib merges by key, so no version marker is needed. Do not add one.
 hacks:
   # Punishment type this template issues: ban, mute or blacklist.
   type: ban
+  # Text stored and shown as the reason; the id above is only what staff type.
+  reason: "Using unfair advantages"
   # Escalation steps; the last one repeats for every further offence.
   ladder: [1d, 5d, permanent]
 
@@ -336,6 +346,8 @@ hacks:
 spam:
   # Punishment type this template issues: ban, mute or blacklist.
   type: mute
+  # Text stored and shown as the reason; the id above is only what staff type.
+  reason: "Spamming the chat"
   # Escalation steps; the last one repeats for every further offence.
   ladder: [30m, 2h, 1d]
 ```
@@ -344,14 +356,18 @@ spam:
 
 Each top-level key is a template id, matched against the full reason of the command and case-insensitively. `type` is `ban`, `mute` or `blacklist`. `ladder` is the escalation list, where every step is a duration token such as `30s`, `5m`, `2h` or `7d`, or the literal `permanent`.
 
-Step 1 applies to the first offence, step 2 to the second, and the last step repeats for every further offence. Offences reverted by `/snbans rollback` do not count toward the step, while expired and manually removed ones do.
+`reason` is the text stored on the punishment and rendered as `{reason}` everywhere: the broadcast, the staff notice, the history entry, the Discord embed and the disconnect screen. It exists so the two halves of a template can be different things - the id is the short word staff have to type and tab-complete (`hacks`), while the reason is the sentence a player is entitled to read ("Using unfair advantages"). The key is optional: a template without one keeps its id as its reason, which is exactly how templates behaved before the key existed.
+
+Step 1 applies to the first offence, step 2 to the second, and the last step repeats for every further offence. Offences reverted by `/snbans rollback` do not count toward the step - a rollback deletes them - while expired and manually removed ones do.
+
+The ids of the command's own type are offered on tab, so `/ban Notch <TAB>` lists the ban ladders and `/mute Notch <TAB>` the mute ones. The suggestion is a convenience only: any reason is still accepted, and one matching no template is a manual punishment.
 
 {% hint style="warning" %}
 A template only applies to a command that issues the same type. `/ban Notch spam` against a `type: mute` template gets no template and no ladder, and with no typed duration becomes a permanent ban. Give the word its own ban template with a different id, or type a duration.
 {% endhint %}
 
 {% hint style="info" %}
-This file is seeded once, so keys added by a future version never appear in an existing copy. Delete your file to get the shipped examples back, and read the release notes when a version changes the format.
+This file is seeded once, so keys added by a future version never appear in an existing copy. **`reason:` is such a key**: an existing `templates.yml` will not grow it on its own, and its templates keep storing their id as the reason until you add the line by hand. Delete your file to get the shipped examples back, and read the release notes when a version changes the format.
 {% endhint %}
 
 ## webhooks.yml
@@ -647,7 +663,7 @@ On Velocity, a `lang` code naming a file that is neither bundled nor already in 
 | `prefix` | The single value SnLib prepends to every single-line message. It ships as the SnBans brand tag. |
 | `snlib` | SnLib's shared command contract, 12 keys: permission, usage, number and value validation, out-of-range, number-too-small, player-not-found, unknown subcommand, reload confirmation, and the help header, entry and footer. |
 | `messages` (errors) | Refusals and errors: `console-only`, `unknown-player`, `hierarchy-denied`, `already-punished`, `not-punished`, `invalid-duration`, `internal-error`, `match-self`, `self-target`, `reload-busy`, plus `muted` and `muted-command` for a muted player. |
-| `messages.format` | The words other messages splice in as placeholder values: `permanent`, `no-template`, `console`, the three `status-*` words behind `{status}`, and the nine `type-*` words behind `{type}`. |
+| `messages.format` | The words other messages splice in as placeholder values: `permanent`, `no-template`, `no-reason`, `console`, the three `status-*` words behind `{status}`, and the nine `type-*` words behind `{type}`. `no-reason` is the odd one out: it is WRITTEN to the database as the reason of a punishment a `snbans.noreason` holder issued bare, so retranslating it changes what new punishments record and leaves the stored ones reading as they did. |
 | `messages.<event>` | One block per event (`ban`, `ipban`, `mute`, `ipmute`, `blacklist`, `unban`, `unmute`, `unblacklist`), each with `announce` for the public broadcast and `notify` for `snbans.notify` holders. `ban`, `ipban` and `blacklist` also carry `screen`, the disconnect screen the punished player sees. |
 | `messages.alts` | The `/alts` listing and the join scan: `header`, `scan-header`, `legend`, `entry`, `none`, `footer` and the five `status-*` color prefixes behind `{color}`. |
 | `messages.history` and `messages.staffhistory` | The two paged listings: `header`, `entry` and a `footer` carrying the clickable page arrows. |

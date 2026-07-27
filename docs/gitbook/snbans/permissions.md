@@ -1,6 +1,6 @@
 # Permissions
 
-Every SnBans node defaults to `op`, because every command is staff-facing. There is no `snbans.use` node: each command root carries its own leaf node instead. The tree is 19 nodes, declared once for both platforms: the 17 SnBans checks itself behave identically on a backend and on the proxy, and the two SnLib owns are Paper only.
+Every SnBans node defaults to `op`, because every command is staff-facing. There is no `snbans.use` node: each command root carries its own leaf node instead. The tree is 20 nodes, declared once for both platforms: the 18 SnBans checks itself behave identically on a backend and on the proxy, and the two SnLib owns are Paper only.
 
 | Permission | Default | Description |
 |-----------|---------|-------------|
@@ -12,6 +12,7 @@ Every SnBans node defaults to `op`, because every command is staff-facing. There
 | `snbans.admin.rollback` | op | Allows `/snbans rollback` |
 | `snbans.notify` | op | Receive staff notifications of SnBans punishments and alt scans |
 | `snbans.silent` | op | Allows the `-s` / `-p` visibility flag on punishments and reverts |
+| `snbans.noreason` | op | Allows issuing a punishment without typing a reason |
 | `snbans.ban` | op | Allows `/ban` |
 | `snbans.ipban` | op | Allows `/ipban` |
 | `snbans.unban` | op | Allows `/unban` |
@@ -26,7 +27,7 @@ Every SnBans node defaults to `op`, because every command is staff-facing. There
 
 ## What granting `snbans.admin` does
 
-`snbans.admin` is declared with an exhaustive children map: the other 18 nodes are all listed under it. Granting `snbans.admin` alone therefore grants the five `snbans.admin.*` nodes, `snbans.notify`, `snbans.silent`, and all eleven flat command roots. A full-staff rank needs that one node and nothing else.
+`snbans.admin` is declared with an exhaustive children map: the other 19 nodes are all listed under it. Granting `snbans.admin` alone therefore grants the five `snbans.admin.*` nodes, `snbans.notify`, `snbans.silent`, `snbans.noreason`, and all eleven flat command roots. A full-staff rank needs that one node and nothing else.
 
 On Paper, Bukkit expands the children map inside its own permission registry, so a group holding only the parent passes `snbans.ban` without the leaf being granted. A proxy has no descriptor and no registry, so SnBans reproduces the same semantics in its own check: the node's own value is read first, and only an undefined leaf falls through to the parent.
 
@@ -47,9 +48,11 @@ SnLib declares and tests both itself, so no line of SnBans code ever names eithe
 
 `snbans.admin.reload` is not in that category. SnLib injects `reload` on Paper and checks the node itself, and the proxy writes its own `reload` subcommand that checks the same node. The node works on both platforms.
 
-## Visibility and notification nodes
+## Visibility, reason and notification nodes
 
 `snbans.silent` gates the `-s` / `-p` flag on every issue and every revert. Without it, the per-type `silent-by-default` setting in `config.yml` always decides who hears a punishment. Staff who type a flag they may not use are refused with the branded no-permission line, never silently downgraded.
+
+`snbans.noreason` gates issuing a punishment with no reason at all. Without it, `/ban Notch` answers the usage line and nothing is stored. Holders may run the command bare, and the row records the `messages.format.no-reason` text ("No reason" by default), which is then shown as `{reason}` by every announcement, history line, Discord embed and disconnect screen. It is a node of its own rather than part of `snbans.ban`, because the reason is what a history line and an appeal are read from - so the strict behaviour stays the default and you opt individual ranks out of it. The console holds it implicitly.
 
 `snbans.notify` holders receive the notices for silent punishments and the output of the automatic join alt scan, filtered by `alts.notify-states`. The console always receives both, on a backend and on the proxy alike.
 
