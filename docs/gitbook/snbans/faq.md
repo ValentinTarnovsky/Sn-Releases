@@ -38,6 +38,17 @@ The sweep has a safety ceiling of 5000 punishments per invocation, and a window 
 ### Why does SnBans say the player is unknown?
 The login table is the only source of accounts SnBans knows, and there is no Mojang lookup, on purpose: a name the network has never seen is a mistake rather than a punishable stranger. The account has to have connected at least once to this install, or to any server sharing the same MySQL. `retention.days` purges login records, so an account absent for longer than that window stops resolving by name. Raise the value if your staff need to name accounts that have not connected in a long time. Punishment rows themselves are never purged.
 
+### Can I keep my LiteBans history?
+Yes. `/snbans import litebans <host:port> <database> <user> <password>` reads a LiteBans database and writes its bans, mutes and login history into SnBans; see [Commands](commands.md) for the full mapping. Run it from the console, and run it without `confirm` first - that is a dry run which counts what it would write and writes nothing. It can only be run once: a second run would duplicate every punishment, so it refuses.
+
+LiteBans kicks and warnings are not imported. SnBans stores no kick row and has no warning type, so there is nowhere for either to go.
+
+### Why did an imported punishment show up as Expired instead of Lifted?
+Because it expired rather than being lifted. LiteBans stamps a removal date on both, so the importer uses the recorded *remover* to tell them apart: a row nobody reverted keeps its original expiry and reads as Expired, with no staff member wrongly credited for ending it.
+
+### Why do imported punishments not count towards my template ladders?
+LiteBans identifies templates by number and SnBans by `templates.yml` id, and there is no mapping between the two. Rather than guess, the importer stores no template on an imported row, so escalation counts nothing from them and a player's next templated punishment starts at step one.
+
 ### Why can nobody remove a blacklist in game?
 `/unblacklist` is console-only at runtime. The `snbans.unblacklist` node only makes the command grantable and tab-visible; the flow refuses any other sender before the target name is even looked up. Run it from the server console.
 

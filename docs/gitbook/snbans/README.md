@@ -35,6 +35,10 @@ shared SQL schema, so several servers pointed at the same MySQL share a single p
   embed. The shipped file is inert until you fill a URL in.
 - **Bulk staff rollback**: `/snbans rollback <staff> <time>` counts the matches first and prints the
   confirm command to run. Nothing is reverted until `confirm` is appended.
+- **LiteBans import**: `/snbans import litebans ...` reads an existing LiteBans database and writes
+  its bans, mutes and login history into SnBans, so a network switching over keeps its record
+  instead of starting blank. It is a dry run until `confirm` is appended, and it refuses to run
+  twice.
 - **Paginated lookups**: `/history <player>` and `/staffhistory <staff>` page punishment records in
   chat, at `history.page-size` entries per page.
 

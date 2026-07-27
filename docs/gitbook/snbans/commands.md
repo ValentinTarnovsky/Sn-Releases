@@ -28,6 +28,7 @@ Duration tokens are `30s`, `5m`, `2h`, `7d`, and the literal `permanent`. No dur
 | `/snbans` | `snbans.admin` | Main admin command of SnBans; a bare call shows the help listing |
 | `/snbans match <player> <other>` | `snbans.admin.match` | Lists the IPs two accounts have ever shared |
 | `/snbans rollback <staff> <time> [confirm]` | `snbans.admin.rollback` | Reverts the punishments a staff member issued in a window |
+| `/snbans import <source> <host:port> <database> <user> <password> [prefix] [confirm]` | `snbans.admin.import` | Imports punishments from another plugin's database |
 | `/snbans reload` | `snbans.admin.reload` | Reloads the plugin configuration: config, lang, templates and webhooks |
 | `/snbans help [page]` | `snbans.admin` | Shows the available commands |
 | `/snbans debug` | `snbans.admin.debug` | Toggles runtime debug output (Paper only) |
@@ -94,3 +95,44 @@ Suggestions are a convenience only. Any name is accepted and resolved against th
 {% hint style="warning" %}
 On a multi-server MySQL install, a rollback is the one action peers do not learn about through the sync poller: the poller reads rows whose removal was just recorded, and a deleted row is in no feed. The server that ran the sweep lifts its own mutes at once; other backends keep an erased mute in force until the player next connects there, at which point the login check finds nothing and the mute is gone. A single-server (SQLite) install has no peer and is unaffected.
 {% endhint %}
+
+## Importing from LiteBans
+
+`/snbans import litebans <host:port> <database> <user> <password> [prefix] [confirm]` reads a LiteBans database and writes its punishments into SnBans, so a network switching over keeps its history instead of starting blank. `prefix` defaults to `litebans_`, and a bare `host` without a port is read as port 3306.
+
+Without `confirm` it is a **dry run**: it connects, counts what a real run would write, reports the mapping decisions, and writes nothing. Run it that way first and check the numbers against what LiteBans reports.
+
+{% hint style="danger" %}
+**Run it from the console, and only once.** The password is a command argument, so it is written to the server log either way - a player running it also puts it in chat. Treat those credentials as disclosed afterwards.
+
+A successful run records itself in the `snbans_imports` table, and every later run refuses. That guard is not a convenience: importing twice would insert a second copy of every punishment, and the copies are indistinguishable from the originals afterwards. A run that fails partway records nothing and can be retried, but whatever it already wrote is still there - check the tables before retrying.
+{% endhint %}
+
+### What is imported
+
+| Source | Becomes | Notes |
+|--------|---------|-------|
+| `litebans_bans` | `BAN` punishments | Removals, expiry and silence carried over |
+| `litebans_mutes` | `MUTE` punishments | Same |
+| `litebans_history` | `snbans_logins` rows | Collapsed to one row per `(player, address)` pair |
+| `litebans_kicks` | nothing | A SnBans kick stores no row, so there is nowhere for them to go |
+| `litebans_warnings` | nothing | SnBans has no warning type |
+
+Importing the login history is what makes `/history`, `/alts`, `/snbans match` and name resolution work from the first boot: without it SnBans cannot turn a typed name into an account. Pairs whose last connection is already older than `retention.days` are skipped, because the next daily purge would delete them anyway; the dry run reports how many that is.
+
+### Mapping decisions
+
+These are the places where LiteBans records something SnBans models differently. Each one is a deliberate choice, not a limitation of the reader.
+
+- **Scope follows LiteBans' own IP flag.** A punishment it recorded as an IP ban becomes one here. Be aware that a LiteBans install running `punish_ip: true` sets that flag on *every* punishment it ever wrote, so on such a network every imported row covers the address as well - which is exactly what that network is already enforcing today, but it is worth knowing before you import.
+- **Expired is not the same as lifted.** LiteBans stamps a removal date on a punishment that merely ran out as well as on one a staff member reverted. Only rows with a recorded remover are imported as lifted; the rest keep their original expiry and read as Expired in `/history`, with no reverter attributed to them.
+- **Templates are not carried over.** LiteBans template numbers are integers and SnBans template ids are `templates.yml` strings, so there is no mapping between them. Imported punishments carry no template and therefore count towards no escalation ladder - a player's next templated punishment starts at step one.
+- **Console punishments** keep their name and carry no staff UUID, which is how SnBans already represents the console.
+- **Rows with no usable address.** LiteBans writes `#` where it knew no address. Those punishments import as account-only, and on the login side they are dropped entirely: treating that placeholder as an address would put every account behind it on one "shared IP" and make each of them look like an alt of every other.
+- **Accounts the source never recorded a name for** are stored as `Unknown-<uuid prefix>`, which keeps them distinct from one another in `/history` and in name resolution.
+
+### While it runs
+
+A large history takes several minutes. The command answers immediately, reports progress as it goes, and posts a summary at the end with the same counts the dry run showed. Do not restart the server during it: a partial import leaves rows behind and records no guard row.
+
+The new `snbans_imports` table is created on boot if missing, on both platforms, so an existing install gains it with no migration step.

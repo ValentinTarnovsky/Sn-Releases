@@ -10,6 +10,7 @@ Every SnBans node defaults to `op`, because every command is staff-facing. There
 | `snbans.admin.update` | op | Receive update notifications of SnBans (Paper only) |
 | `snbans.admin.match` | op | Allows `/snbans match` |
 | `snbans.admin.rollback` | op | Allows `/snbans rollback` |
+| `snbans.admin.import` | op | Allows `/snbans import` |
 | `snbans.notify` | op | Receive staff notifications of SnBans punishments and alt scans |
 | `snbans.silent` | op | Allows the `-s` / `-p` visibility flag on punishments and reverts |
 | `snbans.noreason` | op | Allows issuing a punishment without typing a reason |
