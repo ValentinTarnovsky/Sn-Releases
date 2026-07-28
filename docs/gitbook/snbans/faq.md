@@ -30,10 +30,19 @@ A template id in `templates.yml` is matched against the full reason, ignoring ca
 Because the template's `type` did not match the command. A template only applies to a command issuing the same type, so `/ban Notch spam` ignores the shipped `spam` template (`type: mute`). With no duration typed either, the result is a manual permanent ban. Give the word its own ban template under a different id, or type a duration on the command. A malformed duration such as `5x` is refused outright rather than stored as permanent.
 
 ### How do I undo a wrong rollback?
-There is no un-rollback command, so reverting a sweep is manual. A rollback lifts only the punishments that were still active inside the window and marks them as rollback removals, so nothing is deleted: the rows stay in `/history` and `/staffhistory` with status `Lifted`, with their id, reason, staff and duration. Read them back with `/staffhistory <staff>` and re-issue the ones that should stand. Type the duration explicitly when you do, because a rolled-back offence no longer counts toward escalation and a template reason would land on a lower ladder step than the original. Keeping `rollback.require-confirm: true` is what prevents the situation: the first invocation only counts the matches and prints the confirm command to run.
+You cannot, and the same is true of a wipe. Both **delete** the punishments they sweep rather than marking them lifted, so the rows leave `/history` and `/staffhistory` entirely and there is nothing to read back and re-issue. Restore from a database backup, or re-issue from whatever record you kept outside SnBans. What prevents the situation is the dry run: the first invocation of either command only counts the matches and prints the confirm command to run, and for `/snbans wipe` that step cannot be turned off.
 
 ### Why is my rollback refused for being too wide?
-The sweep has a safety ceiling of 5000 punishments per invocation, and a window above it is refused with a "narrow the window" line before anything is written. It is almost always a typo in the window token, such as `3650d`. Narrow the window and run the command again.
+The sweep has a safety ceiling of 5000 punishments per invocation, and a window above it is refused with a "narrow the window" line before anything is written. It is almost always a typo in the window token, such as `3650d`. Narrow the window and run the command again. `/snbans wipe` has no such ceiling and needs none: it never reads the rows it erases, so there is no batch to bound.
+
+### How do I unban everyone at once?
+`/snbans wipe ban confirm`, from the console. It erases every ban that is still in force in one statement, which is what you want after a bad mass-ban or for a season amnesty. `mute` and `blacklist` do the same for theirs and `all` does the three together. Without `confirm` it is a dry run that counts and writes nothing.
+
+### Why can only the console run `/snbans wipe`?
+Because the smallest thing it does is lift every ban on the network at once, and a permission node can be granted by mistake while being the console cannot. Granting `snbans.admin.wipe` to a rank makes the subcommand visible in `/snbans help` and nothing more: a player who runs it is answered `messages.console-only` whatever they hold.
+
+### Does a wipe erase old punishments too?
+No. It only erases what is still **in force**. A ban somebody already served out, or one a staff member already lifted, is a record of something that happened and stays in `/history` untouched. That is what makes `/snbans wipe ban` the bulk `/unban` it is meant to be rather than a history purge.
 
 ### Why does SnBans say the player is unknown?
 The login table is the only source of accounts SnBans knows, and there is no Mojang lookup, on purpose: a name the network has never seen is a mistake rather than a punishable stranger. The account has to have connected at least once to this install, or to any server sharing the same MySQL. `retention.days` purges login records, so an account absent for longer than that window stops resolving by name. Raise the value if your staff need to name accounts that have not connected in a long time. Punishment rows themselves are never purged.

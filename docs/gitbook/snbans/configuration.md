@@ -168,6 +168,13 @@ rollback:
   # Require the confirm token before /snbans rollback <staff> <time> reverts anything.
   require-confirm: true
 
+# /snbans wipe - the bulk amnesty - has NO section here on purpose, and in
+# particular no require-confirm key. It erases every punishment of a kind that
+# is still in force, so the smallest thing it can do is lift every ban on the
+# network at once; a key to skip its dry run would be a key whose only purpose
+# is to remove the guard. It is also refused for anybody but the console. What
+# you can configure about it is broadcasts.wipe, at the bottom of this file.
+
 # Cross-server propagation; only does something when servers share one MySQL.
 sync:
   # Seconds between cross-server punishment polls.
@@ -214,6 +221,9 @@ broadcasts:
   ipkick: true
   # Announce rollbacks; false leaves them to snbans.notify holders.
   rollback: true
+  # Announce wipes; false leaves them to snbans.notify holders. A wipe that
+  # erased nothing is never announced either way - there was nothing to tell.
+  wipe: true
 ```
 
 ## Notable settings
@@ -284,6 +294,10 @@ While `true`, `/snbans rollback <staff> <time>` only counts the matches and prin
 Setting this to `false` removes the dry run, so the first invocation reverts immediately.
 {% endhint %}
 
+### There is no `wipe.require-confirm`
+
+`/snbans wipe` has no configuration section at all, and that is deliberate rather than an omission. Its dry run cannot be turned off and it cannot be granted to a player: the command is console only at runtime, and the smallest thing it does is lift every ban on the network at once. The only thing you configure about it is `broadcasts.wipe` below, plus its lang block and its webhook block.
+
 ### sync.interval-seconds
 
 Seconds between cross-server punishment polls, clamped to a minimum of 1. It only does something when several servers share one MySQL. The issuing server enforces a punishment immediately, and its peers pick the row up within this interval.
@@ -300,7 +314,7 @@ Commands a muted player cannot run, written without the leading slash. Entries a
 
 One key per announced event. `false` leaves that event to `snbans.notify` holders instead of the whole server. An unban covers both a ban and an IP ban, and the same pairing applies to the other reverts.
 
-`broadcasts.rollback` alone decides how visible a sweep is: `/snbans rollback` declares no `-s` or `-p` flag, so a sweep is never silent.
+`broadcasts.rollback` and `broadcasts.wipe` alone decide how visible those two bulk actions are: neither `/snbans rollback` nor `/snbans wipe` declares an `-s` or `-p` flag, so neither is ever silent. A wipe that erased nothing is not announced at all, whatever the toggle says.
 
 ### debug
 
@@ -658,11 +672,34 @@ rollback:
   # Changing it has no effect; it is kept so the block stays complete if a
   # future version does give the command a visibility flag.
   include-silent: false
+
+wipe:
+  # Send this webhook when /snbans wipe erases a batch of punishments. A wipe
+  # that erased nothing sends nothing.
+  enabled: false
+  # Discord webhook URL; an empty URL never sends.
+  url: ""
+  # Plain text posted above the embed; empty sends the embed alone.
+  content: ""
+  embed:
+    # Title line of the embed.
+    title: "Punishments wiped"
+    # Side color of the embed, as a hex string.
+    color: "#FF5555"
+    # Body of the embed, one entry per line. A wipe reads none of the rows it
+    # erases, so it has no {player}, {reason}, {duration} or {id} to report:
+    # {kind} is what it covered ("bans", "punishments"), {total} how many.
+    description:
+      - "**Wiped:** {total} {kind}"
+      - "**Staff:** {staff}"
+  # INERT here for the reason it is inert on rollback just above: /snbans wipe
+  # declares no -s / -p flag, so a wipe is never silent.
+  include-silent: false
 ```
 
 ### Enabling a webhook
 
-There are eleven blocks, one per event: `ban`, `ipban`, `unban`, `mute`, `ipmute`, `unmute`, `blacklist`, `unblacklist`, `kick`, `ipkick` and `rollback`. Each carries `enabled`, `url`, `content`, an `embed` section and `include-silent`.
+There are twelve blocks, one per event: `ban`, `ipban`, `unban`, `mute`, `ipmute`, `unmute`, `blacklist`, `unblacklist`, `kick`, `ipkick`, `rollback` and `wipe`. Each carries `enabled`, `url`, `content`, an `embed` section and `include-silent`.
 
 A block sends nothing while `enabled` is `false` or `url` is empty, so the shipped file is inert until you paste a Discord webhook URL in. Set `include-silent: true` on a block to post silent punishments of that type too.
 
@@ -693,6 +730,16 @@ The `rollback` block has no punishment row of its own, so it carries a different
 | `{window}` | That same window as the single token the command accepts. |
 | `{type}` | Translated word naming the event. |
 
+The `wipe` block has none either, and it reads none of the rows it erases, so its set is smaller again.
+
+| Placeholder | Description |
+|-------------|-------------|
+| `{staff}` | Who ran the wipe, which is always the console. |
+| `{total}` | How many punishments were erased. |
+| `{kind}` | What was covered, as a translated plural: `bans`, `mutes`, `blacklists` or `punishments`. |
+| `{target}` | That same kind as the raw token the command accepts: `ban`, `mute`, `blacklist` or `all`. |
+| `{type}` | Translated word naming the event. |
+
 A placeholder with no value is left as written.
 
 {% hint style="info" %}
@@ -700,7 +747,7 @@ A placeholder with no value is left as written.
 {% endhint %}
 
 {% hint style="warning" %}
-`include-silent` in the `rollback` block is inert. `/snbans rollback` declares no `-s` or `-p` flag and defers to `broadcasts.rollback` alone, so changing this key has no effect. It exists only to keep every block the same shape.
+`include-silent` is inert in the `rollback` and `wipe` blocks. Neither command declares an `-s` or `-p` flag - each defers to its own `broadcasts` toggle alone - so changing the key there has no effect. It exists only to keep every block the same shape.
 {% endhint %}
 
 ## Language file
@@ -727,12 +774,14 @@ On Velocity, a `lang` code naming a file that is neither bundled nor already in 
 | `prefix` | The single value SnLib prepends to every single-line message. It ships as the SnBans brand tag. |
 | `snlib` | SnLib's shared command contract, 12 keys: permission, usage, number and value validation, out-of-range, number-too-small, player-not-found, unknown subcommand, reload confirmation, and the help header, entry and footer. |
 | `messages` (errors) | Refusals and errors: `console-only`, `unknown-player`, `hierarchy-denied`, `already-punished`, `not-punished`, `invalid-duration`, `internal-error`, `match-self`, `self-target`, `reload-busy`, plus `muted` and `muted-command` for a muted player. |
-| `messages.format` | The words other messages splice in as placeholder values: `permanent`, `no-template`, `no-reason`, `console`, the three `status-*` words behind `{status}`, and the eleven `type-*` words behind `{type}`. `no-reason` is the odd one out: it is WRITTEN to the database as the reason of a punishment a `snbans.noreason` holder issued bare, so retranslating it changes what new punishments record and leaves the stored ones reading as they did. |
+| `messages.format` | The words other messages splice in as placeholder values: `permanent`, `no-template`, `no-reason`, `console`, the three `status-*` words behind `{status}`, the twelve `type-*` words behind `{type}`, and the four `wipe-*` plurals behind `{kind}`. `no-reason` is the odd one out: it is WRITTEN to the database as the reason of a punishment a `snbans.noreason` holder issued bare, so retranslating it changes what new punishments record and leaves the stored ones reading as they did. |
 | `messages.<event>` | One block per event (`ban`, `ipban`, `mute`, `ipmute`, `blacklist`, `unban`, `unmute`, `unblacklist`, `kick`, `ipkick`), each with `announce` for the public broadcast and `notify` for `snbans.notify` holders. Five carry `screen`, the disconnect screen the player sees: `ban`, `ipban` and `blacklist` because they deny a login, plus `kick` and `ipkick` because they disconnect somebody already in. `kick` additionally carries `not-online`, the answer when the target is not connected to this server. A kick block has no `{duration}`, `{id}`, `{template}` or `{status}` to render, since a kick has no length, no row, no ladder and no state; `{total}` is how many accounts an `ipkick` disconnected and is not available in a `screen`. |
 | `messages.alts` | The `/alts` listing and the join scan: `header`, `scan-header`, `legend`, `entry`, `none`, `footer` and the five `status-*` color prefixes behind `{color}`. |
 | `messages.history` and `messages.staffhistory` | The two paged listings: `header`, `entry` and a `footer` carrying the clickable page arrows. |
 | `messages.match` | The `/snbans match` listing: `header`, `entry`, `none` and `footer`. |
 | `messages.rollback` | The sweep: `announce` and `notify` for the network, plus `dry-run`, `done`, `none` and `too-wide` for the staff member who ran it. |
+| `messages.wipe` | The bulk amnesty: `announce` and `notify` for the network, plus `dry-run`, `done`, `none` and `unknown-target` for whoever ran it. `dry-run` prints a runnable confirm command, so keep `{label}`, `{target}` and `{confirm}` in it as tokens rather than spelling them out. |
+| `messages.import` | The LiteBans import: `started`, `progress`, `dry-run`, `done` and `empty` for a run that worked, plus `already-imported`, `unknown-source`, `bad-address`, `no-driver`, `failed` and `busy` for one that did not. |
 
 ### Editing rules
 

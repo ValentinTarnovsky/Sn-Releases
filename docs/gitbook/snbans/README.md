@@ -30,11 +30,14 @@ shared SQL schema, so several servers pointed at the same MySQL share a single p
 - **Three-layer visibility**: a `snbans.silent` gated `-s` / `-p` flag on every issue and every
   revert, a per-type `silent-by-default`, and a per-event `broadcasts.*` toggle. A silent
   punishment is still reported to `snbans.notify` holders.
-- **Eleven Discord webhook blocks**, one per event, each with its own URL, embed and `include-silent`
+- **Twelve Discord webhook blocks**, one per event, each with its own URL, embed and `include-silent`
   toggle. Staff-typed reasons arrive neutralized, so no reason can ping `@everyone` or restyle your
   embed. The shipped file is inert until you fill a URL in.
 - **Bulk staff rollback**: `/snbans rollback <staff> <time>` counts the matches first and prints the
   confirm command to run. Nothing is reverted until `confirm` is appended.
+- **Bulk amnesty**: `/snbans wipe <ban|mute|blacklist|all>` erases every punishment of a kind that is
+  still in force, for a season reset or a bad mass-ban. Console only, and a dry run until `confirm`
+  is appended, with no configuration key that can skip that step.
 - **LiteBans import**: `/snbans import litebans ...` reads an existing LiteBans database and writes
   its bans, mutes and login history into SnBans, so a network switching over keeps its record
   instead of starting blank. It is a dry run until `confirm` is appended, and it refuses to run

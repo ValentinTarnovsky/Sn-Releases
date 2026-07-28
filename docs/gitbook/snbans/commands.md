@@ -29,6 +29,7 @@ Duration tokens are `30s`, `5m`, `2h`, `7d`, and the literal `permanent`. No dur
 | `/snbans match <player> <other>` | `snbans.admin.match` | Lists the IPs two accounts have ever shared |
 | `/snbans rollback <staff> <time> [confirm]` | `snbans.admin.rollback` | Reverts the punishments a staff member issued in a window |
 | `/snbans import <source> <host:port> <database> <user> <password> [prefix] [confirm]` | `snbans.admin.import` | Imports punishments from another plugin's database |
+| `/snbans wipe <ban\|mute\|blacklist\|all> [confirm]` | `snbans.admin.wipe` | Erases every active punishment of a kind (console only) |
 | `/snbans reload` | `snbans.admin.reload` | Reloads the plugin configuration: config, lang, templates and webhooks |
 | `/snbans help [page]` | `snbans.admin` | Shows the available commands |
 | `/snbans debug` | `snbans.admin.debug` | Toggles runtime debug output (Paper only) |
@@ -79,7 +80,8 @@ Both platforms suggest real values as you type:
 - Nothing at all for either argument of `/unblacklist` when a player types it.
 - `-s` and `-p` on a revert, but only for holders of `snbans.silent`.
 - The duration examples `30m`, `1d`, `1h`, `30s`, and `5m` for the `/snbans rollback` window.
-- The literal `confirm` for the rollback confirm token, and nothing else.
+- The literal `confirm` for the rollback and wipe confirm tokens, and nothing else.
+- `ban`, `mute`, `blacklist` and `all` for the `/snbans wipe` target, and only when the console is typing: completing them for a player would promise a command they can never run.
 - The subcommand names of `/snbans`, alphabetically and permission-filtered.
 - The template ids of the command's own type on a reason argument, so `/ban Notch <TAB>` lists the ban ladders and `/mute Notch <TAB>` the mute ones.
 - An angle-bracket hint such as `<reason>` or `<page>` for free-form arguments.
@@ -95,6 +97,40 @@ Suggestions are a convenience only. Any name is accepted and resolved against th
 {% hint style="warning" %}
 On a multi-server MySQL install, a rollback is the one action peers do not learn about through the sync poller: the poller reads rows whose removal was just recorded, and a deleted row is in no feed. The server that ran the sweep lifts its own mutes at once; other backends keep an erased mute in force until the player next connects there, at which point the login check finds nothing and the mute is gone. A single-server (SQLite) install has no peer and is unaffected.
 {% endhint %}
+
+## Wiping punishments in bulk
+
+`/snbans wipe <ban|mute|blacklist|all> [confirm]` erases every punishment of that kind that is still **in force**. It is the bulk amnesty: `/snbans wipe ban confirm` is the `/unban` of everyone at once, `mute` and `blacklist` do the same for theirs, and `all` does the three together. Use it for an amnesty, a season reset, or to undo a bad mass-ban without running one `/unban` per player.
+
+Without `confirm` it is a **dry run**: it counts what a real run would erase, writes nothing, and prints the exact command that would do it.
+
+```
+> snbans wipe ban
+----------------------------------------
+WIPE | 412 bans are currently in force.
+This will erase them permanently; they will not appear in /history.
+Run /snbans wipe ban confirm to wipe them.
+----------------------------------------
+
+> snbans wipe ban confirm
+Wiped 412 bans.
+```
+
+{% hint style="danger" %}
+This command is **console only** and cannot be granted around. A player who runs it is answered `messages.console-only` whatever permissions they hold; `snbans.admin.wipe` only makes the subcommand grantable and visible in `/snbans help`. The reasoning is that a permission node can be granted by mistake and being the console cannot, and the smallest thing this command does is lift every ban on the network at once.
+
+Unlike `rollback.require-confirm`, there is **no configuration key that skips the dry run**. A key whose only purpose is to remove the guard on the most destructive command in the plugin is not one this plugin ships.
+{% endhint %}
+
+{% hint style="warning" %}
+Like a rollback, a wipe **deletes** its rows rather than marking them lifted. Wiped punishments leave the sanctioned player's `/history` entirely and can never push a template ladder up a step. There is no way back - take a database backup first if that history matters to you.
+{% endhint %}
+
+Only what is still in force is erased. A sanction a player already served (expired), or one a staff member already lifted, is a record of something that happened and stays in `/history` untouched - which is what makes this the bulk `/unban` it is advertised as rather than a history purge.
+
+On a multi-server MySQL install, a wipe reaches peers the same way a rollback does and with the same gap: a deleted row is in no sync feed, so the server that ran the wipe drops its own cached mutes at once while other backends keep an erased mute in force until the affected player next connects there. Bans and blacklists need no such handling at all - they are read from the punishment table on every login, and the wipe has already emptied it. A single-server (SQLite) install has no peer and is unaffected.
+
+A wipe is announced like any other event, through `broadcasts.wipe`, the `messages.wipe` lang block and the `wipe` block of `webhooks.yml`. It takes no `-s` / `-p` flag, so `broadcasts.wipe` alone decides who sees it. A wipe that erased nothing announces nothing.
 
 ## Importing from LiteBans
 

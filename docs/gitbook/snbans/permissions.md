@@ -1,6 +1,6 @@
 # Permissions
 
-Every SnBans node defaults to `op`, because every command is staff-facing. There is no `snbans.use` node: each command root carries its own leaf node instead. The tree is 20 nodes, declared once for both platforms: the 18 SnBans checks itself behave identically on a backend and on the proxy, and the two SnLib owns are Paper only.
+Every SnBans node defaults to `op`, because every command is staff-facing. There is no `snbans.use` node: each command root carries its own leaf node instead. The tree is 24 nodes, declared once for both platforms: the 22 SnBans checks itself behave identically on a backend and on the proxy, and the two SnLib owns are Paper only.
 
 | Permission | Default | Description |
 |-----------|---------|-------------|
@@ -11,6 +11,7 @@ Every SnBans node defaults to `op`, because every command is staff-facing. There
 | `snbans.admin.match` | op | Allows `/snbans match` |
 | `snbans.admin.rollback` | op | Allows `/snbans rollback` |
 | `snbans.admin.import` | op | Allows `/snbans import` |
+| `snbans.admin.wipe` | op | Allows `/snbans wipe` (console only at runtime) |
 | `snbans.notify` | op | Receive staff notifications of SnBans punishments and alt scans |
 | `snbans.silent` | op | Allows the `-s` / `-p` visibility flag on punishments and reverts |
 | `snbans.noreason` | op | Allows issuing a punishment without typing a reason |
@@ -30,7 +31,7 @@ Every SnBans node defaults to `op`, because every command is staff-facing. There
 
 ## What granting `snbans.admin` does
 
-`snbans.admin` is declared with an exhaustive children map: the other 19 nodes are all listed under it. Granting `snbans.admin` alone therefore grants the five `snbans.admin.*` nodes, `snbans.notify`, `snbans.silent`, `snbans.noreason`, and all eleven flat command roots. A full-staff rank needs that one node and nothing else.
+`snbans.admin` is declared with an exhaustive children map: the other 23 nodes are all listed under it. Granting `snbans.admin` alone therefore grants the seven `snbans.admin.*` nodes, `snbans.notify`, `snbans.silent`, `snbans.noreason`, and all thirteen flat command roots. A full-staff rank needs that one node and nothing else.
 
 On Paper, Bukkit expands the children map inside its own permission registry, so a group holding only the parent passes `snbans.ban` without the leaf being granted. A proxy has no descriptor and no registry, so SnBans reproduces the same semantics in its own check: the node's own value is read first, and only an undefined leaf falls through to the parent.
 
@@ -64,7 +65,7 @@ SnLib declares and tests both itself, so no line of SnBans code ever names eithe
 `plugin.yml` deliberately declares no `permission:` key on any command. Bukkit tests such a key before the executor runs and answers with the raw descriptor string, which would replace the branded no-permission message. The command dispatchers check the nodes themselves on both platforms, so removing a node from the descriptor does not disable the check.
 
 {% hint style="warning" %}
-`snbans.unblacklist` only makes `/unblacklist` grantable and tab-visible. The command is console only at runtime: the flow refuses any non-console sender before the target name is looked up.
+Two nodes grant less than they look like they do. `snbans.unblacklist` only makes `/unblacklist` grantable and tab-visible, and `snbans.admin.wipe` does the same for `/snbans wipe`: both commands are console only at runtime, and each flow refuses a non-console sender before it reads its own arguments. Granting either node to a rank does not put the command in that rank's hands.
 {% endhint %}
 
 {% hint style="info" %}
