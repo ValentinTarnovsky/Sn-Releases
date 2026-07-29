@@ -313,6 +313,21 @@ visible through `scope()`.
 exactly `BLACKLISTED`, `IPBANNED`, `BANNED`, `ONLINE` or `OFFLINE`. A muted account is never
 presented as muted, because a mute does not stop it being online.
 
+{% hint style="warning" %}
+**`ONLINE` means the NETWORK since 1.6.0.** On an install whose servers share one MySQL it now
+reports an account connected to any of them; before 1.6.0 it only ever meant "connected to this
+server". Nothing about the type or the value changed, so no code has to be updated - but a
+consumer that read it as a local presence check should use the platform's own player lookup
+instead, which is what that question actually is. A single-server install is unaffected.
+{% endhint %}
+
+{% hint style="info" %}
+**`alts.hidden` does not filter the API.** The config key hides accounts from every alt scan a
+player is shown, in both directions, and the console is its one exception. A consumer is
+server-side code with the same trust as the console, so `scanAlts` and `AltScanCompletedEvent`
+always carry the whole scan. Filter it yourself if you present a scan to players.
+{% endhint %}
+
 `AltScanView.accounts()` is an unmodifiable copy, normally starting with the scanned player. Two
 cases hold no entry for the target: an empty scan, and a join scan, which keeps only the accounts
 worth warning about. Match on `AltAccountView.uuid()` when you need the target's own entry.
@@ -327,3 +342,8 @@ may contribute, so a saturated address yields its most recently seen accounts on
 Call `getApiVersion()` for the API contract version. It is independent of the plugin version.
 Additions bump the minor component. Existing members are never removed or changed; deprecated
 members keep working.
+
+`1.0.0` is still current as of SnBans 1.6.0: that release added no member and renamed none. It did
+widen what one existing value MEANS - `AltAccountView.state()`'s `ONLINE`, see the warning above -
+which is a behaviour note rather than a contract change, and is recorded here so a consumer can
+tell the two apart.

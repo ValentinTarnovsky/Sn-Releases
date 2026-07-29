@@ -157,6 +157,20 @@ alts:
   # logged and ignored, and an empty list turns the warning off. ONLINE and
   # OFFLINE match every account, so listing either warns on every join.
   notify-states: [BANNED, IPBANNED, BLACKLISTED, MUTED]
+  # Accounts that never appear in an alt scan shown to a PLAYER. A name (case
+  # insensitive) or a UUID; both forms may be mixed, and a UUID keeps working
+  # after the account is renamed. The rule runs BOTH ways, because hiding only
+  # one of them would leak the same link from the other end: a listed account
+  # is dropped from everybody else's /alts and join warning, AND a scan whose
+  # target is listed answers as if the address carried nothing.
+  # The console is the only exception - it always sees the whole scan, and so
+  # does the developer API, which is server-side code with the same trust.
+  # There is deliberately no permission for it: a node can be mis-granted,
+  # being the console cannot.
+  # Nothing about ENFORCEMENT changes. A hidden account is still scanned,
+  # stored, banned, muted and kicked exactly like any other, and /snbans match
+  # still reports the addresses it shares with a named account.
+  hidden: []
 
 # Chat pagination of /history and /staffhistory.
 history:
@@ -279,6 +293,38 @@ LuckPerms is optional on Paper and on Velocity. Without it the hierarchy check s
 The alt states that trigger the join warning. Accepted tokens are `BLACKLISTED`, `IPBANNED`, `BANNED`, `MUTED`, `ONLINE` and `OFFLINE`. An unknown token is warned about in console and skipped, and an empty list turns the warning off.
 
 `ONLINE` and `OFFLINE` match every account, so listing either one warns on every single join.
+
+### alts.hidden
+
+Accounts that never appear in an alt scan shown to a **player**. Entries are names (matched
+case-insensitively) or UUIDs, and the two forms may be mixed in one list - a UUID keeps working
+after the account is renamed, which is the one way a name list silently stops hiding what it was
+written to hide.
+
+```yaml
+alts:
+  hidden:
+    - Snopeyy
+    - 069a79f4-44e9-4726-a5be-fca90e38aaf5
+```
+
+The rule runs **both ways**, because hiding only one end would leak the identical link from the
+other:
+
+* a listed account is dropped from everybody else's `/alts` and from the join warning;
+* a scan whose **target** is listed answers as if the address carried nothing, so `/alts <hidden>`
+  reads exactly like an account nobody shares an address with.
+
+{% hint style="info" %}
+The console is the only exception - it always sees the whole scan, and so does the developer API,
+which is server-side code with the same trust. There is deliberately no permission node for this:
+a node can be mis-granted, being the console cannot.
+{% endhint %}
+
+Nothing about **enforcement** changes. A hidden account is still scanned, stored, banned, muted and
+kicked exactly like any other, so an IP ban placed on one of its alts still reaches it.
+`/snbans match` is not filtered either: it takes two explicit names and reports shared addresses
+rather than listing accounts.
 
 ### history.page-size
 

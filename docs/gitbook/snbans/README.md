@@ -23,7 +23,10 @@ shared SQL schema, so several servers pointed at the same MySQL share a single p
   rollback do not count toward the escalation.
 - **Alt detection on two axes**: `/alts` lists the accounts sharing the target's current IP, and
   `/snbans match` lists every IP two accounts have ever shared. An automatic join scan warns
-  `snbans.notify` holders, filtered by the states listed in `alts.notify-states`.
+  `snbans.notify` holders, filtered by the states listed in `alts.notify-states`. On a shared MySQL
+  both the account list and the **Online** marker are network-wide, so an alt connected to another
+  backend is listed and shown as online rather than offline. `alts.hidden` keeps named accounts out
+  of every scan a player sees, in both directions, without touching enforcement.
 - **Network-wide punishments**: on one shared MySQL the issuing server enforces immediately, and
   its peers pick the row up within `sync.interval-seconds`. No plugin messaging channel is
   involved, and a server skips its own rows so nothing is announced twice.

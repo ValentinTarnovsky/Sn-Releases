@@ -67,8 +67,17 @@ Check three things in this order. Every backend must use `database.type: mysql` 
 ### Nothing arrives in my Discord channel. Why?
 Every block of `webhooks.yml` ships with `enabled: false` and an empty `url`, so the file is inert until you fill both in. A silent punishment is only posted when that block's `include-silent` is `true`. The `include-silent` key of the `rollback` block does nothing: a rollback carries no visibility flag, and `broadcasts.rollback` alone decides how public it is.
 
+### Does `/alts` see accounts on my other servers?
+Yes, and it always has: login history carries no server column, so on a shared MySQL every backend sees every account of the network. Since 1.6.0 the **Online** marker is network-wide too - each server publishes its connected players into `snbans_presence` and refreshes them on a heartbeat, so an alt connected to another backend renders as online instead of offline. There is nothing to configure: it is on wherever the backend can be shared and absent on SQLite, exactly like cross-server punishment sync. The table is created on boot, so an existing install needs no migration.
+
+### An account still shows as offline even though they are on another server. Why?
+Three things to check, in this order. The other server must be running SnBans 1.6.0 or newer against the *same* MySQL - a peer on an older build publishes nothing. Each server needs its own `server-name`, since that is what tells its presence rows from a peer's. And a server that was killed without a clean shutdown keeps its rows for under a minute before they stop counting, so give it that long after a crash. If the peer was restarted while players were already connected, its own boot pass publishes them, so no reconnect is needed.
+
+### How do I keep a staff member's alt off `/alts`?
+Add their name (or UUID) to `alts.hidden` in `config.yml` and reload. No player sees that account in an alt scan afterwards, in either direction: it is dropped from everybody else's listing, and `/alts <that name>` answers as if the address carried nothing - hiding only one end would leak the same link from the other. The console still sees the whole scan, and there is deliberately no permission node for it, because a node can be mis-granted and being the console cannot. Nothing about enforcement changes: a hidden account is still banned, muted and kicked like any other, and `/snbans match` is not filtered.
+
 ### Does it need PlaceholderAPI, and is there a developer API?
-No to both. SnBans registers no PlaceholderAPI expansion and ships no public developer API yet. The `{player}` style tokens you see belong to `lang/messages_en.yml` and `webhooks.yml` and are internal to SnBans. There are no GUIs either: every listing is chat-paginated. LuckPerms is the only optional integration.
+No PlaceholderAPI: SnBans registers no expansion, and the `{player}` style tokens you see belong to `lang/messages_en.yml` and `webhooks.yml`, internal to SnBans. There **is** a public developer API on Paper - see [Developer API](api.md). There are no GUIs either: every listing is chat-paginated. LuckPerms is the only optional integration.
 
 ### Where do I put my license key?
 In `plugins/.Sn-License/license.yml`, which SnBans creates on its first start on a Paper server. It is one shared file for every Sn bundle plugin on that server, so a single key unlocks the whole pack. Paste your key over the placeholder line and restart. The key is validated once at startup against the Sn license backend, so the machine needs outbound HTTPS. Without a valid key SnBans logs `[Sn] License: FAIL` and disables itself. A standalone Velocity install creates and reads no license file, and has no key step.

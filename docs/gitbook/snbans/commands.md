@@ -69,6 +69,12 @@ Naming your own account is allowed wherever it only affects you: `/alts <you>`, 
 {% endhint %}
 
 {% hint style="info" %}
+**Both alt surfaces are network-wide on a shared MySQL.** Login history carries no server column, so an alt that has only ever played on one backend is listed by an `/alts` run on another. Since 1.6.0 the **Online** marker is network-wide too: each server publishes its connected players into `snbans_presence`, so an account connected elsewhere renders as online rather than offline. A single-server SQLite install writes nothing to that table and needs no configuration for any of it.
+
+Accounts listed in `alts.hidden` never appear in an alt scan shown to a player, in either direction - see [alts.hidden](configuration.md#alts-hidden). Enforcement is untouched, and `/snbans match` is not filtered.
+{% endhint %}
+
+{% hint style="info" %}
 One platform difference. `/snbans debug` exists on Paper only, because SnLib injects it there and the proxy has no counterpart; on Velocity the debug channel is the proxy logger's own level. Everything else, `/snbans help` included, lists the same commands on both sides.
 {% endhint %}
 
