@@ -32,6 +32,16 @@
 * [Developer API](snclans/api.md)
 * [FAQ](snclans/faq.md)
 
+## SnEconomyRobots
+
+* [Overview](sneconomyrobots/README.md)
+* [Installation](sneconomyrobots/installation.md)
+* [Commands](sneconomyrobots/commands.md)
+* [Permissions](sneconomyrobots/permissions.md)
+* [Configuration](sneconomyrobots/configuration.md)
+* [Placeholders](sneconomyrobots/placeholders.md)
+* [FAQ](sneconomyrobots/faq.md)
+
 ## SnElementalGems
 
 * [Overview](snelementalgems/README.md)
