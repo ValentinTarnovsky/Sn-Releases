@@ -18,7 +18,7 @@ returns `status.none`. Both words are configurable in the language file.
 | `%sneconomyrobots_slots_free%` | Unlocked minus used, never negative |
 | `%sneconomyrobots_slots_max%` | The configured `slots.max` ceiling |
 | `%sneconomyrobots_storage_used%` | Robots in storage |
-| `%sneconomyrobots_storage_max%` | Storage capacity, resolved live from the player's permissions |
+| `%sneconomyrobots_storage_max%` | Storage capacity from the player's permissions, refreshed every 5 seconds (a rank granted mid-session shows up within that window) |
 | `%sneconomyrobots_storage_free%` | Capacity minus used, never negative |
 
 ## Claim bag
@@ -33,8 +33,11 @@ returns `status.none`. Both words are configurable in the language file.
 
 ## Accrual rate
 
-Summed over the player's equipped robots, per hour. A robot contributes nothing for an economy it
-has not unlocked, and nothing at all once it has hit its production cap.
+Summed over the player's equipped robots, per hour, and it mirrors what production actually pays:
+a robot contributes nothing for an economy it has not unlocked or once it has hit its production
+cap, the rate reads `0` while that economy's claim bag sits at `bag.max-per-economy` or while the
+player is outside `production.active-worlds`, and it reads `status.unknown` while the bag is still
+loading.
 
 | Placeholder | Description |
 |-------------|-------------|
