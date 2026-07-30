@@ -17,6 +17,15 @@ Installing on the proxy and on its backends at the same time announces every pun
 ### Which deployment enforces mutes better?
 The backends. Clients from 1.19.1 onward with enforced secure chat may not accept a chat message the proxy denies, so a proxy install is the weaker option for mutes. Blocked commands, bans, IP bans and blacklists are enforced exactly on either deployment.
 
+### Can I see when a banned or muted player keeps trying?
+Yes, that is what `attempt-notices` in `config.yml` is for. With it on, the console and every `snbans.notify` holder are told when a ban, IP ban or blacklist refuses a login, and when a mute cancels a chat message or one of `mute.blocked-commands`. Each of the three is its own toggle, and the wording lives in the `messages.attempt` block of the lang file. There is no public form of the notice: announcing to the whole server that a banned player is trying to get in is an invitation to bait them.
+
+### Why did I only get one notice when a muted player sent ten messages?
+Because of `attempt-notices.cooldown-seconds`, which defaults to 60. The same account's same kind of attempt is reported once per window, and that window is what keeps the feature usable: a banned client reconnects every few seconds by itself and a muted player types faster the less they are heard, so without it the notice would be a flood aimed at staff chat. Set it to `0` if you really want every attempt. Note that only the staff notice is throttled - the muted player was answered every single time, because somebody who sees nothing concludes the server is broken and keeps trying.
+
+### An attempt notice named an account I never punished. Why?
+Because an IP ban and an IP mute reach every account on the address, and the notice names the account that **tried** rather than the account on the punishment. That is the point: a ban-evading alt is visible the moment it knocks. The `{id}` in the same line is the row that stopped them, so `/history` on the original account is one lookup away.
+
 ### Where are punishments stored?
 In SQLite by default, which needs no setup. Switch to MySQL under `database` in `config.yml` and point every backend at the same schema to make punishments network-wide. That MySQL user needs CREATE, SELECT, INSERT, UPDATE and DELETE on the schema. The cross-server poller exists only on a shared MySQL install, because a SQLite install has no peer to hear from.
 

@@ -238,6 +238,31 @@ broadcasts:
   # Announce wipes; false leaves them to snbans.notify holders. A wipe that
   # erased nothing is never announced either way - there was nothing to tell.
   wipe: true
+
+# Staff notices for the punishments a player RUNS INTO, as opposed to the ones
+# staff hand out: a banned account knocking on the door and a muted player still
+# trying to talk. They go to the console and to snbans.notify holders only, and
+# there is no public form of them at all - telling the whole server that a banned
+# player is trying to get in is an invitation to bait them. The refusal the player
+# themselves sees is unchanged and never mentions that staff were told. Wording
+# lives in the messages.attempt block of the lang file.
+attempt-notices:
+  # Report a login a ban, an IP ban or a blacklist refused. A mute never denies a
+  # login, so a muted player joining is not an attempt at anything: the automatic
+  # join alt scan is what reports them (alts.notify-states above).
+  login: true
+  # Report a chat message a mute cancelled.
+  chat: true
+  # Report one of mute.blocked-commands a mute cancelled.
+  command: true
+  # Seconds before the SAME player's SAME kind of attempt is reported again.
+  # This is the key that decides whether the feature is useful or unusable: the
+  # two players it reports are the two who repeat themselves - a banned client
+  # reconnects every few seconds by itself, and a muted player types faster the
+  # less they are heard - so without a window a staff notice becomes a flood
+  # aimed at staff chat. Only the STAFF notice is throttled; the refusal the
+  # player themselves sees is never withheld. 0 reports every single attempt.
+  cooldown-seconds: 60
 ```
 
 ## Notable settings
@@ -361,6 +386,24 @@ Commands a muted player cannot run, written without the leading slash. Entries a
 One key per announced event. `false` leaves that event to `snbans.notify` holders instead of the whole server. An unban covers both a ban and an IP ban, and the same pairing applies to the other reverts.
 
 `broadcasts.rollback` and `broadcasts.wipe` alone decide how visible those two bulk actions are: neither `/snbans rollback` nor `/snbans wipe` declares an `-s` or `-p` flag, so neither is ever silent. A wipe that erased nothing is not announced at all, whatever the toggle says.
+
+### attempt-notices
+
+The counterpart of `broadcasts`: that section is about the punishments staff hand out, this one about the punishments players run into. Three toggles pick which refusals are reported to the console and to `snbans.notify` holders.
+
+| Key | Reports |
+|-----|---------|
+| `login` | A ban, an IP ban or a blacklist refused a login |
+| `chat` | A mute cancelled a chat message |
+| `command` | A mute cancelled one of `mute.blocked-commands` |
+
+`cooldown-seconds` (default 60) is the key that decides whether the feature is useful. The two players it reports are the two who repeat themselves: a banned client reconnects every few seconds on its own, and a muted player types faster the less they are heard. The same account's same kind of attempt is reported once per window; `0` reports every single attempt. Only the staff notice is throttled - the refusal the player gets is unchanged, because somebody who sees nothing concludes the server is broken and keeps trying.
+
+`{player}` is the account that **tried**, which is not always the account named on the punishment: an IP ban and an IP mute reach every account on the address, so the notice names the alt that ran into the row while `{id}` names the row that stopped them. That is what makes a ban-evading alt visible the moment it knocks.
+
+{% hint style="info" %}
+There is no public form of these notices and no webhook block for them: an attempt is not something anybody did, and announcing to the whole server that a banned player is trying to get in is an invitation to bait them. A muted player joining is not an attempt either, since a mute does not deny logins - the join alt scan reports them through `alts.notify-states`.
+{% endhint %}
 
 ### debug
 
@@ -822,6 +865,7 @@ On Velocity, a `lang` code naming a file that is neither bundled nor already in 
 | `messages` (errors) | Refusals and errors: `console-only`, `unknown-player`, `hierarchy-denied`, `already-punished`, `not-punished`, `invalid-duration`, `internal-error`, `match-self`, `self-target`, `reload-busy`, plus `muted` and `muted-command` for a muted player. |
 | `messages.format` | The words other messages splice in as placeholder values: `permanent`, `no-template`, `no-reason`, `console`, the three `status-*` words behind `{status}`, the twelve `type-*` words behind `{type}`, and the four `wipe-*` plurals behind `{kind}`. `no-reason` is the odd one out: it is WRITTEN to the database as the reason of a punishment a `snbans.noreason` holder issued bare, so retranslating it changes what new punishments record and leaves the stored ones reading as they did. |
 | `messages.<event>` | One block per event (`ban`, `ipban`, `mute`, `ipmute`, `blacklist`, `unban`, `unmute`, `unblacklist`, `kick`, `ipkick`), each with `announce` for the public broadcast and `notify` for `snbans.notify` holders. Five carry `screen`, the disconnect screen the player sees: `ban`, `ipban` and `blacklist` because they deny a login, plus `kick` and `ipkick` because they disconnect somebody already in. `kick` additionally carries `not-online`, the answer when the target is not connected to this server. A kick block has no `{duration}`, `{id}`, `{template}` or `{status}` to render, since a kick has no length, no row, no ladder and no state; `{total}` is how many accounts an `ipkick` disconnected and is not available in a `screen`. |
+| `messages.attempt` | The three attempt notices of `attempt-notices`: `login`, `chat` and `command`. They share the audience of a `notify` block and are sent the same way, so they are lists and carry their own inline tag. `{player}` is the account that tried, not the account the punishment names. |
 | `messages.alts` | The `/alts` listing and the join scan: `header`, `scan-header`, `legend`, `entry`, `none`, `footer` and the five `status-*` color prefixes behind `{color}`. |
 | `messages.history` and `messages.staffhistory` | The two paged listings: `header`, `entry` and a `footer` carrying the clickable page arrows. |
 | `messages.match` | The `/snbans match` listing: `header`, `entry`, `none` and `footer`. |

@@ -12,7 +12,7 @@ Every SnBans node defaults to `op`, because every command is staff-facing. There
 | `snbans.admin.rollback` | op | Allows `/snbans rollback` |
 | `snbans.admin.import` | op | Allows `/snbans import` |
 | `snbans.admin.wipe` | op | Allows `/snbans wipe` (console only at runtime) |
-| `snbans.notify` | op | Receive staff notifications of SnBans punishments and alt scans |
+| `snbans.notify` | op | Receive staff notifications of SnBans punishments, alt scans and refused attempts |
 | `snbans.silent` | op | Allows the `-s` / `-p` visibility flag on punishments and reverts |
 | `snbans.noreason` | op | Allows issuing a punishment without typing a reason |
 | `snbans.ban` | op | Allows `/ban` |
@@ -58,7 +58,7 @@ SnLib declares and tests both itself, so no line of SnBans code ever names eithe
 
 `snbans.noreason` gates issuing a punishment with no reason at all. Without it, `/ban Notch` answers the usage line and nothing is stored. Holders may run the command bare, and the row records the `messages.format.no-reason` text ("No reason" by default), which is then shown as `{reason}` by every announcement, history line, Discord embed and disconnect screen. It is a node of its own rather than part of `snbans.ban`, because the reason is what a history line and an appeal are read from - so the strict behaviour stays the default and you opt individual ranks out of it. The console holds it implicitly.
 
-`snbans.notify` holders receive the notices for silent punishments and the output of the automatic join alt scan, filtered by `alts.notify-states`. The console always receives both, on a backend and on the proxy alike.
+`snbans.notify` holders receive the notices for silent punishments, the output of the automatic join alt scan (filtered by `alts.notify-states`) and the attempt notices of `attempt-notices` - a banned account that tried to join, a muted one that tried to talk. The console always receives all three, on a backend and on the proxy alike. One node for the three, because they are one job: watching what SnBans is doing while nobody typed a command.
 
 ## How the nodes are enforced
 
