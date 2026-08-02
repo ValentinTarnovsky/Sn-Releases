@@ -1,7 +1,7 @@
 # FAQ
 
 ### How do I update SnMiniGames?
-Download the newer `snminigames-v*` release and replace the jar. Update SnLib first if the release notes ask for a newer version. Configs auto-merge on restart; the per-game files (`games/parkour.yml`, `games/tntrun.yml`, `games/tnttag.yml`) are never touched.
+Download the newer `snminigames-v*` release and replace the jar. Update SnLib first if the release notes ask for a newer version. Configs auto-merge on restart; the per-game files (`games/parkour.yml`, `games/tntrun.yml`, `games/tnttag.yml`, `games/spleef.yml`) are never touched.
 
 ### Why are the map setup commands missing from `/mg help`?
 They are hidden from the root help on purpose. Every minigame ships its own set of setup commands, so listing them all would make `/mg help` unreadable once several games are installed. Each game exposes one entry instead, `/mg admin <game> help`, which lists that game's commands on its own page. The commands themselves are unchanged: they still run, and they still tab-complete under `/mg admin <game> `.
@@ -17,6 +17,21 @@ Create it with `/mg admin tntrun create <name>`. Get the cuboid wand with `/mg a
 
 ### How do I build a TNT Tag arena?
 Create it with `/mg admin tnttag create <name>`. Get the cuboid wand with `/mg admin wand region`, left-click one corner and right-click the opposite one, then run `/mg admin tnttag setregion <map>`. Stand inside the arena and run `setstart <map>` - the start spawn **must be inside the region**, because it is also where an escapee gets sent back to, and a spawn outside it would loop forever (the plugin refuses to open such a round and logs why). Stand in the mini-lobby and run `setwaiting <map>`. `/mg admin tnttag help` lists the rest (`settaggers`, `setroundtime`, `setdecrement`, `setminroundtime`, `setgrace`, `setbreak`, `setwinners`, `settimelimit`, `setend`).
+
+### How do I build a Spleef arena?
+Create it with `/mg admin spleef create <name>`. Get the cuboid wand with `/mg admin wand region`, left-click one corner and right-click the opposite one, then run `/mg admin spleef setregion <map>`. Select the snow floor **and the headroom above it**: the region is what may be broken, and it is also the area the melt picks from. Stand on the floor and run `setstart <map>` - the start spawn must be in the region's world and over the arena's footprint, or the plugin refuses to open the round and logs why rather than dropping everyone into the void. Stand in the mini-lobby and run `setwaiting <map>`, and set the elimination height with `setelimy <map> <y>`. `/mg admin spleef help` lists the rest (`setsnowballs`, `setmeltstart`, `setmeltrate`, `setwinners`, `settimelimit`, `setend`).
+
+### My Spleef shovel does not break anything. Why?
+Almost always the floor list. `removable-materials` in `games/spleef.yml` is both what may be broken and what the shovel is allowed to break, so if your floor is not snow you have to put its material there and run `/mg reload`. Clicking a block outside the arena region never does anything either, by design. If the log carries a line about the server refusing the can-destroy restriction, report your server version: without it the client sends no dig packet at all, because players in a round are in adventure mode.
+
+### Can I use a different floor material, or more than one?
+Yes. Put every material in `removable-materials` and run `/mg reload`; the shovel is restricted to exactly that list at the start of each round. What you cannot do is leave it empty to mean "anything" - an empty restriction is a shovel that breaks nothing, so an empty or unrecognised list falls back to `SNOW_BLOCK` with a warning.
+
+### Does a Spleef snowball hurt anyone?
+No. Nobody in a Spleef round can lose a single heart, from a snowball or from a punch. A snowball only pushes you - the hurt animation and the sound are feedback, not damage - and punching does nothing at all, not even knockback. The push is applied by the plugin rather than by the server, so it feels the same with PvP on and PvP off.
+
+### Why is my Spleef floor disappearing on its own?
+That is the anti-camping melt. After `melt-start` seconds (default 120) the arena starts losing `melt-rate` random floor blocks every second, so waiting on a safe island stops working. Set `melt-start: 0` on the map to switch it off completely; the arena is then never scanned at round start either.
 
 ### Does TNT Tag damage blocks or players?
 Neither. The "explosion" is a particle plus a sound - the plugin never calls the vanilla explosion, so not a single block is touched and nobody takes damage from it. Hitting someone to pass the tag costs no health either: since v1.8.1 the hit is kept but its damage is zeroed, so it still knocks the other player back and plays the hurt animation while no participant ever loses a heart (a second guard re-zeroes the damage after every other plugin has had its say). An exploded player is simply removed from the round with their pre-game state restored.

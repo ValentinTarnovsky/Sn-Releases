@@ -71,12 +71,30 @@ than one line per subcommand. The setup commands still run and still tab-complet
 | `/mg admin tnttag setbreak <map> <s>` | `snminigames.admin.setup` | Set the observation break between a detonation and the next round (0-30, 0 = none) |
 | `/mg admin tnttag setwinners <map> <n>` | `snminigames.admin.setup` | Set how many survivors end the match |
 | `/mg admin tnttag settimelimit <map> <s>` | `snminigames.admin.setup` | Set the match time limit (0 disables it) |
+| `/mg admin spleef help [page]` | `snminigames.admin.setup` | List every Spleef setup command with its usage, paginated |
+| `/mg admin spleef create <name>` | `snminigames.admin.setup` | Create a new Spleef map |
+| `/mg admin spleef delete <map>` | `snminigames.admin.setup` | Delete a map (not while a round plays it) |
+| `/mg admin spleef list` | `snminigames.admin.setup` | List maps with their region, floor materials and survivor counts |
+| `/mg admin spleef setregion <map>` | `snminigames.admin.setup` | Save your region-wand selection as the breakable arena (select the floor **and** the headroom above it) |
+| `/mg admin spleef setstart <map>` | `snminigames.admin.setup` | Set the round start to where you stand (must be over the arena's footprint) |
+| `/mg admin spleef setwaiting <map>` | `snminigames.admin.setup` | Set the queue waiting lobby to where you stand |
+| `/mg admin spleef setend <map>` | `snminigames.admin.setup` | Set the survivors' end teleport to where you stand |
+| `/mg admin spleef setelimy <map> <y>` | `snminigames.admin.setup` | Set the Y below which a player is eliminated |
+| `/mg admin spleef setsnowballs <map> <min> <max>` | `snminigames.admin.setup` | Set the snowballs a **shovel** break pays out (0-16; snowball and melt breaks pay nobody) |
+| `/mg admin spleef setmeltstart <map> <s>` | `snminigames.admin.setup` | Set how long before the floor starts melting by itself (0-3600, 0 = never) |
+| `/mg admin spleef setmeltrate <map> <n>` | `snminigames.admin.setup` | Set how many random floor blocks the melt takes per second (1-64) |
+| `/mg admin spleef setwinners <map> <n>` | `snminigames.admin.setup` | Set how many survivors end the round |
+| `/mg admin spleef settimelimit <map> <s>` | `snminigames.admin.setup` | Set the round time limit (0 disables it) |
 | `/mg reload` | `snminigames.admin.reload` | Reload configuration |
 
 {% hint style="info" %}
-Each game hides its setup commands behind its own `help` leaf, so `/mg help` stays short: it shows one line per game (`/mg admin tntrun help`, `/mg admin tnttag help`) instead of one line per subcommand. The hidden leaves still tab-complete.
+Each game hides its setup commands behind its own `help` leaf, so `/mg help` stays short: it shows one line per game (`/mg admin tntrun help`, `/mg admin tnttag help`, `/mg admin spleef help`) instead of one line per subcommand. The hidden leaves still tab-complete.
+{% endhint %}
+
+{% hint style="info" %}
+Spleef's floor materials have **no** subcommand: `removable-materials` is a list, so edit it in `games/spleef.yml` and run `/mg reload`. That list is also what the shovel is allowed to break, which is why it can never be empty.
 {% endhint %}
 
 {% hint style="danger" %}
-These commands are destructive and cannot be undone: `/mg admin parkour delete`, `/mg admin parkour clearwaypoints`, `/mg admin tntrun delete`, `/mg admin tnttag delete`.
+These commands are destructive and cannot be undone: `/mg admin parkour delete`, `/mg admin parkour clearwaypoints`, `/mg admin tntrun delete`, `/mg admin tnttag delete`, `/mg admin spleef delete`.
 {% endhint %}
