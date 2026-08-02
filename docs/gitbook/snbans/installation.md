@@ -101,5 +101,5 @@ Hierarchy: LuckPerms group weights
 Read the second line to confirm the deployment you meant to build. A standalone install prints `Database: SQLite, standalone install (no cross-server sync)` instead, and the sync clause only appears on MySQL. The third line reads `Hierarchy: off (LuckPerms not installed)` or `Hierarchy: off (disabled in config)` when the check is inactive.
 
 {% hint style="info" %}
-On Paper the boot log also warns that the punishment tables are still being prepared on the database worker. A login arriving in that window is allowed with a warning instead of being checked, and a ban that misses it is enforced on the player's next connect.
+The punishment tables are created on a database worker while the server finishes starting, so there is a brief window where the login check has nothing to read yet. If somebody actually connects during it, the log says so once per start, naming the player: the login can be allowed without being checked, and a ban that misses it is enforced on the player's next connect. No connection in that window means no warning - up to and including v1.8.0 Paper printed the notice on every single boot whether or not anyone was affected.
 {% endhint %}
