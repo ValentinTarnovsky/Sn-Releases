@@ -29,6 +29,18 @@ Because an IP ban and an IP mute reach every account on the address, and the not
 ### Staff got an attempt notice but the player got in anyway. How?
 A notice reports the decision SnBans made, and two setups can override it afterwards. Another plugin can allow a login SnBans denied, if it acts at a later event priority - an appeal or bypass plugin does exactly that. And on a proxy-only install a chat message from a 1.19.1+ client with enforced secure chat may be delivered even though the proxy denied it, which is the same caveat that makes backend installs the recommended path for mutes. Neither is SnBans changing its mind: the punishment is still in force and the next attempt is refused the same way.
 
+### Can players ask staff for help or report somebody?
+
+Yes: `/helpop <message>` and `/report <player> <message>`, both on by default. The notice reaches the console and every `snbans.requests.receive` holder on **every server of the network**, and names the server the request was filed on - on a proxy install that is the backend the sender is standing on, not the proxy. Both are throttled per player and per kind by `staff-requests.cooldown-seconds` (default 60), and a player inside their window is told how long is left. Switch either off with `staff-requests` in `config.yml`, or revoke `snbans.helpop` / `snbans.report`.
+
+### Is there a list of past reports?
+
+No, deliberately. `snbans_requests` is a delivery envelope rather than a history: each server reads a row once and a sweep drops it a few minutes later. There is no `/reports` command, no claiming and no Discord webhook for them. A punishment plugin that grew half a ticket system would owe you retention, paging, claiming and closing - if you want those, run a ticket plugin beside SnBans.
+
+### Another plugin already owns `/report`. What happens?
+
+The last registration wins on a proxy, and on a backend Bukkit still reaches the other plugin's command as `/<plugin>:report`. Turning the kind off in `staff-requests` answers the player with `messages.request.disabled` rather than unregistering the command, so it does not hand the name back - resolve the collision on your server, by aliasing or removing whichever command you do not want.
+
 ### Where are punishments stored?
 In SQLite by default, which needs no setup. Switch to MySQL under `database` in `config.yml` and point every backend at the same schema to make punishments network-wide. That MySQL user needs CREATE, SELECT, INSERT, UPDATE and DELETE on the schema. The cross-server poller exists only on a shared MySQL install, because a SQLite install has no peer to hear from.
 

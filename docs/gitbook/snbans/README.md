@@ -39,6 +39,12 @@ shared SQL schema, so several servers pointed at the same MySQL share a single p
   per player by `attempt-notices.cooldown-seconds`, because a banned client reconnects on its own
   and a muted player keeps typing. The notice names the account that **tried**, so an IP ban
   reached by an alt shows the alt rather than the account on the row.
+- **Player-facing `/helpop` and `/report`**: the two commands here a player runs, delivered to the
+  console and to `snbans.requests.receive` holders on **every server of the network** and carrying
+  the server the request was filed on - which on a proxy install is the backend the sender is
+  standing on rather than the proxy. Throttled per player and per kind by
+  `staff-requests.cooldown-seconds`, and a throttled player is told how long is left rather than
+  left staring at silence.
 - **Twelve Discord webhook blocks**, one per event, each with its own URL, embed and `include-silent`
   toggle. Staff-typed reasons arrive neutralized, so no reason can ping `@everyone` or restyle your
   embed. The shipped file is inert until you fill a URL in.

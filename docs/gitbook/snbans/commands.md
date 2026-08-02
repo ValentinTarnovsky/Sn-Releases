@@ -1,8 +1,8 @@
 # Commands
 
-SnBans has no player-facing commands. Every command below is a staff command, and every permission node defaults to `op`. Granting `snbans.admin` alone grants all of them, because its children map is exhaustive. There is no `snbans.use` node: each root carries its own leaf node instead. See [Permissions](permissions.md) for the whole tree.
+Two commands of SnBans are player-facing - `/helpop` and `/report`, whose nodes default to **true** - and every other one is a staff command whose node defaults to `op`. Granting `snbans.admin` alone grants all of them, because its children map is exhaustive. There is no `snbans.use` node: each root carries its own leaf node instead. See [Permissions](permissions.md) for the whole tree.
 
-`/snbans` is the admin root, and the only command that takes configurable aliases, listed under `command.aliases` in `config.yml`. That list is authoritative: the names you write there are the complete set, and `/snbans` keeps working alongside them. The eleven flat roots (`/ban`, `/history`, and the rest) take no configurable aliases. On Paper the alias list is re-read on `/snbans reload`. On Velocity a reload re-registers the aliases too, but the proxy does not resend its command tree to players who are already connected, so a new alias only tab-completes for them after they reconnect. Typed in full it works right away.
+`/snbans` is the admin root, and the only command that takes configurable aliases, listed under `command.aliases` in `config.yml`. That list is authoritative: the names you write there are the complete set, and `/snbans` keeps working alongside them. The fifteen flat roots (`/ban`, `/history`, `/report`, and the rest) take no configurable aliases. On Paper the alias list is re-read on `/snbans reload`. On Velocity a reload re-registers the aliases too, but the proxy does not resend its command tree to players who are already connected, so a new alias only tab-completes for them after they reconnect. Typed in full it works right away.
 
 Every command exists on both platforms with the same syntax, permissions and messages, except where a row or a hint below says otherwise. Usage lines render under the label you actually typed, so `/punish rollback ...` is what an alias shows you. Run `/snbans` with no arguments for the help listing: SnLib generates it on Paper, and the proxy shell renders its own on Velocity.
 
@@ -25,6 +25,8 @@ Duration tokens are `30s`, `5m`, `2h`, `7d`, and the literal `permanent`. No dur
 | `/alts <player>` | `snbans.alts` | Lists the accounts sharing the target's current IP |
 | `/history <player> [page]`<br>alias `/hist` | `snbans.history` | Shows a player's punishment history |
 | `/staffhistory <staff> [page]` | `snbans.staffhistory` | Shows the punishments issued by a staff member |
+| `/helpop <message...>` | `snbans.helpop` | **Players.** Asks the staff team for help |
+| `/report <player> <message...>` | `snbans.report` | **Players.** Reports a player to the staff team |
 | `/snbans` | `snbans.admin` | Main admin command of SnBans; a bare call shows the help listing |
 | `/snbans match <player> <other>` | `snbans.admin.match` | Lists the IPs two accounts have ever shared |
 | `/snbans rollback <staff> <time> [confirm]` | `snbans.admin.rollback` | Reverts the punishments a staff member issued in a window |
@@ -78,6 +80,33 @@ Accounts listed in `alts.hidden` never appear in an alt scan shown to a player, 
 One platform difference. `/snbans debug` exists on Paper only, because SnLib injects it there and the proxy has no counterpart; on Velocity the debug channel is the proxy logger's own level. Everything else, `/snbans help` included, lists the same commands on both sides.
 {% endhint %}
 
+## Staff requests: `/helpop` and `/report`
+
+The two commands here a **player** runs. `/helpop <message>` asks staff to look at the sender, `/report <player> <message>` asks them to look at somebody else, and both reach the console and every `snbans.requests.receive` holder **on every server of the network**:
+
+```
+[HelpOp] Snopeyy (Dev): my chest got griefed
+[Report] Snopeyy reported Alex on Dev: flying in spawn
+```
+
+They are cross-server, and that is the feature. Several servers sharing one MySQL means a report filed on Survival reaches the moderators standing on Skyblock, on the lobby and on the proxy within a few seconds. A single-server SQLite install has no peers, so a request is delivered to that server's staff and nowhere else - there is no key for it, because an install that cannot have peers has nothing to configure about them.
+
+| Behaviour | Detail |
+|-----------|--------|
+| The server named | `{server}` is where the **player** is. On a backend install that is `server-name`; on a **proxy** install it is the backend the sender is standing on, not the proxy - a proxy that reported every helpop as coming from "Proxy" would be telling staff nothing. |
+| The target of a report | Resolved against the login history like every other named account, so a typo answers the unknown-player line instead of filing a report about nobody, and the notice carries the stored casing of the name. Reporting your own account is refused, because that is what somebody types when they meant `/helpop`. |
+| The throttle | `staff-requests.cooldown-seconds`, per player and per kind. A player inside their window is **told** how long is left - unlike an attempt notice, this throttles a command somebody deliberately typed, and silence there reads as a broken server. |
+| Typed text | Sanitized exactly like a punishment reason: a typed `<click:run_command:...>` or `%placeholder%` reaches staff chat as text. It matters more here than anywhere else, since this is the one player-typed value that reaches every moderator of the network at once. |
+| Muted players | Can still use both by default - "why am I muted" is the most common legitimate helpop there is. Add `helpop` and `report` to `mute.blocked-commands` to change that. |
+
+{% hint style="info" %}
+`snbans.requests.receive` is a node of its own rather than part of `snbans.notify`: that one is for watching what SnBans does while nobody typed a command, and these are the opposite. Answering helpops is also plausibly a job for a rank with no business reading silent punishment notices.
+{% endhint %}
+
+{% hint style="warning" %}
+There is deliberately no queue to read back: no `/reports` listing, no claiming, no Discord webhook. The rows are a delivery envelope that a sweep drops after a few minutes, not a ticket system. Switching a kind off in `staff-requests` answers the player with `messages.request.disabled` rather than unregistering the command, so if another plugin on your network owns `/helpop` or `/report`, deciding which one answers is your server's job.
+{% endhint %}
+
 ## Tab completion
 
 Both platforms suggest real values as you type:
@@ -90,7 +119,7 @@ Both platforms suggest real values as you type:
 - `ban`, `mute`, `blacklist` and `all` for the `/snbans wipe` target, and only when the console is typing: completing them for a player would promise a command they can never run.
 - The subcommand names of `/snbans`, alphabetically and permission-filtered.
 - The template ids of the command's own type on a reason argument, so `/ban Notch <TAB>` lists the ban ladders and `/mute Notch <TAB>` the mute ones.
-- An angle-bracket hint such as `<reason>` or `<page>` for free-form arguments.
+- An angle-bracket hint such as `<reason>`, `<message>` or `<page>` for free-form arguments.
 
 {% hint style="info" %}
 Suggestions are a convenience only. Any name is accepted and resolved against the login table, so offline accounts and accounts this server has never seen stay typable, and a name the network has never seen is answered with the unknown-player line. At most 100 names are offered: Paper caps the online list before filtering it, while Velocity filters first and caps the matches.

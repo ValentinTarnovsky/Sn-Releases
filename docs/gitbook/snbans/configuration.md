@@ -74,10 +74,13 @@ command:
   # which is what a punishment plugin wants by default - a stolen root (/b, /s)
   # is a support ticket on a network that already runs something using it.
   #
-  # Re-read on /snbans reload; on Velocity they are applied at proxy start (a
-  # reload re-reads every other key, but not command names). A name that is
-  # already a command on the proxy is refused with a warning naming it, because
-  # Velocity's registrar would REPLACE the original.
+  # Re-sourced on /snbans reload on both platforms: a name you remove is
+  # unregistered and a name you add starts working immediately when typed in
+  # full. On Velocity only, an added name tab-completes for players who were
+  # already connected once they reconnect, because the proxy does not re-send
+  # its command tree to a live session. A name that is already a command on the
+  # proxy is refused with a warning naming it, because Velocity's registrar
+  # would REPLACE the original.
   aliases: []
 
 # ------------------------------------------------------------
@@ -97,6 +100,15 @@ database:
   username: root
   # Password of that user; an empty value means none.
   password: ""
+
+# ------------------------------------------------------------
+#  Public developer API.
+# ------------------------------------------------------------
+# Public developer API events. When false, no API event is dispatched (zero
+# cost) and cancellable hooks report "not cancelled" so gameplay proceeds.
+# The query facade stays available either way.
+api-events:
+  enabled: true
 
 # ------------------------------------------------------------
 #  Model. What a punishment is on this network.
@@ -267,6 +279,52 @@ attempt-notices:
   # why it has a ceiling at all: an hour is already far longer than a notice
   # about somebody actively trying can usefully be silenced for.
   cooldown-seconds: 60
+
+# ------------------------------------------------------------
+#  Staff requests. The two commands of SnBans a PLAYER runs.
+# ------------------------------------------------------------
+# /helpop <message> and /report <player> <message>: a player asking staff to
+# look at them, or at somebody else. Both go to the console and to holders of
+# snbans.requests.receive - a node of its own, so answering helpops can be a
+# job you grant separately from reading punishment notices - and they carry the
+# server the request was made ON.
+#
+# CROSS-SERVER, and that is the point of the feature. Several servers sharing
+# one MySQL means a /report filed on Survival reaches the moderators standing
+# on Skyblock, on the lobby and on the proxy within a few seconds, each of them
+# reading which server to go to. On SQLite there is nothing to share, so a
+# request is delivered to this server's staff and nowhere else. Nothing about
+# it is configurable: an install that cannot have peers has nothing to
+# configure about them, and the delivery table cleans up after itself.
+#
+# A muted player can still use both by default. That is deliberate - "why am I
+# muted" is the single most common legitimate helpop - and it is undone by
+# adding helpop and report to mute.blocked-commands above.
+#
+# Wording lives in the messages.request block of the lang file.
+#
+# Switching a kind off answers the player with messages.request.disabled; it
+# does NOT unregister the command. So if another plugin on your network already
+# owns /helpop or /report, deciding which of the two answers is your server's
+# job, not this key's: alias or remove the other one (on a backend Bukkit still
+# reaches it as /<plugin>:helpop, on a proxy the last registration wins).
+staff-requests:
+  # Let players ask staff for help with /helpop <message>.
+  helpop: true
+  # Let players report another player with /report <player> <message>. The name
+  # is resolved against the login history, so a typo answers "no player named
+  # ..." instead of filing a report about nobody.
+  report: true
+  # Seconds before the SAME player may file the SAME kind of request again,
+  # between 0 and 3600 (a value outside that range is clamped with a warning).
+  # /report is the first command of this plugin every player may run, and it
+  # reaches the staff of the whole network at once, so this is what decides
+  # whether it is a moderation tool or a way to write in staff chat. Unlike the
+  # attempt notices above, a player inside their window is TOLD how long is
+  # left - they typed a command, and silence reads as a broken server. 0
+  # accepts every request. The window is also how long one throttle entry is
+  # held in memory, which is why it has a ceiling.
+  cooldown-seconds: 60
 ```
 
 ## Notable settings
@@ -416,6 +474,26 @@ There is no public form of these notices and no webhook block for them: an attem
 
 {% hint style="warning" %}
 A notice reports the **decision** SnBans made, which is almost always the outcome but not always. Another plugin can allow a login SnBans denied, if it acts at a later event priority - an appeal or bypass plugin. And on a proxy-only install a 1.19.1+ signed chat message may be delivered even though the proxy denied it, which is the same caveat that makes backend installs the recommended path for mutes. In those two setups a notice can name an attempt that then succeeded.
+{% endhint %}
+
+### staff-requests
+
+The only section of this file about commands a **player** runs. Two toggles pick whether `/helpop` and `/report` exist at all, and one window decides how often the same player may use them.
+
+| Key | Does |
+|-----|------|
+| `helpop` | Let players ask staff for help with `/helpop <message>` |
+| `report` | Let players report another player with `/report <player> <message>` |
+| `cooldown-seconds` | Seconds before the SAME player may file the SAME kind of request again (default 60, range 0-3600) |
+
+`cooldown-seconds` is the key that matters. `/report` is the first command of this plugin every player may run, and it reaches the staff of the whole network at once, so the window is what decides whether it is a moderation tool or a way to write in staff chat. `0` accepts every request. A value outside the range is clamped with a console warning, exactly like `attempt-notices.cooldown-seconds`, and for the same reason: the window is also how long one throttle entry is held in memory.
+
+Unlike an attempt notice, a player inside their window is **told** how long is left. The two features throttle opposite things: an attempt notice throttles a message staff receive about somebody who asked for nothing, while this throttles a command a player deliberately typed - and silence there reads as a broken server, which is exactly what makes somebody type it again.
+
+Both notices carry the server the request was filed **on**, which on a proxy install is the backend the sender is standing on rather than the proxy. See [Commands](commands.md) for what they look like and how they cross servers.
+
+{% hint style="warning" %}
+Switching a kind off answers the player with `messages.request.disabled`; it does **not** unregister the command. So if another plugin on your network already owns `/helpop` or `/report`, deciding which of the two answers is your server's job - on a backend Bukkit still reaches the other one as `/<plugin>:helpop`, and on a proxy the last registration wins.
 {% endhint %}
 
 ### debug
@@ -875,10 +953,11 @@ On Velocity, a `lang` code naming a file that is neither bundled nor already in 
 |--------|-------|
 | `prefix` | The single value SnLib prepends to every single-line message. It ships as the SnBans brand tag. |
 | `snlib` | SnLib's shared command contract, 12 keys: permission, usage, number and value validation, out-of-range, number-too-small, player-not-found, unknown subcommand, reload confirmation, and the help header, entry and footer. |
-| `messages` (errors) | Refusals and errors: `console-only`, `unknown-player`, `hierarchy-denied`, `already-punished`, `not-punished`, `invalid-duration`, `internal-error`, `match-self`, `self-target`, `reload-busy`, plus `muted` and `muted-command` for a muted player. |
+| `messages` (errors) | Refusals and errors: `console-only`, `unknown-player`, `hierarchy-denied`, `already-punished`, `not-punished`, `invalid-duration`, `internal-error`, `match-self`, `self-target`, `reload-busy`, `player-only` (the inverse of `console-only`, sent only by `/helpop` and `/report`), plus `muted` and `muted-command` for a muted player. |
 | `messages.format` | The words other messages splice in as placeholder values: `permanent`, `no-template`, `no-reason`, `console`, the three `status-*` words behind `{status}`, the twelve `type-*` words behind `{type}`, and the four `wipe-*` plurals behind `{kind}`. `no-reason` is the odd one out: it is WRITTEN to the database as the reason of a punishment a `snbans.noreason` holder issued bare, so retranslating it changes what new punishments record and leaves the stored ones reading as they did. |
 | `messages.<event>` | One block per event (`ban`, `ipban`, `mute`, `ipmute`, `blacklist`, `unban`, `unmute`, `unblacklist`, `kick`, `ipkick`), each with `announce` for the public broadcast and `notify` for `snbans.notify` holders. Five carry `screen`, the disconnect screen the player sees: `ban`, `ipban` and `blacklist` because they deny a login, plus `kick` and `ipkick` because they disconnect somebody already in. `kick` additionally carries `not-online`, the answer when the target is not connected to this server. A kick block has no `{duration}`, `{id}`, `{template}` or `{status}` to render, since a kick has no length, no row, no ladder and no state; `{total}` is how many accounts an `ipkick` disconnected and is not available in a `screen`. |
 | `messages.attempt` | The three attempt notices of `attempt-notices`: `login`, `chat` and `command`. They share the audience of a `notify` block and are sent the same way, so they are lists and carry their own inline tag. `{player}` is the account that tried and `{server}` the server it tried against - neither is read off the punishment row, unlike every other block here. |
+| `messages.request` | The two staff requests plus the four lines their sender gets back: `helpop` and `report` are lists sent to `snbans.requests.receive` holders on every server of the network, and `sent`, `throttled`, `self` and `disabled` answer the player who typed the command. Two tokens are unique to this block - `{reported}`, the account a `/report` named (absent in the `helpop` line, which names nobody), and `{message}`, what the player typed. `{server}` is the server the request was filed on. |
 | `messages.alts` | The `/alts` listing and the join scan: `header`, `scan-header`, `legend`, `entry`, `none`, `footer` and the five `status-*` color prefixes behind `{color}`. |
 | `messages.history` and `messages.staffhistory` | The two paged listings: `header`, `entry` and a `footer` carrying the clickable page arrows. |
 | `messages.match` | The `/snbans match` listing: `header`, `entry`, `none` and `footer`. |
