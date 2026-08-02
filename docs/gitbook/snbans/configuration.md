@@ -114,10 +114,20 @@ api-events:
 #  Model. What a punishment is on this network.
 # ------------------------------------------------------------
 # Name of this server; stored on every punishment and shown as {server}.
-# MUST be unique per install: cross-server sync tells a peer's row from its own
-# by this name, so copying the same value to every backend silently disables
-# peer announcements. Also install SnBans on the backends OR the proxy, never
-# both, or every punishment is announced twice.
+#
+# GIVE EVERY BACKEND ITS OWN NAME (Lobby, Survival, Arena, ...). Two servers
+# sharing this value still deliver cross-server punishments correctly - those are
+# matched by row id, not by this name - but while they collide:
+#   - network presence breaks between them, so /alts stops knowing who is online
+#     where and the two wipe each other's rows out of the presence table;
+#   - /helpop and /report never reach the staff of the other one;
+#   - {server} names the wrong server in every message and every history line.
+# SnBans warns at boot while this is still the shipped default on a shared
+# database, and again if it ever reads a punishment written by another install
+# using this same name.
+#
+# Also install SnBans on the backends OR the proxy, never both, or every
+# punishment is announced twice.
 server-name: "Server"
 
 # Default scope and visibility of each punishment type.
@@ -341,7 +351,15 @@ The MySQL user needs CREATE, SELECT, INSERT, UPDATE and DELETE on the configured
 
 ### server-name
 
-Stored on every punishment and shown wherever `{server}` appears. It must be unique per install. Cross-server sync tells a peer's row from its own by this name, so the same value on every backend silently disables peer announcements.
+Stored on every punishment and shown wherever `{server}` appears. Give every install its own value.
+
+Cross-server **punishments** do not depend on it: since 1.8.2 the sync poller recognises the rows it wrote by row id, recorded inside the insert's own transaction, so bans, mutes and reverts propagate correctly even on a network whose backends all still call themselves `Server`. Three other things are still keyed by the name and have no id to fall back on, so they break between any two servers that share one:
+
+- **network presence**, so `/alts` stops knowing who is online where, and the two servers delete each other's rows out of the presence table;
+- **`/helpop` and `/report`**, which never reach the staff of the other server;
+- **`{server}`**, which names the wrong server in every message and every history line.
+
+SnBans reports the collision rather than leaving it silent: a throttled console warning the first time it reads a punishment written by another install using this server's name, and a boot warning while the value is still the shipped `"Server"` on a shared database.
 
 {% hint style="danger" %}
 Install SnBans on the backends or on the proxy, never both. Both halves announce the same event, so every punishment is announced twice.

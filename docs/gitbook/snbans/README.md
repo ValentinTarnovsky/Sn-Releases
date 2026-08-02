@@ -80,9 +80,11 @@ secure chat may not accept a chat message the proxy denies. Blocked commands, ba
 blacklists are enforced exactly on either deployment.
 {% endhint %}
 
-Give each backend its own `server-name`. It is what `{server}` resolves to, and it is how the sync
-poller tells a peer's row from its own. Copying the default name to every backend silently disables
-peer announcements.
+Give each backend its own `server-name`. It is what `{server}` resolves to, it is what network
+presence is keyed by, and it is how `/helpop` and `/report` reach the staff of the other servers.
+Cross-server punishments themselves no longer depend on it - since 1.8.2 the sync poller recognises
+its own rows by row id - and SnBans warns when it detects two servers sharing a name, but the three
+things above still break between them until each one is renamed.
 
 Two behaviors differ by platform. `/snbans debug` and the `snbans.admin.debug` node are Paper only,
 with no proxy counterpart. `command.aliases` is re-sourced on `/snbans reload` on both, but the proxy

@@ -27,7 +27,7 @@ SnBans declares no `folia-supported` key, so it is not Folia compatible.
 | Velocity proxy | `plugins/` of the proxy | SQLite works standalone | Logins, chat and commands are enforced at the proxy |
 
 {% hint style="danger" %}
-Install SnBans on your backends or on your proxy, never on both. With both halves installed every punishment is announced twice, once by the backend and once by the proxy. On a shared MySQL a copied `server-name` also stops the sync poller from telling a peer's row from its own.
+Install SnBans on your backends or on your proxy, never on both. With both halves installed every punishment is announced twice, once by the backend and once by the proxy.
 {% endhint %}
 
 {% hint style="warning" %}
@@ -46,7 +46,7 @@ Backend installs stay the recommended path for **mutes**. Clients from 1.19.1 on
 8. Restart the backends and read the boot log of each, as described below.
 
 {% hint style="info" %}
-`server-name` must be unique per install. Cross-server sync tells a peer's row from its own by this name, so leaving the shipped `"Server"` on every backend silently disables peer announcements. It is also what the `{server}` placeholder resolves to.
+Do not skip the `server-name` on step 6. Punishments still sync correctly without it - the poller matches its own rows by row id since 1.8.2, and it warns when it sees two servers sharing a name - but network presence (`/alts` knowing who is online where), `/helpop`, `/report` and the `{server}` placeholder are all keyed by that name and break between any two backends that share one. SnBans warns at boot while the value is still the shipped `"Server"` on a shared database.
 {% endhint %}
 
 {% hint style="warning" %}
