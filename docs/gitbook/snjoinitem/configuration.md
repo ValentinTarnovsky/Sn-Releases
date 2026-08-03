@@ -264,15 +264,13 @@ inventory path binds it; SnLib builds the world-click context itself and binds n
 
 #### Declare both sides
 
-The item is clickable from two surfaces - in the world and inside an open inventory - and they do not
-behave identically when only one list is declared:
+The two sides never cross. A right click runs `right-click-actions` and a left click runs
+`left-click-actions`, and neither ever falls back to the other, in the world or inside an open
+inventory. Declare only one side and the opposite click does nothing at all, on both surfaces, with
+nothing logged.
 
-- An **inventory** click falls back to the other side's list (kept for compatibility with 1.x, where
-  a single `command:` ran on every use-click).
-- A **world** click does not fall back and simply does nothing.
-
-Declaring both `right-click-actions` and `left-click-actions` avoids the asymmetry. Declaring them
-with different contents is fine and fully supported - each click then runs its own list on both
+Declare both `right-click-actions` and `left-click-actions` if both clicks have to act. Declaring
+them with different contents is fine and fully supported - each click then runs its own list on both
 surfaces.
 
 Not every click reaches these lists either. Middle click, drop, number keys, off-hand swap and double

@@ -173,8 +173,9 @@ Yes. `right-click-actions` and `left-click-actions` are separate lists, and you 
 the click is shifted. Both surfaces honour all four.
 
 {% hint style="danger" %}
-Declare **both** base lists. Declaring only one makes the two surfaces disagree: an inventory
-click falls back to the other side's list, a world click does not and simply does nothing.
+The two sides never cross. Declare only `right-click-actions` and a left click does nothing at
+all, in the world and inside an inventory alike, with nothing logged. Declare **both** base lists
+if both clicks have to act.
 {% endhint %}
 
 ### The slot I picked already has something in it.

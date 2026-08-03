@@ -60,7 +60,6 @@
 * [Commands](snjoinitem/commands.md)
 * [Permissions](snjoinitem/permissions.md)
 * [Configuration](snjoinitem/configuration.md)
-* [Migrating from 1.x](snjoinitem/migration.md)
 * [FAQ](snjoinitem/faq.md)
 
 ## SnKillEffects
