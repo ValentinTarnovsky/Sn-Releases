@@ -111,3 +111,13 @@
 * [Permissions](snrtp/permissions.md)
 * [Configuration](snrtp/configuration.md)
 * [FAQ](snrtp/faq.md)
+
+## SnSimpleVouchers
+
+* [Overview](snsimplevouchers/README.md)
+* [Installation](snsimplevouchers/installation.md)
+* [Commands](snsimplevouchers/commands.md)
+* [Permissions](snsimplevouchers/permissions.md)
+* [Configuration](snsimplevouchers/configuration.md)
+* [Migrating from 1.x](snsimplevouchers/migration.md)
+* [FAQ](snsimplevouchers/faq.md)
