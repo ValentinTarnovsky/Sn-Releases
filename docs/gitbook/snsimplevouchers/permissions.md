@@ -28,9 +28,3 @@ To give a helper rank partial access, grant the parent and negate what you want 
 ```
 
 That rank can browse `/voucher open` but cannot hand anything out, from the command **or** from the menu.
-
-## Upgrading from 1.x
-
-`snsimplevouchers.admin` still grants everything, because every new node is declared as its child. A group that had the old single node keeps working with no changes.
-
-What did change: in v1.4.3 the command itself was ungated, so ordinary players could run `/voucher` and saw `reload`, `open` and `give` in tab completion. They no longer can. If any non-staff rank relied on reaching the command, grant it `snsimplevouchers.admin` explicitly.

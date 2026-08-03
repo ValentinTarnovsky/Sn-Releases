@@ -23,7 +23,3 @@ Crate keys, money notes, rank vouchers, seasonal reward drops. Anything you woul
 ## Requirements
 
 Java 21+, Paper 1.20.x or 1.21.x, **SnLib**, and a valid licence key. PlaceholderAPI is optional and only needed if you use `condition:`.
-
-{% hint style="warning" %}
-Upgrading from SnSimpleVouchers 1.x? Read [Migrating from 1.x](migration.md) first. v2.0.0 is a rebuild: the config and language layouts both change, `/voucher` now needs a permission, and SnLib is required. Your voucher files and every voucher item already in a player's inventory carry over untouched.
-{% endhint %}

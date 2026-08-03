@@ -25,10 +25,6 @@ Put `SnLib.jar` in `plugins/` and restart. It is a hard dependency.
 
 Read the console. Every load failure names the voucher id. Common causes: no `item:` section, no `item.material`, an empty `commands:` list, or a material that cannot exist as an item such as `AIR`.
 
-## I set `enabled: "false"` and the voucher is still live
-
-You quoted it. In 1.x quoted booleans were ignored entirely, so the voucher stayed live. v2.0.0 parses them and warns. Write `enabled: false` unquoted.
-
 ## Clicking one voucher consumed others I did not click
 
 That is `bulk.aggregate-by-category`, which ships **on**. A bulk claim also consumes vouchers of other ids in the same category folder when they declare the exact same reward list, and pays the summed total in one command. No value is lost.
@@ -66,6 +62,6 @@ That was possible before v2.0.0, when the menu performed a give with no permissi
 
 Every message gets the same five placeholders: `{voucher}` `{category}` `{amount}` `{count}` `{player}`. If one renders literally, the key is misspelled in your language file. To disable a message entirely, blank its value - a missing key renders a visible marker instead.
 
-## Will updating reset my config again?
+## Will updating reset my config?
 
-No. That was the `config-version` behaviour of 1.x, and v2.0.0 removed it. New keys merge in while your values and comments are preserved. The move to v2.0.0 is the last time it happens.
+No. New keys merge in while your values and comments are preserved.
