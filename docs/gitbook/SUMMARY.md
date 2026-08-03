@@ -53,6 +53,16 @@
 * [Developer API](snelementalgems/api.md)
 * [FAQ](snelementalgems/faq.md)
 
+## SnJoinItem
+
+* [Overview](snjoinitem/README.md)
+* [Installation](snjoinitem/installation.md)
+* [Commands](snjoinitem/commands.md)
+* [Permissions](snjoinitem/permissions.md)
+* [Configuration](snjoinitem/configuration.md)
+* [Migrating from 1.x](snjoinitem/migration.md)
+* [FAQ](snjoinitem/faq.md)
+
 ## SnKillEffects
 
 * [Overview](snkilleffects/README.md)
