@@ -62,6 +62,20 @@ Everything else in 1.x `config.yml` was regrouped:
 | - | `update-configs` **(new)** - master gate for the key merge above |
 | - | `command.aliases` **(new)** - extra aliases for `/joinitem` |
 
+{% hint style="info" %}
+**From 2.0.1 the old flat keys still work.** If any of `give-on-join`, `give-delay-ticks`,
+`restore-interval-ticks`, `worlds` or `item.slot` is still present, the plugin reads it and
+logs which keys it is honouring and what to rename them to. This exists so an upgrade cannot
+silently revert your settings - in 2.0.0 it could, and `worlds: [lobby]` quietly became every
+world. Move each value to its new key and delete the old one; until you do, edits to the new
+keys have no effect.
+
+This does **not** cover the item's own settings. `material`, `name`, `lore`, `model-data`,
+`glow`, `hide-flags`, `unbreakable`, `command` and `command-cooldown-ms` live in `items.yml`
+now, a file 1.x never had, and nothing migrates them. A customised join item comes back as the
+default compass until you re-apply it by hand - see section 4.
+{% endhint %}
+
 ### `config-version` is gone
 
 1.x used a version number to decide when your file was outdated, and an outdated file was
