@@ -117,3 +117,13 @@
 * [Permissions](snsimplevouchers/permissions.md)
 * [Configuration](snsimplevouchers/configuration.md)
 * [FAQ](snsimplevouchers/faq.md)
+
+## SnTags
+
+* [Overview](sntags/README.md)
+* [Installation](sntags/installation.md)
+* [Commands](sntags/commands.md)
+* [Permissions](sntags/permissions.md)
+* [Configuration](sntags/configuration.md)
+* [Placeholders](sntags/placeholders.md)
+* [FAQ](sntags/faq.md)
