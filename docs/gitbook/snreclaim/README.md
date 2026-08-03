@@ -30,9 +30,3 @@ things out by hand.
 
 Java 21+, Paper 1.20.4+, **SnLib**, **Vault** and a groups-based permissions plugin such
 as LuckPerms. PlaceholderAPI is optional.
-
-{% hint style="warning" %}
-Upgrading from SnReclaim 1.x? Read [Migrating from 1.x](migration.md) first - the
-permission nodes and the config layout both changed, and a season lock will silently lift
-if you skip it.
-{% endhint %}

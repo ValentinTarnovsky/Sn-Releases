@@ -26,12 +26,6 @@ Three causes, all of which print a clear console line:
 - **No SnLib.** `SnLib.jar` must be in `plugins/`.
 - **License.** The key goes in the shared `plugins/.Sn-License/license.yml`.
 
-### I updated from 1.x and the season lock came off by itself.
-
-Known and documented - see [Migrating from 1.x](migration.md). Your old `settings:` block
-is still on disk but is no longer read, so `redeem.enabled` started at its default of
-`true`. The plugin prints a warning block naming every stale key at boot.
-
 ### Can I give one rank's reclaim back without wiping the rest?
 
 No. `/reclaim reset` is all-or-nothing. If you need per-rank surgery, delete that row from

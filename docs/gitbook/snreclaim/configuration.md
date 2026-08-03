@@ -85,5 +85,5 @@ database:
   file: data.db
 ```
 
-`file: data.db` is deliberate: it is the same file SnReclaim 1.x used, so existing claims
-carry over. Changing it starts everyone from scratch.
+`file: data.db` holds every claim ever made. Changing it starts from an empty table, so
+everyone can claim again.
