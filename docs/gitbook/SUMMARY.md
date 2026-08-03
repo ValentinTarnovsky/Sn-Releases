@@ -63,6 +63,16 @@
 * [Placeholders](snkilleffects/placeholders.md)
 * [FAQ](snkilleffects/faq.md)
 
+## SnKills
+
+* [Overview](snkills/README.md)
+* [Installation](snkills/installation.md)
+* [Commands](snkills/commands.md)
+* [Permissions](snkills/permissions.md)
+* [Configuration](snkills/configuration.md)
+* [Migrating from 1.x](snkills/migration.md)
+* [FAQ](snkills/faq.md)
+
 ## SnMiniGames
 
 * [Overview](snminigames/README.md)
