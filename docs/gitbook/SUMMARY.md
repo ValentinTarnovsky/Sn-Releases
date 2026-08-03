@@ -83,6 +83,16 @@
 * [Placeholders](snminigames/placeholders.md)
 * [FAQ](snminigames/faq.md)
 
+## SnReclaim
+
+* [Overview](snreclaim/README.md)
+* [Installation](snreclaim/installation.md)
+* [Commands](snreclaim/commands.md)
+* [Permissions](snreclaim/permissions.md)
+* [Configuration](snreclaim/configuration.md)
+* [Migrating from 1.x](snreclaim/migration.md)
+* [FAQ](snreclaim/faq.md)
+
 ## SnRTP
 
 * [Overview](snrtp/README.md)
