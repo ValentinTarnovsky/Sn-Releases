@@ -822,6 +822,199 @@ sounds:
   win: "UI_TOAST_CHALLENGE_COMPLETE 1.0 1.0"
 ```
 
+## games/fastmine.yml
+
+{% hint style="warning" %}
+`blocks` is not just "what the column is made of" - it is also the restriction burned onto the five tools, because players are in adventure mode and a client refuses to dig a block its item does not declare. A map whose palette has no usable entry therefore refuses to start rather than falling back to anything, and says so in the log: unlike Spleef's floor, a silent fallback here would hide the typo behind a race that plays fine with the wrong blocks.
+{% endhint %}
+
+{% hint style="info" %}
+There is no `region` and no `start-spawn`: a FastMine arena is generated, not built. `shafts` is the whole layout, and its length is the map's capacity - the queue fills and starts at that many players however high `queue.max-players` is set. Keep `queue.min-players` at or below the shaft count or the round can never start on its own.
+{% endhint %}
+
+{% hint style="info" %}
+Keep `leave-item.slot` at **8**: slots 0-4 are the kit. If they collide the tools shift one slot right rather than overwrite your way out of the round.
+{% endhint %}
+
+```yaml
+# ============================================================
+#  SnMiniGames - FastMine game
+#  Seeded once by SnLib and NEVER auto-merged: your structure and values
+#  are kept. The setup commands (/minigames admin fastmine ...) write maps
+#  back into this file.
+# ============================================================
+
+# Whether the FastMine game is active. When false it is not registered:
+# it will not appear in /minigames list, /minigames join or PlaceholderAPI.
+enabled: true
+
+# Display name of the game, shown wherever {game} appears. Supports color
+# codes and the full SnLib text pipeline.
+display-name: "&#8ce05a&lFastMine"
+
+# ------------------------------------------------------------
+#  Queue and round staging (shared framework settings).
+# ------------------------------------------------------------
+queue:
+  # Seconds between automatic rounds. 0 disables auto-start (rounds then open
+  # only via /minigames admin start fastmine).
+  auto-start-interval: 120
+  # Seconds the queue stays open before the round begins.
+  countdown: 30
+  # Minimum queued players for the round to begin; below this at countdown end
+  # the round is cancelled. A map with FEWER SHAFTS than this can never start,
+  # so the round aborts at once and says so in the console.
+  min-players: 2
+  # Maximum queued players. FastMine also has a hard limit of its own: a map
+  # seats exactly as many players as it has shafts, and the smaller of the two
+  # wins - so a 4-shaft map fills at 4 and starts there, whatever this says.
+  max-players: 12
+  # Broadcast the "starts in" line every N seconds while the queue counts down.
+  announce-interval: 10
+  # Mini-lobby players are teleported to while they wait (world;x;y;z;yaw;pitch).
+  # Set it in-game with /minigames admin fastmine setwaiting <map>.
+  waiting-spawn: ""
+  # Seconds a player must wait before rejoining after leaving or losing. 0 = none.
+  rejoin-cooldown: 15
+
+# ------------------------------------------------------------
+#  Join gate.
+# ------------------------------------------------------------
+join:
+  # Require an empty inventory, armor and hands to join (prevents item smuggling).
+  require-empty-inventory: true
+
+# ------------------------------------------------------------
+#  Start countdown (the 3-2-1 GO freeze before the round).
+#  Players are already sealed in their shafts while it runs, and nobody can
+#  mine until it reaches GO.
+# ------------------------------------------------------------
+start-countdown:
+  # Seconds of the pre-round freeze. 0 skips the freeze.
+  seconds: 3
+
+# ------------------------------------------------------------
+#  Leave item (hotbar item that leaves the round on right-click).
+#  Material and name are framework-level and live in config.yml under
+#  leave-item; here you only choose whether this game hands it out and where.
+#  Keep the slot at 8: slots 0-4 are where the five tools go, and the kit
+#  shifts right to avoid this one.
+# ------------------------------------------------------------
+leave-item:
+  # Whether to give the leave item while in the round.
+  enabled: true
+  # Hotbar slot (0-8) the leave item occupies.
+  slot: 8
+
+# ------------------------------------------------------------
+#  Map rotation across rounds: RANDOM (a random map each round) or
+#  SEQUENTIAL (maps picked in file order).
+# ------------------------------------------------------------
+map-rotation: RANDOM
+
+# ------------------------------------------------------------
+#  The kit (game-level: every map shares it).
+# ------------------------------------------------------------
+# Tier of the five tools handed out at hotbar slots 0-4: a pickaxe, an axe,
+# a shovel, a hoe and a sword, all unbreakable. Mining runs at normal vanilla
+# speed, so the tier IS the pace of the race.
+# One of: WOODEN, STONE, IRON, GOLDEN, DIAMOND, NETHERITE.
+# The tools are automatically restricted to each map's blocks palette, which
+# is what lets them dig at all: players are in adventure mode, where a client
+# sends no dig packet for a block its item does not declare.
+tool-tier: DIAMOND
+
+# Haste level granted for the whole round (1 = Haste I), 0-3. 0 = off, which
+# is the default: the race is meant to be won by picking the right tool, not
+# by out-hasting the block.
+haste-level: 0
+
+# Where each player sees their OWN progress: ACTIONBAR (a line above the
+# hotbar) or BOSSBAR (a bar that fills as their column empties). Each player
+# only ever sees their own.
+counter-display: ACTIONBAR
+
+# ------------------------------------------------------------
+#  Maps. Each entry is one FastMine arena, created in-game with
+#  /minigames admin fastmine create <name>.
+#
+#  There is NO region and NO start spawn here, because nothing is built by
+#  hand: you stand where a shaft belongs and run
+#    /minigames admin fastmine addshaft <map>
+#  and the round GENERATES the 3x3 casing, the landing floor and a fresh
+#  random column at start - then puts every block back exactly as it was when
+#  the round ends, on /minigames reload and on server shutdown.
+#
+#  The map seats EXACTLY as many players as it has shafts.
+#  Also: delete <map>, list, removeshaft, shafts, setwaiting, setend,
+#  setdepth, setcasing, settimelimit.
+#    Full command list: /minigames admin fastmine help
+# ------------------------------------------------------------
+maps:
+  arena1:
+    # Where each player is sealed in for the race (world;x;y;z;yaw;pitch).
+    # Add them with addshaft while standing on the spot; keep shafts at least
+    # 2 blocks apart (addshaft refuses anything closer - at a gap of 1 the
+    # neighbour's wall would be built through this shaft's column).
+    shafts: []
+    # Blocks in each player's column, which is also how deep the shaft is dug.
+    depth: 15
+    # The column palette: material -> weight. Each cell of each player's column
+    # is rolled INDEPENDENTLY from this table, so no two races are the same.
+    # Weights are plain positive integers and need not add up to anything.
+    # This list is ALSO the tools' can-destroy restriction, so it can never be
+    # empty - a map with no usable entry refuses to start. Pick materials the
+    # kit can actually mine; the defaults below give each of the five tools
+    # something it is the right answer to.
+    # Edit it here and run /minigames reload.
+    blocks:
+      STONE: 40
+      OAK_LOG: 20
+      DIRT: 20
+      HAY_BLOCK: 10
+      COBWEB: 10
+    # The 3x3 shaft wall and the floor the winner lands on. Glass keeps the
+    # race visible to everyone watching.
+    casing-material: GLASS
+    # Maximum round length in seconds; 0 disables the limit. When it runs out
+    # nobody wins and everyone is ranked by blocks mined.
+    time-limit: 300
+    # Where players are teleported when the round ends. Leave blank to send
+    # each player back to where they were before joining.
+    end-teleport: ""
+    # Rewards by finish position (1 = the winner). Each position is a list of
+    # action strings run for that finisher, with placeholders {player},
+    # {position}, {game} and {map}. Rewards do NOT fire for a player who left
+    # before the round ended (offline finishers are skipped).
+    # Use CONSOLE/economy actions, not [give]: rewards run while the player is
+    # still in the round, so the pre-game inventory restore right afterwards
+    # would wipe any item handed out here.
+    # Positions below the winner are ranked by blocks mined, and a tie goes to
+    # whoever reached that count first.
+    rewards:
+      1:
+        - "[console] eco give {player} 1000"
+        - "[broadcastmessage] &a{player}&a won FastMine!"
+      2:
+        - "[console] eco give {player} 500"
+      3:
+        - "[console] eco give {player} 250"
+
+# ------------------------------------------------------------
+#  Sounds for FastMine events. Format: "SOUND_ID [volume] [pitch]"
+#  (blank or "none" = silent). The 3-2-1 start countdown sound is
+#  configured globally in config.yml (queue.countdown-sound).
+# ------------------------------------------------------------
+sounds:
+  # Played when a player joins the FastMine queue.
+  join: "ENTITY_EXPERIENCE_ORB_PICKUP 1.0 1.0"
+  # Played at each block a player mines. Blank by default on purpose: vanilla
+  # already plays the block's own break sound, and a race is a lot of breaks.
+  break: ""
+  # Played to the winner when the round ends.
+  win: "UI_TOAST_CHALLENGE_COMPLETE 1.0 1.0"
+```
+
 ## lang/messages_en.yml
 
 ```yaml

@@ -85,16 +85,32 @@ than one line per subcommand. The setup commands still run and still tab-complet
 | `/mg admin spleef setmeltrate <map> <n>` | `snminigames.admin.setup` | Set how many random floor blocks the melt takes per second (1-64) |
 | `/mg admin spleef setwinners <map> <n>` | `snminigames.admin.setup` | Set how many survivors end the round |
 | `/mg admin spleef settimelimit <map> <s>` | `snminigames.admin.setup` | Set the round time limit (0 disables it) |
+| `/mg admin fastmine help [page]` | `snminigames.admin.setup` | List every FastMine setup command with its usage, paginated |
+| `/mg admin fastmine create <name>` | `snminigames.admin.setup` | Create a new FastMine map |
+| `/mg admin fastmine delete <map>` | `snminigames.admin.setup` | Delete a map (not while a round plays it) |
+| `/mg admin fastmine list` | `snminigames.admin.setup` | List maps with their shaft count, depth and palette size |
+| `/mg admin fastmine addshaft <map>` | `snminigames.admin.setup` | Mark a shaft where you stand - one per player slot. Refused within one block of an existing shaft: a shaft is a 3x3 footprint |
+| `/mg admin fastmine removeshaft <map> <index>` | `snminigames.admin.setup` | Remove a shaft by its number (1-based, as shown by `shafts`) |
+| `/mg admin fastmine shafts <map>` | `snminigames.admin.setup` | List the marked shafts with their positions |
+| `/mg admin fastmine setwaiting <map>` | `snminigames.admin.setup` | Set the queue waiting lobby to where you stand |
+| `/mg admin fastmine setend <map>` | `snminigames.admin.setup` | Set the end teleport to where you stand |
+| `/mg admin fastmine setdepth <map> <blocks>` | `snminigames.admin.setup` | Set how many blocks each column holds, which is also how deep the shaft is dug (1-64) |
+| `/mg admin fastmine setcasing <map> <material>` | `snminigames.admin.setup` | Set the shaft wall and landing floor material (glass keeps the race watchable) |
+| `/mg admin fastmine settimelimit <map> <s>` | `snminigames.admin.setup` | Set the round time limit (0 disables it) |
 | `/mg reload` | `snminigames.admin.reload` | Reload configuration |
 
 {% hint style="info" %}
-Each game hides its setup commands behind its own `help` leaf, so `/mg help` stays short: it shows one line per game (`/mg admin tntrun help`, `/mg admin tnttag help`, `/mg admin spleef help`) instead of one line per subcommand. The hidden leaves still tab-complete.
+Each game hides its setup commands behind its own `help` leaf, so `/mg help` stays short: it shows one line per game (`/mg admin tntrun help`, `/mg admin tnttag help`, `/mg admin spleef help`, `/mg admin fastmine help`) instead of one line per subcommand. The hidden leaves still tab-complete.
 {% endhint %}
 
 {% hint style="info" %}
-Spleef's floor materials have **no** subcommand: `removable-materials` is a list, so edit it in `games/spleef.yml` and run `/mg reload`. That list is also what the shovel is allowed to break, which is why it can never be empty.
+Spleef's floor materials have **no** subcommand: `removable-materials` is a list, so edit it in `games/spleef.yml` and run `/mg reload`. That list is also what the shovel is allowed to break, which is why it can never be empty. FastMine's `blocks` palette works the same way for the same reason - edit it in `games/fastmine.yml` and reload.
+{% endhint %}
+
+{% hint style="info" %}
+FastMine has no `setregion` and no `setstart`: its arena is generated, not built. `addshaft` is the whole setup - one shaft per player slot - and the map then seats exactly that many players.
 {% endhint %}
 
 {% hint style="danger" %}
-These commands are destructive and cannot be undone: `/mg admin parkour delete`, `/mg admin parkour clearwaypoints`, `/mg admin tntrun delete`, `/mg admin tnttag delete`, `/mg admin spleef delete`.
+These commands are destructive and cannot be undone: `/mg admin parkour delete`, `/mg admin parkour clearwaypoints`, `/mg admin tntrun delete`, `/mg admin tnttag delete`, `/mg admin spleef delete`, `/mg admin fastmine delete`, `/mg admin fastmine removeshaft`.
 {% endhint %}

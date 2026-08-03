@@ -1,7 +1,7 @@
 # FAQ
 
 ### How do I update SnMiniGames?
-Download the newer `snminigames-v*` release and replace the jar. Update SnLib first if the release notes ask for a newer version. Configs auto-merge on restart; the per-game files (`games/parkour.yml`, `games/tntrun.yml`, `games/tnttag.yml`, `games/spleef.yml`) are never touched.
+Download the newer `snminigames-v*` release and replace the jar. Update SnLib first if the release notes ask for a newer version. Configs auto-merge on restart; the per-game files (`games/parkour.yml`, `games/tntrun.yml`, `games/tnttag.yml`, `games/spleef.yml`, `games/fastmine.yml`) are never touched.
 
 ### Why are the map setup commands missing from `/mg help`?
 They are hidden from the root help on purpose. Every minigame ships its own set of setup commands, so listing them all would make `/mg help` unreadable once several games are installed. Each game exposes one entry instead, `/mg admin <game> help`, which lists that game's commands on its own page. The commands themselves are unchanged: they still run, and they still tab-complete under `/mg admin <game> `.
@@ -20,6 +20,24 @@ Create it with `/mg admin tnttag create <name>`. Get the cuboid wand with `/mg a
 
 ### How do I build a Spleef arena?
 Create it with `/mg admin spleef create <name>`. Get the cuboid wand with `/mg admin wand region`, left-click one corner and right-click the opposite one, then run `/mg admin spleef setregion <map>`. Select the snow floor **and the headroom above it**: the region is what may be broken, and it is also the area the melt picks from. Stand on the floor and run `setstart <map>` - the start spawn must be in the region's world and over the arena's footprint, or the plugin refuses to open the round and logs why rather than dropping everyone into the void. Stand in the mini-lobby and run `setwaiting <map>`, and set the elimination height with `setelimy <map> <y>`. `/mg admin spleef help` lists the rest (`setsnowballs`, `setmeltstart`, `setmeltrate`, `setwinners`, `settimelimit`, `setend`).
+
+### How do I build a FastMine arena?
+You do not build one - you mark it. Create the map with `/mg admin fastmine create <name>`, then stand where a player should race and run `/mg admin fastmine addshaft <map>`, once per player slot. There is no region wand and no `setstart`: the round generates the 3x3 glass casing, the landing floor and each player's column when it starts, and restores every block when it ends. Stand in the mini-lobby and run `setwaiting <map>`. `/mg admin fastmine help` lists the rest (`shafts`, `removeshaft`, `setdepth`, `setcasing`, `settimelimit`, `setend`). Leave `depth` blocks of clear space below each shaft, and remember that whatever is there is generated over and put back afterwards.
+
+### How many players fit in a FastMine map?
+Exactly as many shafts as you marked. That is the map's capacity, so the queue refuses the next player with the "full" message and the room starts as soon as those slots are filled - it does not sit out the rest of the countdown. `queue.max-players` still applies as an upper bound, so the smaller of the two wins. Keep `queue.min-players` at or below your shaft count, otherwise the round can never start on its own: the room fills below the minimum and cancels at countdown zero, every time.
+
+### `addshaft` says my spot is too close. Why?
+A shaft is a 3x3 footprint - the player's column plus the wall around it - so two shafts one block apart would have one's wall built straight through the other's column, producing an arena nobody can play. Two blocks apart is the minimum and is perfectly fine: the shafts simply share a wall, which is the tightest sensible layout.
+
+### Nobody can mine in my FastMine round. Why?
+Almost always the palette. `blocks` in `games/fastmine.yml` is both what the columns are built from and what the five tools are allowed to break, so a map whose palette has no usable entry refuses to start and logs why. Check that every material you listed is a real block name and carries a positive weight; unknown or zero-weight entries are skipped with a warning. Also make sure the materials can actually be mined by one of the five tools handed out (pickaxe, axe, shovel, hoe, sword) - bedrock or barrier blocks would simply never break. If the log carries a line about the server refusing the can-destroy restriction, report your server version: without it the client sends no dig packet at all, because players in a round are in adventure mode.
+
+### Can I make FastMine faster or slower?
+Three knobs, all in `games/fastmine.yml`. `tool-tier` sets the tier of all five tools (`WOODEN` through `NETHERITE`, `DIAMOND` by default) and is the main pace control. `haste-level` (0-3, off by default) adds a mining-speed effect for the whole round. `depth` per map sets how many blocks the column holds. The palette matters too: heavier weights on `STONE` make a slower race than heavier weights on `DIRT`.
+
+### Does FastMine damage my world?
+No. Every block the round generates over - the casing, the two cells the player stands in and the whole column - is recorded with its original state before it is touched, and put back when the round ends, when you run `/mg reload`, and when the server shuts down with a round still live. Only the cells around your marked shafts are ever touched, and the depth clamp (64) bounds how far down that reaches.
 
 ### The Spleef block breaks, comes back and breaks again. Is my server lagging?
 No, and it is fixed in **v1.9.1** - update the jar. Nothing was ever wrong with the world; the client was told twice. Your client draws the break the instant you click and then waits for the server to confirm it, and because the plugin cancelled that click the server answered "the block is still there" a moment before the plugin's own removal arrived. The interact is now left alone for a legitimate dig and the empty block is confirmed to the digger immediately, so the break is drawn once. Snowball and melt breaks never had this - only the block you click yourself is predicted by your client.
@@ -90,7 +108,9 @@ No. Movement is frozen at the start point until the GO title: every move that ch
 Nothing is lost. The full player state is written to disk before the game touches it, and it restores on the next start or when the player reconnects.
 
 ### Can more than one player win?
-Yes. In Parkour, set `winners` above 1 on a map: each finisher waits frozen at the `finish-hold` spot until enough players finish or the time limit ends the round. In TNT Run and TNT Tag, `winners` is the number of players still standing that ends the round; all of them are announced as winners. Note that neither of those two has a score to rank survivors by, so with `winners` above 1 their relative positions are stable but not earned - keep the reward difference between those positions small, or leave `winners` at 1.
+Yes, in four of the five games. In Parkour, set `winners` above 1 on a map: each finisher waits frozen at the `finish-hold` spot until enough players finish or the time limit ends the round. In TNT Run, TNT Tag and Spleef, `winners` is the number of players still standing that ends the round; all of them are announced as winners. Note that none of those three has a score to rank survivors by, so with `winners` above 1 their relative positions are stable but not earned - keep the reward difference between those positions small, or leave `winners` at 1.
+
+FastMine deliberately has no `winners` key: exactly one player can clear their column first. Everyone else is ranked by blocks mined, with an earlier finish winning a tie, so the rest of the podium is earned rather than arbitrary - and the `rewards` positions below 1 are the ones worth tuning there.
 
 ### Does it support Folia?
 No, SnMiniGames targets Paper 1.20.x and 1.21.x.
