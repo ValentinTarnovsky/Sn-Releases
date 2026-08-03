@@ -6,7 +6,7 @@ All placeholders require [PlaceholderAPI](https://www.spigotmc.org/resources/pla
 |-------------|-------------|
 | `%snminigames_state_<game>%` | Round state: `waiting`, `starting`, `running`, `ending` or `idle` |
 | `%snminigames_queue_<game>%` | Live participant count of the round |
-| `%snminigames_max_<game>%` | Configured maximum players |
+| `%snminigames_max_<game>%` | How many players the room holds: `queue.max-players`, lowered to the live round's own limit when that is smaller (FastMine seats one player per shaft). With no round running it is the configured value, which is always the upper bound |
 | `%snminigames_countdown_<game>%` | Seconds left in the queue countdown |
 | `%snminigames_map_<game>%` | Id of the map the current round plays |
 | `%snminigames_ingame%` | `yes` or `no` for the viewing player |
