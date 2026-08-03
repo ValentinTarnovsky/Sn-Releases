@@ -7,8 +7,8 @@
 4. Paste your Sn bundle key on the first non-comment line of that file and restart again.
 
 {% hint style="warning" %}
-Requires **SnLib** installed (`depend: [SnLib]`), version 1.20.3 or later. SnKills 2.0.0 needs
-API level 12 and disables itself with a console notice on an older SnLib, so update both jars
+Requires **SnLib** installed (`depend: [SnLib]`), version 1.20.3 or later. SnKills needs API
+level 12 and disables itself with a console notice on an older SnLib, so update both jars
 together.
 {% endhint %}
 
