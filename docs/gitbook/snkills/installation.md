@@ -12,12 +12,6 @@ API level 12 and disables itself with a console notice on an older SnLib, so upd
 together.
 {% endhint %}
 
-{% hint style="danger" %}
-Upgrading from SnKills 1.x? The config, the language file and the permission nodes all
-changed. Read [Migrating from 1.x](migration.md) **before** you restart - one of the changes
-silently removes `/snkills reload` from your staff ranks.
-{% endhint %}
-
 ## License
 
 SnKills is part of the Sn **bundle**: one subscription key unlocks every plugin in the pack.

@@ -12,10 +12,3 @@ grants the whole set.
 
 There is no player-side node. SnKills has nothing a player can run - the death messages
 themselves are broadcast to everyone regardless of permissions.
-
-{% hint style="danger" %}
-**Upgrading from 1.x:** the nodes changed. `snkills.use` and the `snkills.*` wildcard are
-gone, and `snkills.reload` is now `snkills.admin.reload`. A staff rank granted the old nodes
-silently loses `/snkills reload` - update your groups **before** you restart. See
-[Migrating from 1.x](migration.md).
-{% endhint %}

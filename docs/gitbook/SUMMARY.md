@@ -80,7 +80,6 @@
 * [Commands](snkills/commands.md)
 * [Permissions](snkills/permissions.md)
 * [Configuration](snkills/configuration.md)
-* [Migrating from 1.x](snkills/migration.md)
 * [FAQ](snkills/faq.md)
 
 ## SnMiniGames
@@ -119,5 +118,4 @@
 * [Commands](snsimplevouchers/commands.md)
 * [Permissions](snsimplevouchers/permissions.md)
 * [Configuration](snsimplevouchers/configuration.md)
-* [Migrating from 1.x](snsimplevouchers/migration.md)
 * [FAQ](snsimplevouchers/faq.md)

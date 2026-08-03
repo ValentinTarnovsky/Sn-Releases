@@ -10,7 +10,7 @@ Check, in order:
 1. Is `death-messages.FALLBACK` filled in? If it is empty and the cause's own entry is empty,
    that death is silent by design. SnKills logs one line at boot when this is the case.
 2. Did the console name a key at boot? A key that matches no damage cause is reported by name.
-   A typo there does nothing at all - which is exactly how `KILLED` behaved in 1.x.
+   A typo there does nothing at all.
 3. Turn on `/snkills debug` and die once. The trace names the damage cause that was resolved,
    which template matched, and whether anything was broadcast.
 
