@@ -4,6 +4,7 @@
 |---|---|---|
 | `snsimplevouchers.admin` | op | Full administrative access. Parent of every node below |
 | `snsimplevouchers.admin.give` | op | `/voucher give`, **and** the give button inside `/voucher open` |
+| `snsimplevouchers.admin.giveall` | op | `/voucher giveall` |
 | `snsimplevouchers.admin.open` | op | `/voucher open` |
 | `snsimplevouchers.admin.reload` | op | `/voucher reload`, and receives the post-reload voucher count |
 | `snsimplevouchers.admin.debug` | op | `/voucher debug` |
@@ -24,7 +25,12 @@ To give a helper rank partial access, grant the parent and negate what you want 
 ```
 /lp group helper permission set snsimplevouchers.admin true
 /lp group helper permission set snsimplevouchers.admin.give false
+/lp group helper permission set snsimplevouchers.admin.giveall false
 /lp group helper permission set snsimplevouchers.admin.reload false
 ```
 
 That rank can browse `/voucher open` but cannot hand anything out, from the command **or** from the menu.
+
+{% hint style="warning" %}
+`snsimplevouchers.admin.giveall` is a separate node from `snsimplevouchers.admin.give` and must be negated separately. A rank that keeps it can hand a voucher to the entire server in one command.
+{% endhint %}

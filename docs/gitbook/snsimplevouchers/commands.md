@@ -13,6 +13,7 @@ The root command is `/voucher`, with `/vouchers` and `/sv` as default aliases. T
 | `/voucher debug` | `snsimplevouchers.admin.debug` | Toggles debug logging |
 | `/voucher open` | `snsimplevouchers.admin.open` | Opens the paginated admin menu |
 | `/voucher give <player> <voucher> [amount] [-s]` | `snsimplevouchers.admin.give` | Gives a voucher to a player |
+| `/voucher giveall <voucher> [amount] [-s]` | `snsimplevouchers.admin.giveall` | Gives a voucher to every online player |
 
 `help`, `reload` and `debug` are provided by SnLib and behave the same across every Sn plugin.
 
@@ -49,6 +50,41 @@ The admin menu's give-on-click always uses a multiplier of 1.
 ### Unknown voucher
 
 An unknown id reaches the handler and answers with `messages.voucher-not-found`, naming the id you typed, rather than a generic rejection. Tab completion suggests loaded ids but does not restrict what you can type.
+
+### What happens when the inventory is full
+
+By default the overflow drops at the receiver's feet, so nothing is lost. Set `give.drop-overflow: false` in `config.yml` and the give becomes all-or-nothing instead: a receiver without room for the whole stack gets nothing, and both sides are told. See [Configuration](configuration.md).
+
+## `/voucher giveall`
+
+```
+/voucher giveall <voucher> [amount] [-s]
+```
+
+The same give, run once per online player. The grammar is `/voucher give`'s minus the target, so the trailing `[amount] [-s]` pair is read in either order here too.
+
+{% hint style="info" %}
+`[amount]` is the amount **per player**, not a pool split between them. `/voucher giveall keys 3` with 20 players online hands out 60 vouchers.
+{% endhint %}
+
+An `auto-claim` voucher dispatches its rewards to every online player instead of minting items, exactly as `/voucher give` does for one.
+
+### The pass never aborts part way
+
+A player who cannot be served is counted and skipped, and the rest of the server is still served. Two things can cause a skip:
+
+| Situation | Result |
+|---|---|
+| No inventory room, with `give.drop-overflow: false` | That player receives nothing; everyone else is unaffected |
+| An `auto-claim` voucher whose rewards are all ineligible for that player | That player gets no reward; everyone else is unaffected |
+
+When the pass is over you get `messages.giveall.sender` naming how many players received, plus a second line naming how many were skipped when any were. The skipped line differs by cause, so you always know whether it was inventory space or a failed `condition:`.
+
+`-s` suppresses everything: the receivers' messages and your own summary.
+
+### Nobody online
+
+`/voucher giveall` answers `messages.giveall.no-players` and does nothing.
 
 ## `/voucher open`
 

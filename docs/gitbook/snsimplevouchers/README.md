@@ -15,6 +15,7 @@ Every voucher is its own file under `vouchers/`. Drop files in, group them in fo
 - **Auto-claim vouchers** that skip the item entirely and dispatch straight to the player.
 - **A full item builder**: HEX colours, lore, glow, custom model data, armour trims, leather and potion tinting, and custom-texture player heads.
 - **A paginated admin GUI** for browsing and handing out vouchers.
+- **Give to one player or to the whole server**, with a choice of what happens when someone's inventory is full: drop the overflow at their feet, or skip them entirely and report it.
 
 ## Typical use
 

@@ -4,7 +4,7 @@ Four things are yours to edit:
 
 | File | Holds |
 |---|---|
-| `config.yml` | Bulk claim, conditions, sounds, aliases, debug |
+| `config.yml` | Bulk claim, giving, conditions, sounds, aliases, debug |
 | `lang/messages_en.yml` | Every message the plugin sends |
 | `guis/categories.yml`, `guis/vouchers.yml` | The admin menu layouts, items and click actions |
 | `vouchers/*.yml` | Your vouchers, one file each |
@@ -105,6 +105,9 @@ bulk:
   limit: 0                       # cap per click, 0 = unlimited
   aggregate-by-category: true
 
+give:
+  drop-overflow: true
+
 conditions:
   fail-closed: true
 
@@ -120,6 +123,25 @@ Ships **on**. When on, a bulk claim also consumes vouchers of **other ids in the
 So `money_100` and `money_500` in one folder, both running `eco give {player} {amount}`, are aggregated: clicking either consumes both and pays the full total. Siblings whose reward list differs are left alone. Loose vouchers always match by id only.
 
 Set it to `false` to consume only the clicked voucher's own id.
+
+### `give.drop-overflow`
+
+Ships **true**. Decides what happens when the voucher items do not fit in the receiver's inventory.
+
+| Value | Behaviour |
+|---|---|
+| `true` | The receiver keeps what fits and the rest drops at their feet. Nothing is ever lost |
+| `false` | All-or-nothing. A receiver without room for the **whole** stack gets nothing, and both sides are told |
+
+A partial delivery never happens either way, so nobody is quietly handed 4 of the 10 vouchers they were promised.
+
+The key covers all three ways a voucher item reaches a player: `/voucher give`, `/voucher giveall` and the give-on-click of `/voucher open`. `auto-claim` vouchers are unaffected, since they dispatch rewards and never produce an item that could overflow.
+
+{% hint style="info" %}
+`false` is the setting to use with `/voucher giveall` when handing a voucher to a full server: nobody ends up with vouchers scattered on the floor of wherever they happened to be standing. The summary line tells you how many players were skipped so you can follow up.
+{% endhint %}
+
+The receiver sees `messages.inventory-full` and the giver sees `messages.give.inventory-full`.
 
 ### `conditions.fail-closed`
 

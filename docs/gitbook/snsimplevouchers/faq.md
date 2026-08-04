@@ -58,9 +58,19 @@ Yes. Grant `snsimplevouchers.admin` and negate what you want withheld. Note the 
 
 That was possible before v2.0.0, when the menu performed a give with no permission check. It is now gated on `snsimplevouchers.admin.give`, the same node the command requires.
 
+## Players got their vouchers dropped on the floor
+
+That is the default: `give.drop-overflow: true` keeps whatever does not fit and drops it at their feet, so nothing is lost. Set it to `false` if you would rather a player with a full inventory receive nothing at all and be told so. See [Configuration](configuration.md).
+
+## `/voucher giveall` says it skipped players
+
+Two causes, and the message tells you which. With `give.drop-overflow: false` a skip means that player had no inventory room. On an `auto-claim` voucher it means none of its rewards passed that player's `condition:`. Everyone else was still served: the pass never aborts part way.
+
 ## A message shows a literal `{amount}` or a token I did not expect
 
 Every message gets the same five placeholders: `{voucher}` `{category}` `{amount}` `{count}` `{player}`. If one renders literally, the key is misspelled in your language file. To disable a message entirely, blank its value - a missing key renders a visible marker instead.
+
+On the `messages.giveall.*` summary lines two of them read differently: `{count}` counts **players** rather than vouchers, and `{player}` is empty because no single player is named.
 
 ## Will updating reset my config?
 
