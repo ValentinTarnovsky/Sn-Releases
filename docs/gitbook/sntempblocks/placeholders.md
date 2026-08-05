@@ -4,7 +4,8 @@ All placeholders require [PlaceholderAPI](https://www.spigotmc.org/resources/pla
 
 There are two families. The plain ones answer about the zone the viewer is standing in right now,
 which is what a scoreboard or an action bar wants. The ones ending in a zone id name a zone
-explicitly, which is what a hologram at the arena entrance wants.
+explicitly, which is what a hologram at the arena entrance wants. One placeholder,
+`%sntempblocks_bypass%`, is about the viewer rather than any zone.
 
 ## The viewer's own zone
 
@@ -27,6 +28,16 @@ explicitly, which is what a hologram at the arena entrance wants.
 Replace `<zone>` with the zone id, which is the key you wrote under `zones:` in `zones.yml`. For
 a zone called `pvp-arena` that is `%sntempblocks_next_wipe_pvp-arena%`.
 
+## The viewer's own bypass
+
+| Placeholder | Description |
+|-------------|-------------|
+| `%sntempblocks_bypass%` | `Enabled` or `Disabled`, the viewer's own `/tempblocks bypass` state |
+
+This one answers everywhere, not only inside a zone, which makes it useful on a staff scoreboard
+or action bar as a reminder that the switch is still on. An offline viewer reads as `Disabled`,
+which is the literal truth: the toggle is session state and logging out drops it.
+
 ## What they return when there is no answer
 
 Nothing here invents a number.
@@ -46,6 +57,7 @@ If another plugin does arithmetic on that value, make sure it tolerates a non-nu
 {% endhint %}
 
 {% hint style="info" %}
-All three words are language values under `status:` in your messages file, so you can restyle or
-translate them once and every command and placeholder follows.
+Every one of these words, `Enabled` and `Disabled` included, is a language value under `status:`
+in your messages file, so you can restyle or translate them once and every command and
+placeholder follows.
 {% endhint %}

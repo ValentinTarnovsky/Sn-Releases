@@ -36,9 +36,12 @@ working.
 ### Why did nothing get tracked in my zone?
 
 Three usual reasons. The zone's lifetime for that material is `0`, which means "do not track this
-material". The player holds `sntempblocks.bypass`. Or the block was not placed by a player:
-SnTempBlocks tracks `BlockPlaceEvent` and bucket placement only, so world generation, mobs,
-dispensers and other plugins are out of scope.
+material". The player has `/tempblocks bypass` switched on. Or the block was not placed by a
+player: SnTempBlocks tracks `BlockPlaceEvent` and bucket placement only, so world generation,
+mobs, dispensers and other plugins are out of scope.
+
+Since 1.1.0 the bypass is a switch a staff member turns on, never something a permission does on
+its own, so an operator testing a zone sees their blocks tracked normally.
 
 ### Does it track water and lava?
 
