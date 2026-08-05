@@ -146,3 +146,13 @@
 * [Configuration](sntags/configuration.md)
 * [Placeholders](sntags/placeholders.md)
 * [FAQ](sntags/faq.md)
+
+## SnTempBlocks
+
+* [Overview](sntempblocks/README.md)
+* [Installation](sntempblocks/installation.md)
+* [Commands](sntempblocks/commands.md)
+* [Permissions](sntempblocks/permissions.md)
+* [Configuration](sntempblocks/configuration.md)
+* [Placeholders](sntempblocks/placeholders.md)
+* [FAQ](sntempblocks/faq.md)
