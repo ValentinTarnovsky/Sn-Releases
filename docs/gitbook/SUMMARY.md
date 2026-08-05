@@ -32,6 +32,16 @@
 * [Developer API](snclans/api.md)
 * [FAQ](snclans/faq.md)
 
+## SnCustomCrafting
+
+* [Overview](sncustomcrafting/README.md)
+* [Installation](sncustomcrafting/installation.md)
+* [Commands](sncustomcrafting/commands.md)
+* [Permissions](sncustomcrafting/permissions.md)
+* [Configuration](sncustomcrafting/configuration.md)
+* [Placeholders](sncustomcrafting/placeholders.md)
+* [FAQ](sncustomcrafting/faq.md)
+
 ## SnEconomyRobots
 
 * [Overview](sneconomyrobots/README.md)
