@@ -91,6 +91,15 @@
 * [Placeholders](snminigames/placeholders.md)
 * [FAQ](snminigames/faq.md)
 
+## SnPickaxes
+
+* [Overview](snpickaxes/README.md)
+* [Installation](snpickaxes/installation.md)
+* [Commands](snpickaxes/commands.md)
+* [Permissions](snpickaxes/permissions.md)
+* [Configuration](snpickaxes/configuration.md)
+* [FAQ](snpickaxes/faq.md)
+
 ## SnReclaim
 
 * [Overview](snreclaim/README.md)
