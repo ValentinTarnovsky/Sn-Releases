@@ -21,6 +21,15 @@
 * [Developer API](snbans/api.md)
 * [FAQ](snbans/faq.md)
 
+## SnChat
+
+* [Overview](snchat/README.md)
+* [Installation](snchat/installation.md)
+* [Commands](snchat/commands.md)
+* [Permissions](snchat/permissions.md)
+* [Configuration](snchat/configuration.md)
+* [FAQ](snchat/faq.md)
+
 ## SnClans
 
 * [Overview](snclans/README.md)
