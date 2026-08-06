@@ -10,7 +10,7 @@ Most nodes default to `op`. Two default to `true`, so every player has them unle
 | `snchat.showcase` | true | Allows the `[item]`, `[inv]` and `[ec]` chat tokens |
 | `snchat.color` | op | Allows `&` codes and `&#RRGGBB` hex in your own messages. The cosmetic MiniMessage tags (`<red>`, `<gradient>`, `<rainbow>`) render too |
 | `snchat.prefixtags` | op | Allows the line tags `[center]`, `[rgb]`, `[small]` and `[noprefix]` at the start of a message. Needs `snchat.color` |
-| `snchat.notify` | op | Receive chat control violation alerts, and toggle your own with `/snchat alerts` |
+| `snchat.notify` | op | Eligibility for chat control violation alerts. Alerts are **opt-in** and start off - turn your own on with `/snchat alerts`, once |
 
 {% hint style="info" %}
 Both style nodes take effect only in a message that also carries a `&` somewhere. A message with no `&` is published exactly as typed, so `<red>hi` and `[center]hi` reach chat as those literal characters. That guard stops SnChat overwriting a line another plugin already coloured. Type `&r<red>hi` to get the tag rendered.

@@ -14,6 +14,12 @@ The command whitelist is on out of the box. `blockcommands.yml` ships with a pop
 
 Either add your groups to `blockcommands.yml`, or set `command-blocker.enabled: false` in `config.yml`.
 
+### My staff stopped receiving violation alerts after updating to 2.1.0.
+
+That is the change, not a bug. Alerts used to be on for every `snchat.notify` holder and the command existed to silence them; they are now opt-in. The permission decides who is **eligible**, and each staff member turns their own on with `/snchat alerts`.
+
+It only has to be done once - the choice is saved in `data.yml` and survives relog and restart, which the old session-scoped toggle did not.
+
 ### A player typed `<red>hello` and it appeared as literal text. Why?
 
 Styling applies only to a message that carries a `&` somewhere. A message with no `&` is published exactly as typed. That guard stops SnChat overwriting a line another plugin already coloured.

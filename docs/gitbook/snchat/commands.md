@@ -10,7 +10,7 @@ The root command is `/snchat`. It ships with no aliases: set your own under `com
 | `/snchat announce <name> [player]` | `snchat.admin.announce` | Send a configured announcement, to everyone or to one player |
 | `/snchat clearchat` | `snchat.admin.clearchat` | Clear chat for every online player |
 | `/snchat mutechat` | `snchat.admin.mutechat` | Toggle the global chat mute |
-| `/snchat alerts` | `snchat.notify` | Toggle your own violation alerts |
+| `/snchat alerts` | `snchat.notify` | Turn your own violation alerts on or off. They start **off**, and the choice is saved across relog and restart |
 | `/snchat blockcommands` | `snchat.admin.blockcommands` | Show the command whitelist status |
 | `/snchat reload` | `snchat.admin.reload` | Reload the configuration |
 | `/snchat help [page]` | `snchat.use` | Show the command help |

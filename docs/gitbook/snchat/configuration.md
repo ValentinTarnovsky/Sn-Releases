@@ -222,7 +222,8 @@ chat-control:
     global-repeat-delay: 1000
     # Minimum gap between any two commands from the same player.
     command-delay: 0
-    # Whether a cooldown violation also alerts snchat.notify holders.
+    # Whether a cooldown violation also alerts the staff who turned their own
+    # alerts on with /snchat alerts. Holding snchat.notify is not enough by itself.
     notification: true
 
   # Bypass: snchat.bypass.caps.
@@ -239,7 +240,8 @@ chat-control:
     percentage: 70
     # Messages shorter than this skip the check (avoids "OK", "GG").
     min-length: 4
-    # Whether a caps violation also alerts snchat.notify holders.
+    # Whether a caps violation also alerts the staff who turned their own
+    # alerts on with /snchat alerts. Holding snchat.notify is not enough by itself.
     notification: true
 
   # Bypass: snchat.bypass.flood.
@@ -254,7 +256,8 @@ chat-control:
     max-repeat: 4
     # Messages shorter than this skip the check.
     min-length: 4
-    # Whether a flood violation also alerts snchat.notify holders.
+    # Whether a flood violation also alerts the staff who turned their own
+    # alerts on with /snchat alerts. Holding snchat.notify is not enough by itself.
     notification: true
 
   # Blocks plugin:command syntax such as /essentials:home.
@@ -267,7 +270,8 @@ chat-control:
     # Case-insensitive PREFIX matches that stay allowed, e.g. "/strikepractice:".
     # Blank entries are ignored: one would otherwise match every command.
     whitelist: []
-    # Whether a syntax violation also alerts snchat.notify holders.
+    # Whether a syntax violation also alerts the staff who turned their own
+    # alerts on with /snchat alerts. Holding snchat.notify is not enough by itself.
     notification: true
 
 # ------------------------------------------------------------
@@ -518,9 +522,11 @@ messages:
   mutechat-enabled: "&cChat has been muted by staff."
   mutechat-disabled: "&aChat has been unmuted."
   clearchat-cleared: "&aChat has been cleared by &f{player}&a."
-  # The alerts toggle lasts for the session: alerts come back on at next login.
+  # Alerts are OPT-IN: holding snchat.notify makes a staff member eligible, it does
+  # not subscribe them, so a fresh server alerts nobody until each one runs
+  # /snchat alerts. The toggle is saved in data.yml and survives relog and restart.
   alerts-enabled: "&aViolation alerts enabled."
-  alerts-disabled: "&cViolation alerts disabled &7(until you relog)&c."
+  alerts-disabled: "&cViolation alerts disabled."
   feature-disabled: "&cThis feature is disabled."
   # Staff violation alert. This one is spliced into chat rather than sent as a
   # message, so it never receives the SnChat prefix and carries its own [CC]
@@ -743,4 +749,20 @@ templates:
   slot:
     display-name: ""
     lore: []
+```
+
+## data.yml
+
+Written by the plugin, not shipped with it. It holds who has turned their chat control violation
+alerts on, so the choice survives relog and restart.
+
+Unlike every other file above, this one is **never seeded and never merged** - it is player state,
+so an update cannot re-insert an entry a staff member switched off. It is created on the first
+`/snchat alerts` and is not meant to be edited by hand: the plugin rewrites it from memory on
+every toggle and on every `/snchat reload`, so a live hand-edit is overwritten.
+
+```yaml
+# uuid: last-known name (the name is stored only so the file is readable)
+alerts-enabled:
+  069a79f4-44e9-4726-a5be-fca90e38aaf5: Notch
 ```

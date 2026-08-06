@@ -34,6 +34,8 @@ SnChat is built against Java 21, as is SnLib. On 1.20.x your server itself has t
 
 `config.yml`, `lang/messages_en.yml` and both `guis/` files are created before the license is checked, so a failed first boot still leaves them on disk. `announcements.yml` and `blockcommands.yml` are created after it, so they appear only once the plugin enables.
 
+`data.yml` is different: it is player state the plugin writes itself, so it is never seeded or merged and does not exist until the first `/snchat alerts`.
+
 ## Read this before your first restart
 
 {% hint style="danger" %}
