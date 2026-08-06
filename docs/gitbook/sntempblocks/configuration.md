@@ -229,6 +229,14 @@ zones:
 There is no third mode for it.
 
 {% hint style="info" %}
+An `INTERVAL` cycle announces every time, including when the zone was already empty. The
+warnings in `warn-at` are sent to whoever is standing in the zone, and the wipe itself sends
+`messages.wipe-done` with the count, or `messages.wipe-done-empty` when there was nothing to
+remove. Before 1.1.1 an empty zone stayed silent, which made the cycle seem to come and go
+depending on whether somebody had placed a block.
+{% endhint %}
+
+{% hint style="info" %}
 Set `region: __global__` to cover an entire world. That is WorldGuard's own name for the
 world-wide region, so you do not need to create a region first.
 {% endhint %}
@@ -298,6 +306,10 @@ messages:
   # ---- warnings broadcast inside a zone before an INTERVAL wipe ----
   wipe-warning: "&eEverything you placed here vanishes in &f{time}&e."
   wipe-done: "&7The zone was wiped: &f{count} &7blocks removed."
+  # Sent instead of wipe-done when the cycle found nothing to remove. An empty
+  # cycle still announces: silence there reads as a broken plugin to the players
+  # who just watched the countdown reach zero.
+  wipe-done-empty: "&7The zone was wiped."
 
   # ---- command feedback ----
   zone-not-found: "&cNo zone named &e{zone}&c. Use &e/{label} list&c."
