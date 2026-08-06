@@ -32,6 +32,17 @@
 * [Developer API](snclans/api.md)
 * [FAQ](snclans/faq.md)
 
+## SnCrates
+
+* [Overview](sncrates/README.md)
+* [Installation](sncrates/installation.md)
+* [Commands](sncrates/commands.md)
+* [Permissions](sncrates/permissions.md)
+* [Configuration](sncrates/configuration.md)
+* [Placeholders](sncrates/placeholders.md)
+* [Developer API](sncrates/api.md)
+* [FAQ](sncrates/faq.md)
+
 ## SnCustomCrafting
 
 * [Overview](sncustomcrafting/README.md)
