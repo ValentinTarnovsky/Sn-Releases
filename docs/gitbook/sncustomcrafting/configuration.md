@@ -66,13 +66,6 @@ database:
   socket-timeout-seconds: 30
 
 # ------------------------------------------------------------
-#  Update checker.
-# ------------------------------------------------------------
-update-check:
-  # Read-only GitHub token for the releases feed; empty uses anonymous access.
-  token: ""
-
-# ------------------------------------------------------------
 #  Workstations and recipe sets.
 # ------------------------------------------------------------
 settings:
