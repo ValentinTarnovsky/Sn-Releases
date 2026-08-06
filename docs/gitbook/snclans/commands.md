@@ -62,7 +62,7 @@ Every `/clan admin` action needs the `snclans.admin` parent node plus its own le
 
 | Command | Permission | Description |
 |---------|-----------|-------------|
-| `/clan givepoint <point> <amount> [clan]` | `snclans.admin.givepoint` | Grant or remove custom points |
+| `/clan givepoint <point> <amount> [clan\|player]` | `snclans.admin.givepoint` | Grant or remove custom points, by clan name or player nick |
 | `/clan admin rename <clan> <name> [-s]` | `snclans.admin.rename` | Rename any clan |
 | `/clan admin disband <clan> [-s]` | `snclans.admin.disband` | Force-disband any clan |
 | `/clan admin transfer <clan> <player> [-s]` | `snclans.admin.transfer` | Force-transfer clan leadership |
@@ -79,6 +79,10 @@ Every `/clan admin` action needs the `snclans.admin` parent node plus its own le
 | `/clan debug` | `snclans.admin.debug` | Toggle runtime debug output |
 
 {% hint style="info" %}
+The last argument of `/clan givepoint` takes a clan name or a player nick: `/clan givepoint kills 1 Snopeyy` credits the clan that player belongs to, and answers that the player is in no clan when they have none. Online players and anyone the server has already seen both resolve. When a token matches both a clan and a player, the clan name wins. Omit the argument entirely to credit your own clan.
+{% endhint %}
+
+{% hint style="info" %}
 The optional `-s` flag runs an admin action silently, skipping the target clan's notifications and any broadcast. It works on every `/clan admin` action except `unban`, and requires the `snclans.admin.silent` permission.
 {% endhint %}
 
@@ -90,8 +94,8 @@ The optional `-s` flag runs an admin action silently, skipping the target clan's
 
 Every argument suggests real values as you type:
 
-- Clan names for `join`, `ally`, `unally`, `givepoint`, and the `/clan admin` subcommands.
-- Clan names and online player nicks for `info`; when a token matches both, the clan name wins.
+- Clan names for `join`, `ally`, `unally`, and the `/clan admin` subcommands.
+- Clan names and online player nicks for `info` and `givepoint`; when a token matches both, the clan name wins.
 - Your own clan's members for `kick`, `ban`, `promote`, `demote`, and `transfer`.
 - Your clan's ban list for `unban`.
 - Online player names for `invite` and the `/clan admin` player argument.

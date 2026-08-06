@@ -7,7 +7,7 @@
 5. Restart the server. SnClans validates the key at startup and then enables.
 
 {% hint style="warning" %}
-Requires **SnLib** installed (`depend: [SnLib]`), version 1.18.0 or later. SnClans refuses to enable against an older engine, so update `SnLib.jar` at the same time. The matching `SnLib.jar` is attached to every SnClans release.
+Requires **SnLib** installed (`depend: [SnLib]`), version 1.20.0 or later. SnClans refuses to enable against an older engine, so update `SnLib.jar` at the same time.
 {% endhint %}
 
 {% hint style="info" %}
