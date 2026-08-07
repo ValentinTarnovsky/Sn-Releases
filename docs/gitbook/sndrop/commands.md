@@ -41,7 +41,9 @@ console shows:
 
 - why each drop attempt was blocked or allowed, and whether the warning was sent or rate-limited
 - what each `/drop` did to the window, and the remaining seconds when it was refused
-- how many crafting-grid stacks the death sweep moved into the drops, and whose
+- how many crafting-grid and cursor stacks the sweep took on a death, whose they were, and whether
+  they went to the death drops or back into a kept inventory
+- the same for the sweep that returns those slots when a player disconnects
 
 This is the answer to "the plugin ate my stack" and "why can't I drop this".
 

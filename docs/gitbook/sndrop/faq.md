@@ -20,13 +20,20 @@ window and banking it for a later session.
 
 ### Why did items in my crafting grid drop when I died?
 
-That is the anti-bypass rule and it is the point of the plugin. Vanilla keeps the 2x2 crafting
-grid through a death and hands it back on respawn, which made it a pocket for carrying loot past
-the drop restriction. SnDrop moves those slots into the death drops instead. The crafting result
-slot is cleared but never dropped, so nothing is duplicated.
+That is the anti-bypass rule and it is the point of the plugin. The 2x2 crafting grid and the
+stack on your cursor are not part of the normal death drops - the server hands them back after the
+respawn - which made them a pocket for carrying loot past the drop restriction. SnDrop moves all
+five slots into the death drops instead. The crafting result slot is cleared but never dropped, so
+nothing is duplicated.
 
-With the `keepInventory` gamerule on, the sweep does not run: nothing drops on that death, so
-there is nothing to smuggle, and your grid comes back untouched.
+With the `keepInventory` gamerule on nothing is confiscated: those five stacks go back into your
+inventory with the rest of it, exactly as keepInventory implies.
+
+### I logged out with my inventory screen open and lost what was in the crafting grid.
+
+Fixed in 2.0.1. Both the grid and the cursor stack are now returned to your inventory when you
+disconnect, before your player file is written, so they are there on the next login. Older builds
+let the server empty those slots after the save, which destroyed them.
 
 ### `/drop reload` did not change how long my window lasts.
 

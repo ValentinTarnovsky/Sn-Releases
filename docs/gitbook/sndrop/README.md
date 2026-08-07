@@ -12,10 +12,15 @@ economy.
 - **Expiry costs nothing.** A window is a single deadline compared against the clock at the moment
   of each drop attempt. The plugin owns no repeating task, no countdown and no sweeper, so a busy
   server pays one map lookup per drop attempt and nothing per tick.
-- **The crafting-grid pocket is closed.** Vanilla preserves the 2x2 crafting grid across a death
-  and never includes it in the death drops, which made it a smuggling pocket: park the valuables,
-  die on purpose, pick everything up on respawn. SnDrop forces those slots into the death drops.
-  The crafting result slot is cleared but never dropped, so nothing is duplicated.
+- **The crafting-grid and cursor pockets are closed.** The 2x2 crafting grid and the stack held on
+  the cursor are never part of the death drops: the server hands them back at respawn instead,
+  which made them a smuggling pocket - park the valuables, die on purpose, pick everything up
+  afterwards. SnDrop moves all five slots into the death drops so the killer gets them. The
+  crafting result slot is cleared but never dropped, so nothing is duplicated.
+- **`keepInventory` keeps those slots too.** On a keep-inventory death the same five stacks go back
+  into the player's own inventory instead of being scattered on the ground. The same is true when
+  a player logs out with the inventory screen open: the stacks are put back before the player file
+  is saved, so nothing is lost and nothing is left lying around.
 - **A warning that does not spam.** The "you cannot drop items right now" line is rate-limited per
   player, at a rate you choose. Holding the drop key gives a steady reminder, not a wall of text
   and not silence.
