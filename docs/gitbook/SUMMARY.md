@@ -62,6 +62,15 @@
 * [Placeholders](sncustomcrafting/placeholders.md)
 * [FAQ](sncustomcrafting/faq.md)
 
+## SnDrop
+
+* [Overview](sndrop/README.md)
+* [Installation](sndrop/installation.md)
+* [Commands](sndrop/commands.md)
+* [Permissions](sndrop/permissions.md)
+* [Configuration](sndrop/configuration.md)
+* [FAQ](sndrop/faq.md)
+
 ## SnEconomyRobots
 
 * [Overview](sneconomyrobots/README.md)
