@@ -39,6 +39,16 @@
 * [Configuration](snchunkloader/configuration.md)
 * [FAQ](snchunkloader/faq.md)
 
+## SnCoinFlip
+
+* [Overview](sncoinflip/README.md)
+* [Installation](sncoinflip/installation.md)
+* [Commands](sncoinflip/commands.md)
+* [Permissions](sncoinflip/permissions.md)
+* [Configuration](sncoinflip/configuration.md)
+* [Placeholders](sncoinflip/placeholders.md)
+* [FAQ](sncoinflip/faq.md)
+
 ## SnClans
 
 * [Overview](snclans/README.md)
