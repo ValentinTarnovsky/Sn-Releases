@@ -199,12 +199,14 @@ messages:
   invalid-duration: "&cInvalid duration: &f{value} &c(use e.g. 1d, 12h, 30m, 1d12h, or -1 for infinite)."
   given: "&aGave &f{amount}x &achunk loader (&f{size}x{size}&a, &f{time}&a) to &f{player}&a."
   received: "&aYou received a &f{size}x{size} &achunk loader with &f{time}&a."
-  # Sent to the RECEIVER of /chunkloader give when the item did not fit. Nothing is ever dropped on
-  # the ground: the loader is owed and handed over on their next join, so say so.
+  # Sent to the RECEIVER of /chunkloader give when the item did not fit. It REPLACES `received`
+  # above rather than following it, because the loader is owed and not held. Nothing is ever
+  # dropped on the ground: it is handed over on their next join.
   inventory-full: "&cYour inventory is full. The chunk loader is waiting for you - make room and rejoin to receive it."
-  # Told to the SENDER of /chunkloader give when the target could not hold it. The item is
-  # never dropped on the ground: it is owed and handed over on their next join.
-  given-queued: "&e&f{player}&e could not hold it, so it was queued for their next join."
+  # Told to the SENDER of /chunkloader give when the target could not hold it. It REPLACES `given`
+  # above, so it carries the same facts: exactly one outcome line reaches each side.
+  # Placeholders: {player}, {size}, {time}
+  given-queued: "&e&f{player}&e could not hold the &f{size}x{size} &eloader (&f{time}&e), so it was queued for their next join."
   list-empty: "&7No chunk loaders found for &f{player}&7."
   chunks-info: "&aForce-loaded chunks: &f{chunks} &7| Loaders: &f{loaders} &7(&a{active} &7on)"
 
