@@ -30,6 +30,15 @@
 * [Configuration](snchat/configuration.md)
 * [FAQ](snchat/faq.md)
 
+## SnChunkLoader
+
+* [Overview](snchunkloader/README.md)
+* [Installation](snchunkloader/installation.md)
+* [Commands](snchunkloader/commands.md)
+* [Permissions](snchunkloader/permissions.md)
+* [Configuration](snchunkloader/configuration.md)
+* [FAQ](snchunkloader/faq.md)
+
 ## SnClans
 
 * [Overview](snclans/README.md)
