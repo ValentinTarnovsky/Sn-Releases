@@ -18,11 +18,18 @@ Requires **SnLib** installed (`depend: [SnLib]`), version 1.20.2 or later.
 
 ## Dependencies
 
-| Plugin | Required |
-|--------|----------|
-| SnLib | Yes |
-| EdTools | Yes |
-| PlaceholderAPI | No |
-| Vault | No |
+| Plugin | Required | Notes |
+|--------|----------|-------|
+| SnLib | Yes | 1.20.2 or later |
+| Vault | Yes | Plus an economy provider behind it (EssentialsX, CMI, ...) - Vault itself is only a bridge |
+| EdTools | No | Adds every EdTools currency as an economy id, and booster-multiplied claims |
+| PlaceholderAPI | No | Adds the `%sneconomyrobots_...%` placeholders |
+
+{% hint style="warning" %}
+**Changed in 1.1.0.** Vault used to be optional and EdTools required; it is now the other way
+round. If you are updating from 1.0.x, install Vault and an economy provider before you update, or
+the server will refuse to enable the plugin. EdTools can be removed if you only use the `vault`
+economy.
+{% endhint %}
 
 SnEconomyRobots targets Paper and supports both 1.20.x and 1.21.x.

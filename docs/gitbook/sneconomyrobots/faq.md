@@ -5,6 +5,16 @@
 Download the newer `sneconomyrobots-v*` release and replace the jar. Configs auto-merge on restart,
 so your edits and comments are preserved and only missing keys are added.
 
+### Can I run it without EdTools?
+
+Yes, since 1.1.0. EdTools is optional and the plugin runs on your Vault economy alone, logging one
+line at startup to say EdTools is absent. What you lose is every EdTools currency as an economy id
+and booster-multiplied claims: a robot production entry or upgrade cost priced in an EdTools
+currency never settles, so that income stays in the claim bag rather than being lost.
+
+Vault is the one you cannot run without - the reserved `economy.vault-economy-id` always routes
+through it, and Vault itself needs an economy provider behind it (EssentialsX, CMI, ...).
+
 ### Does it support Folia?
 
 No, SnEconomyRobots does not declare Folia support.

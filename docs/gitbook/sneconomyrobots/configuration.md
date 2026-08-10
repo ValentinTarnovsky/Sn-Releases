@@ -374,6 +374,13 @@ cooldowns:
 #  ECONOMY
 #  An economy id is either an EdTools currency id or the reserved Vault id
 #  below. Robots may accrue several at once; see robots/<id>.yml.
+#
+#  Vault is REQUIRED (hard depend): the reserved id below always routes to it.
+#  EdTools is OPTIONAL (softdepend) - it is one currency provider among the
+#  several this plugin will support. Without EdTools installed the plugin runs
+#  normally on the Vault id alone, logs one INFO line saying so on boot, and any
+#  robot production entry or upgrade cost priced in an EdTools currency id
+#  simply never settles (the income stays in the bag, nothing is lost).
 # ============================================================
 economy:
   # Reserved id that routes to the Vault economy instead of EdTools.
@@ -382,6 +389,7 @@ economy:
   # active EdTools boosters multiply the claim. Note the timing: income accrues
   # on the tick but is multiplied at claim, so a player can bank all day and
   # claim under a booster. Set false to price the income at accrual value.
+  # Ignored when EdTools is not installed.
   affect-boosters: true
 
 # ------------------------------------------------------------

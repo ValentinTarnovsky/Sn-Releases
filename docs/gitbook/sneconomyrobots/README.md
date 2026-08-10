@@ -1,8 +1,11 @@
 # SnEconomyRobots
 
-SnEconomyRobots is an EdTools addon. Players equip robots into active slots, and those robots accrue
-passive income across several economies at once. The income lands in a claim bag instead of being
+SnEconomyRobots is a passive income plugin. Players equip robots into active slots, and those robots
+accrue income across several economies at once. The income lands in a claim bag instead of being
 paid out tick by tick, so a player claims it when they choose.
+
+It pays into your Vault economy out of the box, and into any EdTools currency when EdTools is
+installed.
 
 ## Features
 
@@ -15,10 +18,13 @@ paid out tick by tick, so a player claims it when they choose.
 
 ## Optional integrations
 
+- **EdTools**: adds every EdTools currency as an economy a robot can produce, and lets a player's
+  active boosters multiply a claim. Without it the plugin runs normally on the Vault economy alone
+  and logs one line saying so; anything you priced in an EdTools currency simply stays in the bag.
 - **PlaceholderAPI**: exposes the full `%sneconomyrobots_...%` placeholder set for scoreboards, tab
   lists and holograms. Without it the plugin runs normally and simply registers no placeholders.
-- **Vault**: lets a robot pay into a Vault economy alongside EdTools currencies. Without it, only
-  EdTools currencies are available.
+
+Vault is not optional: the reserved `economy.vault-economy-id` always routes through it.
 
 ## Links
 
