@@ -64,6 +64,21 @@ editor. The **Accepted Keys** button cycles `PHYSICAL`, `VIRTUAL` and both, and 
 rank-gated crate restarts that cycle at `PHYSICAL` - so once a crate is on `PERMISSION`, edit
 everything else about it freely and leave that one button alone.
 
+### How do I clear everyone's keys for a season reset?
+
+`/crates key wipe` - it deletes the virtual key balances of every player, offline players included,
+and `/crates key wipe <crate>` narrows it to one crate. It cannot be undone, so the first
+invocation only warns and counts; run it again with the confirmation word to go through with it.
+See [the key commands](commands.md#crates-key-wipe-crate-confirm).
+
+It needs `sncrates.admin.wipekeys` on top of `sncrates.admin.keys`, so it is not something a
+moderator can reach by default.
+
+Two things it does **not** do. It does not touch **physical** keys - those are items in inventories
+and ender chests, and no balance command reaches them; if your crates use a key item, the wipe is
+not what resets them. And it does not reset open counters, win history or reward limits: those are
+separate records, and `%sncrates_total_opens%` keeps counting from where it was.
+
 ### How do I make a crate players open from a menu, with no block anywhere?
 
 Give it `VIRTUAL` in `accepted-key-types` and hand out balances with `/crates key give`. It appears

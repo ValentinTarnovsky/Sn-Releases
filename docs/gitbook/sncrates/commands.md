@@ -13,6 +13,7 @@ Root command: `/crates`, aliases `/crate` and `/snc`.
 | `/crates key giveall <crate> [amount] [-s] [-sf]` | Adds virtual keys to every online player | `sncrates.admin.keys` |
 | `/crates key take <player> <crate> [amount] [-s] [-sf]` | Removes virtual keys | `sncrates.admin.keys` |
 | `/crates key set <player> <crate> <amount> [-s] [-sf]` | Sets a balance to an exact number | `sncrates.admin.keys` |
+| `/crates key wipe [crate] [confirm]` | Deletes **every** player's virtual key balances | `sncrates.admin.keys` + `sncrates.admin.wipekeys` |
 | `/crates givekey <player> <crate> [amount] [-s] [-sf]` | Hands over the physical key item | `sncrates.admin.givekey` |
 | `/crates reload` | Reloads config, language, menus and crates | `sncrates.admin.reload` |
 | `/crates debug` | Toggles runtime debug output | `sncrates.admin.debug` |
@@ -94,18 +95,20 @@ Opens the crate editor. It takes no arguments. See [Configuration](configuration
 
 ## The key commands
 
-All four sit under `/crates key` and share `sncrates.admin.keys`.
+All five sit under `/crates key` and share `sncrates.admin.keys`. `wipe` needs a second
+permission on top of it - see [below](#crates-key-wipe-crate-confirm).
 
 ```
 /crates key give <player> <crate> [amount]
 /crates key giveall <crate> [amount]
 /crates key take <player> <crate> [amount]
 /crates key set <player> <crate> <amount>
+/crates key wipe [crate] [confirm]
 ```
 
 `[amount]` is **optional and defaults to 1** for `give`, `giveall` and `take`. `set` requires it,
 and `set` is the only one that accepts `0`, because setting a balance to nothing is how you clear
-it.
+it. `wipe` takes no amount at all - it clears balances outright, for everybody.
 
 | Command | Executor is told | Target is told |
 |---|---|---|
@@ -129,7 +132,12 @@ A crate that accepts `PHYSICAL` but not `VIRTUAL` has no balance to operate on:
   balance to change.` They do not silently succeed. Physical keys live in inventories, so they are
   removed by hand.
 
-A crate that accepts `PERMISSION` but not `PHYSICAL` is not affected: all four commands work on it.
+A crate that accepts `PERMISSION` but not `PHYSICAL` is not affected: all of them work on it.
+
+`wipe` is the exception to this whole section - it is **never** refused for having no virtual
+balance. It only removes stored numbers, and the rows most worth removing belong to exactly such a
+crate: the leftovers of one that used to accept virtual keys and was later switched to a physical
+key item.
 
 ### The two flags
 
@@ -138,13 +146,72 @@ A crate that accepts `PERMISSION` but not `PHYSICAL` is not affected: all four c
 | `-s` | the line sent to the **receiver** |
 | `-sf` | the line sent to the **executor** |
 
-They are independent, can be combined, and work on all four key subcommands plus `givekey`. They go
-after the amount:
+They are independent, can be combined, and work on `give`, `giveall`, `take`, `set` and `givekey`.
+They go after the amount:
 
 ```
 /crates key giveall vote 1 -s
 /crates key give Notch legendary 5 -s -sf
 ```
+
+`wipe` takes neither flag: it notifies nobody but the admin who ran it, and there is no single
+target to stay quiet about.
+
+### `/crates key wipe [crate] [confirm]`
+
+Deletes the virtual key balances of **every player on the server**, offline players included.
+
+```
+/crates key wipe            # every crate
+/crates key wipe common     # only the crate 'common'
+```
+
+Physical key items are **not** touched. They live in inventories and ender chests across the
+server, and no balance command reaches them - same as `take`.
+
+#### It runs in two halves
+
+There is no undo, so the first invocation never destroys anything. Without the confirmation word
+the command only **counts**: it reports how many balances and how many keys are at stake, and
+quotes back the exact line that would delete them.
+
+```
+/crates key wipe
+> WARNING This deletes 4,120 virtual key(s) across 1,284 balance(s), for EVERY player and
+> EVERY crate. It cannot be undone. Run /crates key wipe confirm to go through with it.
+
+/crates key wipe confirm
+> Wiped 1,284 virtual key balance(s), for every player and every crate.
+```
+
+{% hint style="warning" %}
+The confirmation word is **never tab-completed**. Having to type it is the point: an admin who
+could tab their way from `/crates key wipe` to a confirmed server-wide wipe has the same
+protection as no confirmation at all. The warning line is the only place the word is offered.
+{% endhint %}
+
+The word itself is `messages.keys.wipe-confirm-word` in your language file (default `confirm`),
+so it translates with everything else. The warning quotes it from there, so the two can never
+disagree.
+
+#### What it protects you from
+
+- **A mistyped crate id is refused**, not widened. `/crates key wipe commmon confirm` reports
+  `Crate commmon does not exist.` and deletes nothing - it does not fall through to wiping the
+  whole server.
+- **An empty scope is reported, not armed.** If nothing is stored you are told so instead of being
+  asked to confirm a delete of zero rows. It is usually how you find out you named the wrong crate.
+- **Online players are cleared too.** Their cached balances go with the stored ones, so nobody
+  keeps opening crates against keys that no longer exist anywhere.
+- The count in the warning and the count in the result can legitimately differ: keys handed out in
+  between are deleted too. Both numbers were true when they were printed.
+
+#### Permission
+
+`wipe` needs `sncrates.admin.wipekeys` **on top of** the group's `sncrates.admin.keys`. Both
+default to op and both are children of `sncrates.admin`, so granting the parent still grants
+everything - but a moderator given only `sncrates.admin.keys` can run the other four key commands
+and **not** this one. See [Permissions](permissions.md).
 
 ## `/crates givekey <player> <crate> [amount]`
 

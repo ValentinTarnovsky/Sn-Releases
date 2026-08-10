@@ -9,14 +9,25 @@
 | `sncrates.admin.update` | op | Receive the update notice on join. Not a command. |
 | `sncrates.admin.editor` | op | `/crates editor` and every mutation inside it |
 | `sncrates.admin.keys` | op | `/crates key give`, `giveall`, `take` and `set` |
+| `sncrates.admin.wipekeys` | op | `/crates key wipe` - **required on top of** `sncrates.admin.keys` |
 | `sncrates.admin.givekey` | op | `/crates givekey` |
 | `sncrates.admin.open` | op | `/crates open`, for yourself or another player |
 | `sncrates.admin.preview` | op | `/crates preview` |
 | `sncrates.admin.balance` | op | `/crates balance <player>` |
 | `sncrates.open.<crateId>` | false | Opens that one crate, on crates that accept the `PERMISSION` key type |
 
-Granting `sncrates.admin` unlocks the nine admin nodes at once: the children list is exhaustive,
+Granting `sncrates.admin` unlocks the ten admin nodes at once: the children list is exhaustive,
 there is nothing else under it.
+
+## `sncrates.admin.wipekeys` stacks, it does not replace
+
+`/crates key wipe` sits inside the `key` group, and SnCrates checks **every** node on the path from
+the root down to the leaf. So running a wipe needs `sncrates.admin.keys` *and*
+`sncrates.admin.wipekeys`; the second narrows the first rather than standing in for it.
+
+That is what lets you delegate the ordinary key commands without delegating the one that cannot be
+undone. A moderator holding only `sncrates.admin.keys` can give, take and set balances all day and
+gets `You do not have permission to use this command.` from `wipe`.
 
 ## Opening a crate needs no permission
 
@@ -103,11 +114,20 @@ pending block gesture. Revoking the node is enough; you do not have to get them 
 
 ## Useful grants
 
-**A moderator who can hand out keys but cannot edit crates:**
+**A moderator who can hand out keys but cannot edit crates or wipe the economy:**
 
 ```
 /lp group mod permission set sncrates.admin.keys true
 /lp group mod permission set sncrates.admin.givekey true
+```
+
+`sncrates.admin.wipekeys` is deliberately absent - that is the point of it being a separate node.
+
+**An owner who wants the season-reset command, on top of the moderator grant above:**
+
+```
+/lp group owner permission set sncrates.admin.keys true
+/lp group owner permission set sncrates.admin.wipekeys true
 ```
 
 **A helper who can look at what a player is holding, and nothing else:**
