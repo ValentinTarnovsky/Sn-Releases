@@ -8,7 +8,7 @@ SnCoinFlip ships `config.yml`, two language files under `lang/` and three menu l
 
 | Key | Default | Description |
 |-----|---------|-------------|
-| `lang` | `es` | Language code. Loads `lang/messages_<code>.yml`, falling back to `en`. |
+| `lang` | `en` | Language code. Loads `lang/messages_<code>.yml`, falling back to `en`. Does not affect the menus. |
 | `update-configs` | `true` | Master switch of the auto-updater for this plugin's managed files. `false` freezes them and only warns about missing keys. |
 | `debug.enabled` | `false` | Runtime debug output. Also toggleable live with `/coinflip debug`. |
 | `debug.level` | `DEBUG` | `OFF`, `INFO`, `DEBUG` or `TRACE`. |
@@ -150,10 +150,10 @@ An unresolvable sound name is tolerated rather than fatal: the plugin logs one w
 
 ## Language
 
-`lang/messages_en.yml` and `lang/messages_es.yml` both ship, and `lang` in `config.yml` picks between them. Add your own by copying one to `messages_<code>.yml` and pointing `lang` at it.
+`lang/messages_en.yml` and `lang/messages_es.yml` both ship, and `lang` in `config.yml` picks between them. It ships as `en`, so switching to Spanish is `lang: es` plus a `/coinflip reload`. Add your own by copying one to `messages_<code>.yml` and pointing `lang` at it; new keys from later versions merge into it and your wording is never overwritten.
 
 {% hint style="info" %}
-Menu text lives in `guis/*.yml`, not in the language file, and ships in Spanish. Translate the menus by editing those three files directly.
+`lang` covers chat messages only. Menu text lives in `guis/*.yml` and is translated by editing those three files directly, whatever `lang` is set to.
 {% endhint %}
 
 ## Menus

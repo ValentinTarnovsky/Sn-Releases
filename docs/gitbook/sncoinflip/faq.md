@@ -67,9 +67,11 @@ The lobby item is the join button and joining spends real money, so it is left-c
 
 `presentation.main` is set to `chat`. Set it to `gui` to open the lobby. Note that the lobby is the only way to join a coinflip, so on `chat` nobody can accept a wager through the root command.
 
-## Menus are in Spanish
+## I set `lang` and the menus did not change
 
-Menu text lives in `guis/lobby.yml`, `guis/stats.yml` and `guis/animation.yml`, not in the language file, and ships in Spanish. Edit those three files. The `lang` setting only covers chat messages.
+`lang` covers chat messages only. Menu text lives in `guis/lobby.yml`, `guis/stats.yml` and `guis/animation.yml`, so translate the menus by editing those three files directly. They ship in English.
+
+If your menus are in Spanish, the server generated them on an older version: the files on disk are yours and are never rewritten, so they keep the wording they were created with. Edit them, or delete one and let it regenerate.
 
 ## Do the stats show profit?
 
