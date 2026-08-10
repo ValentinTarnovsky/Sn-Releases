@@ -10,12 +10,18 @@ It was refused at startup. Search the console for a SEVERE line naming it. The t
 
 The refusal is deliberate. A currency that can take a wager but not pay a prize is worse than a currency that does not exist.
 
+A `vault: true` currency is never on that list. It is always registered, because the one thing that can be missing - a registered economy provider - is a question of load order rather than a mistake in your file, and it resolves itself the moment an economy plugin registers one. While there is nothing to read, the currency appears in tab completion and refuses wagers as unverifiable.
+
 ## Players are told they have no balance when they clearly do
+
+Read the console line first: it says which of the two this is. A wager refused as **unverifiable** means the balance could not be READ, which is an outage on your side; a wager refused for **insufficient funds** means it was read and it was too small.
 
 For a command-backed currency, the balance comes from `balance-placeholder`. Check it resolves to a plain number for that player with `/papi parse <player> %your_placeholder%`. Common causes:
 
-- PlaceholderAPI is not installed, or the expansion that provides it is not. Every balance then reads as zero.
+- PlaceholderAPI is not installed, or the expansion that provides it is not. No balance can then be read, and every wager is refused as unverifiable.
 - The placeholder renders a formatted string rather than a number.
+
+For a `vault: true` currency there is nothing in your config to check: the balance is whatever your economy plugin reports. Confirm one has registered a provider with Vault - `/vault-info` on most builds - because Vault on its own provides no economy.
 
 ## Wagers are refused with a message about the balance not being precise enough
 
@@ -41,7 +47,9 @@ Both wagers are refunded, to whoever is online and by UUID to whoever is not, wi
 
 ## Can a booster or a money enchant multiply a coinflip prize?
 
-No. Payouts on an EdTools currency are credited with the booster flag off, so nothing listening for a currency-add event sees a coinflip prize as earned income. This was the most expensive bug in this plugin's history and the guard is deliberate.
+Not on an EdTools currency: payouts there are credited with the booster flag off, so nothing listening for a currency-add event sees a coinflip prize as earned income. This was the most expensive bug in this plugin's history and the guard is deliberate. On a command-backed currency the answer is whatever your `give-command` does, which is your choice to make.
+
+Vault is the one backend that cannot promise it. Its API has a single deposit primitive and no event-free form, so whatever your economy plugin fires on a credit, it fires on a coinflip payout too. In practice a Vault deposit is a plain balance write and the things that multiply income listen to their own plugin's events instead. If that is not true on your server, put the currency on EdTools or on an explicit `give-command`.
 
 ## Can a player have two coinflips at once?
 

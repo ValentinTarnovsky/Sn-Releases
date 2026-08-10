@@ -41,9 +41,16 @@ Setting `presentation.main: chat` makes the lobby unreachable through the root c
 
 The map key is the currency id: it is the `<currency>` argument of `/coinflip create`, the PlaceholderAPI suffix and the key stats are stored under. There is no limit on how many you declare.
 
-There are two backends, chosen with `edtoolapi`.
+There are three backends, chosen with two flags: `vault` and `edtoolapi`.
 
-**Command-backed** (`edtoolapi: false`, or absent):
+**Vault-backed** (`vault: true`) - the default, and the only one that needs no configuration:
+
+| Key | Required | Description |
+|-----|----------|-------------|
+| `display-name` | Yes | Name shown wherever the currency is named. PlaceholderAPI is resolved before colour, so a placeholder that returns a colour code may be written right after a `&`. |
+| `vault` | Yes | `true` selects this backend. No id, no commands and no placeholder are read. |
+
+**Command-backed** (neither flag):
 
 | Key | Required | Description |
 |-----|----------|-------------|
@@ -52,12 +59,18 @@ There are two backends, chosen with `edtoolapi`.
 | `take-command` | Yes | Console command that debits a wager. `{player}` and `{amount}` are replaced. |
 | `balance-placeholder` | Yes | Placeholder read to learn a player's balance. |
 
-**EdTools-backed** (`edtoolapi: true`):
+**EdTools-backed** (`edtoolapi: true`, `vault` absent or false):
 
 | Key | Required | Description |
 |-----|----------|-------------|
 | `display-name` | Yes | As above. |
 | `currency-id` | Yes | EdTools currency id. The three command fields are ignored. |
+
+{% hint style="info" %}
+Vault is a hard dependency of SnCoinFlip, but Vault itself provides no economy - it brokers whatever an economy plugin (EssentialsX, CMI, XConomy, ...) registers with it. A `vault: true` currency is never skipped at startup over a missing provider: it registers, refuses wagers as unverifiable while there is nothing to read, and starts working the moment a provider appears. No restart and no `/coinflip reload` are needed, which is what makes an economy plugin that enables after SnCoinFlip a non-event.
+
+Setting both `vault: true` and `edtoolapi: true` on one currency is a mistake. Vault wins, `currency-id` is ignored, and the console says so by name at startup.
+{% endhint %}
 
 {% hint style="danger" %}
 `give-command` is not optional and its absence is not cosmetic. It is the only way a prize, an abort refund, a shutdown refund or a refused-join rollback reaches a player. A command-backed currency without it is refused at startup with a SEVERE line naming it, rather than registered as a currency that takes wagers and pays nobody. The same rule applies to an EdTools `currency-id` that EdTools cannot resolve.
@@ -101,7 +114,7 @@ Both keys are clamped to 1200 ticks because neither player can close the menu un
 
 ### Debit verification
 
-Only ever runs for command-backed currencies. An EdTools currency confirms its own debit as it makes it.
+Only ever runs for command-backed currencies. An EdTools currency confirms its own debit as it makes it, and a Vault currency gets the economy provider's own verdict on the withdrawal.
 
 A console `take-command` reports nothing about whether money moved, so the plugin reads both balances twice after a match starts and decides from what changed.
 

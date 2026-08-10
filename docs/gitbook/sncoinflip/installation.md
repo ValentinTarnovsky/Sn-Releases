@@ -7,7 +7,11 @@
 5. Restart the server. SnCoinFlip validates the key at startup and then enables.
 
 {% hint style="warning" %}
-Requires **SnLib** installed (`depend: [SnLib]`), version 1.24.1 or later. SnCoinFlip refuses to enable against an older engine, so update `SnLib.jar` at the same time.
+Requires **SnLib** installed (`depend: [SnLib, Vault]`), version 1.24.1 or later. SnCoinFlip refuses to enable against an older engine, so update `SnLib.jar` at the same time.
+{% endhint %}
+
+{% hint style="danger" %}
+**Vault has been a hard dependency since v2.1.0.** Without `Vault.jar` in `plugins/`, SnCoinFlip does not load at all - Bukkit refuses it before the plugin gets a chance to say anything. If you are upgrading from 2.0.x, install Vault before you drop the new jar in.
 {% endhint %}
 
 {% hint style="info" %}
@@ -23,11 +27,17 @@ The licence is checked on every startup, not only the first one. The check is an
 | Plugin | Required |
 |--------|----------|
 | SnLib | Yes |
+| Vault | Yes |
+| An economy plugin (EssentialsX, CMI, XConomy, ...) | No to load, but the default `money` currency has nothing to read without one |
 | PlaceholderAPI | No, but every command-backed currency needs it, and so do the placeholders |
 | EdTools | No, but every `edtoolapi: true` currency needs it |
 
 {% hint style="danger" %}
-"Optional" here means the plugin starts without them, not that the shipped configuration works without them. Five of the six currencies that ship in `config.yml` are EdTools currencies and the sixth is command-backed. On a server with neither plugin installed, every one of them is either skipped at startup or refuses every wager.
+"Optional" here means the plugin starts without them, not that the shipped configuration works without them. Three currencies ship in `config.yml`: a Vault-backed `money`, a command-backed one and an EdTools one. On a server with no economy plugin, no PlaceholderAPI and no EdTools, every one of them is either skipped at startup or refuses every wager.
+{% endhint %}
+
+{% hint style="info" %}
+Vault is the one dependency you can satisfy late. It is required to LOAD, but the economy provider behind it is not required to be registered yet: a `vault: true` currency starts working the moment an economy plugin registers one, with no restart and no reload.
 {% endhint %}
 
 **Requirements:** Java 21+, Paper 1.20.x or 1.21.x
@@ -42,7 +52,8 @@ The `currencies:` block is marked extensible. Entries you delete stay deleted: t
 
 ## Before you let players use it
 
-The shipped `currencies:` block describes the OkiMC network's own currencies. Replace it with yours. Two things are worth getting right before the first wager:
+The shipped `currencies:` block wagers your Vault economy by default and then shows one example of each other backend, written against the OkiMC network's own currencies. Replace the examples with yours. Three things are worth getting right before the first wager:
 
+- **The `currencies:` block is not inserted into a config that already exists.** It is extensible, so upgrading from 2.0.x does not add the new Vault-backed `money` currency to your file. Add it by hand (`display-name` plus `vault: true` is the whole entry) or delete the whole `currencies:` block and let the plugin write the new defaults back on the next boot.
 - **`balance-placeholder` must render an exact number.** It is not a display string. It is the only evidence a command-backed currency ever produces that a wager really left the player. A placeholder that renders `1.5M` cannot show a 100 debit leaving, so wagers it could not display are refused before anything is charged. See [Configuration](configuration.md).
 - **`verification.confirm-look-ticks` depends on your balance provider, not on this plugin.** If your take-command is forwarded to a proxy, the placeholder may still be reading a stale local cache when the plugin looks. Raise it if you see aborted matches in the console for wagers that were actually paid.
