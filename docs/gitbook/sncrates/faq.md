@@ -59,6 +59,11 @@ Yes, three ways:
   `/crates key give`.
 - Remove the `key-item` block entirely from a crate that accepts `VIRTUAL` or `PERMISSION`.
 
+`PERMISSION` is written in the crate file (or in `defaults.accepted-key-types`), not chosen from the
+editor. The **Accepted Keys** button cycles `PHYSICAL`, `VIRTUAL` and both, and clicking it on a
+rank-gated crate restarts that cycle at `PHYSICAL` - so once a crate is on `PERMISSION`, edit
+everything else about it freely and leave that one button alone.
+
 ### How do I make a crate players open from a menu, with no block anywhere?
 
 Give it `VIRTUAL` in `accepted-key-types` and hand out balances with `/crates key give`. It appears
@@ -174,6 +179,16 @@ exemption let them place a candle key as a block, frame it, or eat an edible one
 `HAPPY_VILLAGER` is the 1.20.5+ spelling. On 1.20.1 to 1.20.4 the constant is `VILLAGER_HAPPY`. Put
 that in `effects.complete-particle` instead; the console logs one warning per load telling you the
 name did not resolve.
+
+### The console says `complete-particle-count` is invalid, and prints the same number twice.
+
+```
+Invalid value in config.yml -> 'effects.complete-particle-count': received '40', using default '40'
+```
+
+Nothing was wrong with your value, and it was fixed in **2.1.0**. The crate editor's panel read that
+key as text when it holds a number, once per control per render, so opening a crate panel printed the
+line every time. Update, and it stops. On any version, the count itself was always being used.
 
 ### My server ran an older SnCrates and everything is empty.
 

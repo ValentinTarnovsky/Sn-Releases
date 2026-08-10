@@ -86,11 +86,19 @@ defaults:
 | Key | Meaning |
 |---|---|
 | `animation` | `NONE`, `CSGO`, `WHEEL`, `REVEAL` or `QUICK`. `NONE` opens instantly with no menu. |
-| `accepted-key-types` | Any non-empty subset of `PHYSICAL`, `VIRTUAL`, `PERMISSION` |
+| `accepted-key-types` | Any non-empty subset of `PHYSICAL`, `VIRTUAL`, `PERMISSION` (see the note below) |
 | `preview-id` | Which file under `guis/` a preview opens |
 | `key-material` | Material of a new crate's key item |
 | `key-name` / `display-name` | `{crate}` is the crate id |
 | `reward-weight` | Weight a reward is created with in the editor |
+
+{% hint style="info" %}
+The editor's **Accepted Keys** button cycles three combinations: `PHYSICAL`, `VIRTUAL`, and both.
+`PERMISSION` is set here or in a crate file, not from that button - it is a rank-gated crate rather
+than a key, and it consumes nothing when it opens. Such a crate keeps `PERMISSION` until somebody
+clicks the button, at which point the cycle restarts at `PHYSICAL`, so leave that button alone on a
+rank-gated crate. See [Rank-gated crates](faq.md) in the FAQ.
+{% endhint %}
 
 ### Keys
 
@@ -159,10 +167,23 @@ Only the keys that fit are handed over, and exactly that many are deducted.
 ```yaml
 editor:
   chat-input-timeout-seconds: 60
+  preview-layouts: [preview, preview-compact]
 ```
 
-How long an admin has to answer a chat prompt. On expiry the prompt is cancelled and the editor
-screen reopens, exactly as typing `cancel` does.
+| Key | Meaning |
+|---|---|
+| `chat-input-timeout-seconds` | How long an admin has to answer a chat prompt |
+| `preview-layouts` | The layouts the crate panel's **Preview Layout** button cycles, in this order |
+
+On expiry the prompt is cancelled and the editor screen reopens, exactly as typing `cancel` does.
+Every prompt says both things underneath it - the cancel word and the seconds left - so an admin
+never has to know them in advance.
+
+Each `preview-layouts` entry is the name of a file under `guis/`, written without the `.yml`. An
+entry naming a file that is not there is **skipped rather than offered**, so deleting a layout can
+never leave a crate pointing at a preview that will not open. Add your own layout to this list after
+copying `preview.yml` under a new name, and give it a label under `previews:` in the language file so
+the button reads as a name instead of a file name.
 
 ### Opening log
 
@@ -504,8 +525,22 @@ every settings and effects key.
 | Reward panel | The item, weight, amount, per-player limit, global limit, limit window, win commands, can-be-won, announce, give-item, duplicate, delete |
 | Item capture | Copies the item from your main hand |
 
-Values that need typing are asked in chat. Type the cancel word (`cancel` by default) to abort;
-either way the editor screen reopens.
+Values that need typing are asked in chat, and every prompt tells you how to get out of it: the
+cancel word (`cancel` by default) and how many seconds are left. Either way the editor screen
+reopens. Animation, accepted keys, preview layout and the on/off controls are clicks, not prompts.
+
+The reward panel's **Win Commands** icon lists the commands themselves, numbered, and marks in red
+any line that will not run as written:
+
+| Marked when | Why |
+|---|---|
+| The line is empty | Nothing to dispatch |
+| It uses a placeholder that is not `{player}`, `{amount}` or `{crate}` | Those three are the only ones filled in, and they are case-sensitive |
+| It uses a `%papi%` token and PlaceholderAPI is not installed | The token reaches the console as written |
+
+The check never asks the server which commands exist: a command-map lookup would call a vanilla
+command unknown on one server and known on the next, and a wrong mark teaches you to ignore the
+marks. A misspelt command name is still yours to spot.
 
 ### The item capture
 
@@ -564,8 +599,10 @@ and the items each character maps to. Editing them is how you restyle the plugin
 Names and lore resolve colour codes, HEX, `[center]` and PlaceholderAPI **per viewer**, so
 `%player_name%` in a button's lore renders the name of whoever is looking.
 
-Add your own preview layout by copying `preview.yml`, and add a matching entry under `previews:` in
-the language file so the editor shows it a readable name.
+Add your own preview layout by copying `preview.yml` under a new name. Three places make it a
+first-class layout: list its file name under `editor.preview-layouts` in `config.yml` so the editor
+button can reach it, add a matching entry under `previews:` in the language file so the button shows
+a readable name, and point a crate at it from the crate panel.
 
 {% hint style="warning" %}
 The `click-actions` lines (`[crates-editor-crate] delete` and friends) are the button's behaviour.
