@@ -110,7 +110,9 @@ chunk-loader:
     #     island regen - and it runs whether or not returns are enabled.
     #  2. Re-checks that every owner is still a member of the island their loader
     #     sits on: the safety net for memberships changed through the
-    #     SuperiorSkyblock API, which fires no event.
+    #     SuperiorSkyblock API, which fires no event. Skipped entirely when
+    #     SuperiorSkyblock is not installed, and skipped for any loader placed
+    #     while it was not - (1) still runs for all of them.
     # Setting this to 0 therefore also switches off (1). Do that only if you are
     # certain no plugin on the server removes blocks without an event.
     reconciliation-interval-seconds: 120
@@ -119,10 +121,22 @@ chunk-loader:
   #  Limits. How many loaders may be placed, and where.
   # ----------------------------------------------------------
   limits:
-    # Placed loaders per owner. 0 = unlimited.
+    # Placed loaders per owner. 0 = unlimited. Applies on EVERY server, with or
+    # without SuperiorSkyblock: it counts loaders, not islands.
     per-player: 3
     # Placed loaders per island, counted as NUMBER of loaders. 0 = unlimited.
+    # IGNORED when SuperiorSkyblock is not installed - there are no islands to
+    # count against, so per-player above is the only limit left.
     per-island: 5
+
+  # ----------------------------------------------------------
+  #  Island rules. SuperiorSkyblock is OPTIONAL: install it and this whole
+  #  section applies, leave it out and the plugin is a plain chunk loader -
+  #  loaders may be placed anywhere the server lets you place a block, anyone
+  #  who can break the block gets the loader and its remaining time, and nothing
+  #  below is evaluated. The keys stay here either way, ready for the day the
+  #  island plugin is added.
+  # ----------------------------------------------------------
   island:
     # Membership gate. This is NOT only a placement rule - read it before turning it off.
     # When true, a player must be a member of the island a loader stands on in order to
@@ -263,13 +277,18 @@ lists:
 
 # Name and lore of the loader item, rendered once when the item is created and
 # identical for every viewer. Placeholders: {size}, {chunks}, {time}
+#
+# The lore is deliberately island-neutral, because SuperiorSkyblock is optional and the same item
+# is handed out on servers that have no islands at all. On an island server, replace the third line
+# with something like "&8Place inside your island to activate." - your value is preserved on every
+# update.
 item:
   name: "&#8354f2&lChunk Loader &7({size}x{size})"
   lore:
     - "&7Keeps &f{chunks} &7chunk(s) loaded and ticking."
     - "&7Remaining time: {time}"
     - ""
-    - "&8Place inside your island to activate."
+    - "&8Place it down to activate."
     - "&8Right-click a placed loader with another"
     - "&8loader to add its time."
 

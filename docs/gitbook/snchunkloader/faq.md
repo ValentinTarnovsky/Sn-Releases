@@ -21,11 +21,17 @@ They right-click it while holding another loader item of the same size. The time
 ### Is there a ceiling on stored time?
 Yes, `chunk-loader.time.max-stack-seconds`. Stacking past it clamps to it, and the player is told the excess was lost. Set it to 0 for no ceiling. The ceiling does not bind an infinite item: feeding a permanent loader item to a placed loader of the same size makes that loader permanent whatever the ceiling says. A loader that is already permanent refuses further time and consumes nothing.
 
+### Do I need SuperiorSkyblock?
+No. Without it the plugin runs as a plain chunk loader: loaders are placed anywhere the server lets a player place a block, `chunk-loader.limits.per-player` is the only placement rule, and nothing under `chunk-loader.island` is evaluated - there are no islands to evaluate it against. Lifetime, stacking, floating displays, the menu, block protection, breaking and owed deliveries are identical on both kinds of server. Install SuperiorSkyblock and the island rules switch on by themselves; the plugin picks its mode at startup.
+
+### What happens to loaders I placed before installing SuperiorSkyblock?
+They keep working, unchanged. A loader placed without the island plugin is stored as belonging to no island, so the membership sweep leaves it alone instead of treating it as a loader whose island vanished. It is not counted against any per-island limit either. Only loaders placed after the island plugin is installed are bound to an island.
+
 ### Who gets the loader when it is broken?
-The player who broke it. The gate is island membership, not ownership, so any member of the island can break a loader standing on it and keep the item with its remaining time. Set `chunk-loader.island.require-own-island` to `true` to keep that gate on. With it off, anyone at all can do it.
+The player who broke it. On an island server the gate is island membership, not ownership, so any member of the island can break a loader standing on it and keep the item with its remaining time. Set `chunk-loader.island.require-own-island` to `true` to keep that gate on. With it off, anyone at all can do it. Without SuperiorSkyblock there is no membership to check, so whoever can break the block gets the loader - use your protection plugin to decide who that is.
 
 ### What happens to a loader when its owner leaves the island?
-With `return-on-membership-loss` enabled, the loader is removed and returned to its owner with its remaining time. This covers kicks, quits, bans and disbands. These returns go to the owner, unlike a normal break, which goes to the breaker.
+With `return-on-membership-loss` enabled, the loader is removed and returned to its owner with its remaining time. This covers kicks, quits, bans and disbands. These returns go to the owner, unlike a normal break, which goes to the breaker. This whole mechanism needs SuperiorSkyblock and does nothing without it.
 
 ### What happens if the receiving player's inventory is full, or they are offline?
 The loader is queued in the database and handed over on their next join. A loader is never dropped on the ground.

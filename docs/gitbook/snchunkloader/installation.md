@@ -23,12 +23,12 @@ The licence is checked on every startup, not only the first one. The check is an
 | Plugin | Required |
 |--------|----------|
 | SnLib | Yes |
-| SnSuperiorSkyblock | Yes |
+| SnSuperiorSkyblock | No (optional, adds the island rules) |
 | DecentHolograms | No (optional, alternative floating display backend) |
 | PlaceholderAPI | No (optional, resolves PAPI tokens in the shipped files) |
 
 {% hint style="info" %}
-When an optional plugin is absent, the matching feature degrades gracefully. The floating display falls back to SnLib's built-in renderer, and PlaceholderAPI tokens stay raw.
+When an optional plugin is absent, the matching feature degrades gracefully. Without SnSuperiorSkyblock the plugin runs as a plain chunk loader and the island rules are skipped. The floating display falls back to SnLib's built-in renderer, and PlaceholderAPI tokens stay raw.
 {% endhint %}
 
 ## First boot
