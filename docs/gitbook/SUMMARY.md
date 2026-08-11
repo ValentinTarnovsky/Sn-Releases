@@ -139,6 +139,16 @@
 * [Configuration](snkills/configuration.md)
 * [FAQ](snkills/faq.md)
 
+## SnKits
+
+* [Overview](snkits/README.md)
+* [Installation](snkits/installation.md)
+* [Commands](snkits/commands.md)
+* [Permissions](snkits/permissions.md)
+* [Configuration](snkits/configuration.md)
+* [Placeholders](snkits/placeholders.md)
+* [FAQ](snkits/faq.md)
+
 ## SnMiniGames
 
 * [Overview](snminigames/README.md)
