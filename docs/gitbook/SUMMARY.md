@@ -168,6 +168,16 @@
 * [Configuration](snpickaxes/configuration.md)
 * [FAQ](snpickaxes/faq.md)
 
+## SnRankUp
+
+* [Overview](snrankup/README.md)
+* [Installation](snrankup/installation.md)
+* [Commands](snrankup/commands.md)
+* [Permissions](snrankup/permissions.md)
+* [Configuration](snrankup/configuration.md)
+* [Placeholders](snrankup/placeholders.md)
+* [FAQ](snrankup/faq.md)
+
 ## SnReclaim
 
 * [Overview](snreclaim/README.md)
