@@ -12,8 +12,9 @@ No, SnKits is not Folia compatible. It runs on Paper 1.20.4 and newer, on both 1
 ### Why does the plugin not appear in `/plugins`?
 
 Two usual causes. Either `SnLib.jar` is missing from `plugins/`, because SnKits declares
-`depend: [SnLib]` and will not enable without it, or the license id in `plugins/SnKits/license.yml`
-is still the placeholder. Both are reported in the server log at startup.
+`depend: [SnLib]` and will not enable without it, or the bundle key in
+`plugins/.Sn-License/license.yml` is still the placeholder. Both are reported in the server log at
+startup.
 
 ### How do I add a kit?
 

@@ -9,7 +9,7 @@
 | Required | `SnLib.jar` (SnLib 1.24.1 or newer) |
 | Optional | PlaceholderAPI |
 | Database | SQLite (default, no setup) or MySQL |
-| License | Yes, SnKits needs its own Sn license key |
+| License | Yes - SnKits is part of the licensed bundle |
 
 The jar is compiled for Java 21. A 1.20.x server still running Java 17 refuses to load it, so move
 the server to Java 21 first.
@@ -18,12 +18,18 @@ the server to Java 21 first.
 
 1. Download `SnKits-<version>.jar` from the releases page (tags prefixed `snkits-`).
 2. Put it in `plugins/`, together with `SnLib.jar`.
-3. Start the server. SnKits writes its files, creates `plugins/SnKits/license.yml` and then
+3. Start the server. SnKits writes its files, creates `plugins/.Sn-License/license.yml` and then
    disables itself, because that file still holds a placeholder.
-4. Paste your license id into `license-id` in `plugins/SnKits/license.yml`.
+4. Paste your bundle key on the first non-comment line of `plugins/.Sn-License/license.yml`.
 5. Restart the server. SnKits validates the key at startup.
 6. Edit `plugins/SnKits/config.yml` and the menus under `plugins/SnKits/guis/`, then run
    `/kit reload`.
+
+{% hint style="info" %}
+One key unlocks the whole bundle. `plugins/.Sn-License/license.yml` is shared by every Sn bundle
+plugin on the server, so if you already run one of them the file exists and SnKits reads the key
+that is already there. Nothing to paste twice.
+{% endhint %}
 
 {% hint style="info" %}
 The key is checked once, at startup. SnKits refuses to enable without a valid one, so the server
@@ -38,9 +44,10 @@ Updating **SnLib** always needs a full restart, never a `/reload`.
 
 ```
 plugins/
+  .Sn-License/
+    license.yml          your bundle key - shared by every Sn bundle plugin on this server
   SnKits/
     config.yml           menus, auto-claim, multi-claim, sounds, database, editor strings
-    license.yml          your SnKits license id
     kits/
       default.yml        a working kit, ready to rename, edit or delete
     guis/                the layout of every menu, one file each
