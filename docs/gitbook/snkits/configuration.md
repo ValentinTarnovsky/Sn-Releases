@@ -82,13 +82,13 @@ instead of in a `guis/` file.
 ```yaml
 items-editor:
   # Title of the grid. {kit} is the kit id.
-  title: "&8Items: &e{kit}"
+  title: "&#8354f2&lItems &8- &e{kit}"
   # Slot 53. Click it to drop a fresh command item into the first free cell.
   # Full Sn item spec: material, display-name, lore, glow, amount,
   # custom-model-data, enchantments, flags and the rest all work.
   add-command-button:
     material: "COMMAND_BLOCK"
-    display-name: "&6Add Command Item"
+    display-name: "&#8354f2Add Command Item"
     lore:
       - "&7Adds a command item to the grid."
       - "&7Shows in the preview, runs commands on"
@@ -107,7 +107,7 @@ items-editor:
   # item in the grid to mark it; a kit has at most one.
   offhand-item-hint-lore:
     - ""
-    - "&b>> Offhand item"
+    - "&#8354f2>> Offhand item"
     - "&7Shift-right-click to unset."
 ```
 
@@ -282,7 +282,7 @@ A menu is a `title`, a `layout` of rows, an `items` section for decoration and n
 the layout is where it is drawn.
 
 ```yaml
-title: "&#55FFFF&lKits"
+title: "&#8354f2&lKits"
 
 # f filler   k the default kit   m go to page 2
 layout:
