@@ -122,6 +122,15 @@
 * [Developer API](snelementalgems/api.md)
 * [FAQ](snelementalgems/faq.md)
 
+## SnGifts
+
+* [Overview](sngifts/README.md)
+* [Installation](sngifts/installation.md)
+* [Commands](sngifts/commands.md)
+* [Permissions](sngifts/permissions.md)
+* [Configuration](sngifts/configuration.md)
+* [FAQ](sngifts/faq.md)
+
 ## SnJoinItem
 
 * [Overview](snjoinitem/README.md)
