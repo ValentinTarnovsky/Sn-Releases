@@ -81,6 +81,17 @@
 * [Placeholders](sncustomcrafting/placeholders.md)
 * [FAQ](sncustomcrafting/faq.md)
 
+## SnDisplayShops
+
+* [Overview](sndisplayshops/README.md)
+* [Installation](sndisplayshops/installation.md)
+* [Commands](sndisplayshops/commands.md)
+* [Permissions](sndisplayshops/permissions.md)
+* [Configuration](sndisplayshops/configuration.md)
+* [Placeholders](sndisplayshops/placeholders.md)
+* [Developer API](sndisplayshops/api.md)
+* [FAQ](sndisplayshops/faq.md)
+
 ## SnDrop
 
 * [Overview](sndrop/README.md)
