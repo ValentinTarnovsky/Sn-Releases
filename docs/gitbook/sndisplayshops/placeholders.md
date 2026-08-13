@@ -47,14 +47,10 @@ On the offer item, `{price}` is the price of one unit. On the two trade buttons 
 button charges. The shipped file uses it both ways on purpose.
 {% endhint %}
 
-### Owner menu (`owner-menu.yml`)
+### Owner menu (`guis/owner.yml`)
 
-`{currency}`, `{mode}` and `{price}` on the control items, and `{amount}` on the stock grid entries.
-
-{% hint style="info" %}
-Items under `decorative:` are built without a viewer, so per-player PlaceholderAPI does not resolve
-there. Keep those to static text.
-{% endhint %}
+`{item}` in the title, `{currency}`, `{mode}` and `{price}` on the control items, `{amount}` on the
+stock grid entries, and `{page}` / `{pages}` on the arrows and the page indicator.
 
 ## Consumed by SnDisplayShops
 

@@ -7,7 +7,7 @@ Four files, all merged on update:
 | `config.yml` | the shop item, the hologram, limits, currencies, the database, integrations |
 | `lang/messages_en.yml` | every line the plugin sends, plus the hologram text |
 | `guis/buyer.yml` | the layout of the menu everyone but the owner sees |
-| `owner-menu.yml` | the layout of the owner's management menu |
+| `guis/owner.yml` | the layout of the owner's management menu |
 
 ## The shop item
 

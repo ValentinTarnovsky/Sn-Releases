@@ -24,6 +24,19 @@ the owner did not type. The confirmation echoes every digit back so a mistyped p
 immediately.
 {% endhint %}
 
+## How do owners set or change the traded item?
+
+The center cell of the owner menu, only: click it holding the item on the cursor, or drag one onto
+it. The item is read, never taken. Shift-clicking a stack in your inventory ONLY deposits stock -
+if it does not match the traded item it is refused with a message. Before 2.2.0 a non-matching
+shift-click silently replaced the traded item; that gesture is gone on purpose.
+
+## Why does pickup ask me to click twice?
+
+The first click arms a red confirm cell for a few seconds; the second click removes the shop.
+Pickup drains all stock and deletes the shop in one action, so it no longer fires on a single
+(possibly accidental) click.
+
 ## Can I change the shop block's material later?
 
 Yes. A shop is identified by the tag the item carries, never by its material, so every shop already

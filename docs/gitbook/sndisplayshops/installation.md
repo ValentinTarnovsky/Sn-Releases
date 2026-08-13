@@ -47,9 +47,9 @@ plugins/
     license.yml          your bundle key - shared by every Sn bundle plugin on this server
   SnDisplayShops/
     config.yml           shop item, hologram, limits, currencies, database, integrations
-    owner-menu.yml       the layout of the shop owner's management menu
     guis/
       buyer.yml          the layout of the menu everyone else sees
+      owner.yml          the layout of the shop owner's management menu
     lang/
       messages_en.yml    every line the plugin sends, plus the hologram text
     database.db          SQLite database, when database.type is sqlite
@@ -58,8 +58,9 @@ plugins/
 Nothing has to be created by hand. Every file above is written on first boot.
 
 {% hint style="info" %}
-`owner-menu.yml` sits at the root rather than under `guis/` on purpose. The owner menu accepts items
-dragged into it, which a normal Sn menu cannot do, so it is not one of them.
+Both menus are normal Sn menus under `guis/` since 2.2.0. Upgrading from 2.1.0 or earlier: the old
+`owner-menu.yml` at the folder root is no longer read - restyle `guis/owner.yml` instead and delete
+the old file. The plugin logs a warning while it is still there.
 {% endhint %}
 
 ## Dependencies
@@ -75,7 +76,7 @@ dragged into it, which a normal Sn menu cannot do, so it is not one of them.
 ## Updating
 
 Replace the jar and restart. New keys are merged into `config.yml`, `lang/messages_en.yml`,
-`guis/buyer.yml` and `owner-menu.yml` on boot, and your values, comments and additions are
+`guis/buyer.yml` and `guis/owner.yml` on boot, and your values, comments and additions are
 preserved. Example entries you deleted stay deleted.
 
 {% hint style="info" %}
