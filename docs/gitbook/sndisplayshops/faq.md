@@ -10,6 +10,20 @@ or your server shop. Placing it creates the shop; right-clicking it opens the ow
 A fresh shop starts paused on purpose, and it refuses to trade until it has an item, a price and a
 currency. The owner menu shows which of those is missing, and the hologram says the shop is paused.
 
+## How do owners set a price?
+
+The "Set exact price" button closes the menu and asks in chat. What they type is consumed, never
+broadcast, and the menu reopens once it is applied. Shorthand works: `1k`, `1.5m`, `2b` and the rest
+of the `K/M/B/T/Qa/Qi` ladder, and a number written out in full is exact at any size -
+`1500000`, `1.500.000` and `1,500,000` are the same price.
+
+{% hint style="info" %}
+A line the plugin cannot read as one number - two separators, a stray letter, anything past the
+largest price there is - is refused and the price is left alone. It is never rounded into something
+the owner did not type. The confirmation echoes every digit back so a mistyped price is visible
+immediately.
+{% endhint %}
+
 ## Can I change the shop block's material later?
 
 Yes. A shop is identified by the tag the item carries, never by its material, so every shop already

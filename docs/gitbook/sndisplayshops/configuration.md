@@ -54,6 +54,10 @@ the price and the currency.
 Each entry is one currency, and the order they are declared in is the order the owner menu cycles
 through. A currency is backed either by commands or by EdTools.
 
+The file ships one entry of each shape and no more. They are examples, not a currency list to keep:
+copy the shape you need as many times as your server has currencies and delete the one you do not.
+The section is marked extensible, so an entry you remove stays removed.
+
 ```yaml
 currencies:
   okicoins:
@@ -103,13 +107,38 @@ the pickup button is refused and says so; nothing is ever destroyed to make a sh
 
 ## Hologram
 
-`hologram:` in `config.yml` holds the geometry - the item scale, the two vertical offsets and the
-rotation timing. The TEXT lives in `lang/messages_en.yml` under `hologram.text`, because it is
-language, not layout.
+`hologram:` in `config.yml` holds the geometry - the item scale, the two vertical offsets, the
+rotation timing and the bob. The TEXT lives in `lang/messages_en.yml` under `hologram.text`,
+because it is language, not layout.
+
+```yaml
+hologram:
+  item-scale: 1.2
+  item-y-offset: 1.3
+  text-y-offset: 3.0
+  rotation-interval-ticks: 10
+  rotation-period-ticks: 200
+  rotation-interpolation-extra-ticks: 2
+  bounce-amplitude: 0.1
+  bounce-period-ticks: 80
+```
+
+The floating item spins and bobs, the way a dropped item does on the ground. `bounce-amplitude` is
+how far it rises and falls around `item-y-offset`, in blocks; `0` leaves it hanging still.
+`item-y-offset` stays the MIDDLE of the bob rather than its floor, so raising the amplitude swings
+the item further around where it already hangs instead of pushing it up into the text.
 
 {% hint style="info" %}
-Rotation values are clamped to a sane range at startup and a substituted value is logged. The
-hologram lines resolve their placeholders against the shop's OWNER, not against whoever is looking.
+The bob is free. It rides on the same update the spin already sends, so it does not scale with the
+number of loaded shops - `rotation-interval-ticks` remains the plugin's single biggest CPU knob.
+For the smoothest result keep `bounce-period-ticks` a multiple of four times
+`rotation-interval-ticks`; the defaults are exactly eight pushes per bob.
+{% endhint %}
+
+{% hint style="info" %}
+Rotation and bounce values are clamped to a sane range at startup and a substituted value is
+logged. The hologram lines resolve their placeholders against the shop's OWNER, not against whoever
+is looking.
 {% endhint %}
 
 ## Database
