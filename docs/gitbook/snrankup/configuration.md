@@ -84,25 +84,6 @@ menu:
 This is the switch that decides which of the two menus `/rankup` opens. Both files ship, so you can
 change your mind with a reload.
 
-### Leaderboard
-
-```yaml
-top:
-  # Entries kept in the ranking snapshot.
-  size: 10
-  # Seconds between leaderboard refreshes. Values below 5 are raised to 5.
-  refresh-seconds: 60
-```
-
-`size` bounds how many positions the placeholders can answer. The shipped `guis/rankup-menu.yml`
-lists positions 1 to 10, so lowering `size` leaves the lines past it blank.
-
-{% hint style="info" %}
-Lowering `size` does not make the refresh read less. A rank's position lives in `rankup.yml` rather
-than in a column, so every row is always read and ranked on the database thread. What `size` bounds
-is how much of that crosses back to the server thread.
-{% endhint %}
-
 ### Currencies
 
 ```yaml
@@ -142,6 +123,25 @@ The shipped file declares `vault`, and the shipped ladder prices one rank in it.
 economy plugin you get that warning on every boot. Delete the `vault` entry if you do not want it:
 the section is extensible, so it stays deleted.
 
+### Leaderboard
+
+```yaml
+top:
+  # Entries kept in the ranking snapshot.
+  size: 10
+  # Seconds between leaderboard refreshes. Values below 5 are raised to 5.
+  refresh-seconds: 60
+```
+
+`size` bounds how many positions the placeholders can answer. The shipped `guis/rankup-menu.yml`
+lists positions 1 to 10, so lowering `size` leaves the lines past it blank.
+
+{% hint style="info" %}
+Lowering `size` does not make the refresh read less. A rank's position lives in `rankup.yml` rather
+than in a column, so every row is always read and ranked on the database thread. What `size` bounds
+is how much of that crosses back to the server thread.
+{% endhint %}
+
 ## rankup.yml
 
 One entry per rank under `rankups:`. Two fields are required and three are optional.
@@ -160,29 +160,29 @@ rankups:
 
   '0':
     order: 1
-    display: '&6[&e&l0&6]'
+    display: '&8[&#8354f2&l0&8]'
     menu-item:
       material: BLAZE_POWDER
-      display-name: '&#fcf803&lRank &#edeb4c#&l0'
+      display-name: '&#8354f2&lRank #0'
       lore:
-        - '&fWhere everyone starts.'
+        - '&7Where everyone starts.'
 
   '1':
     order: 2
-    display: '&6[&e&l1&6]'
+    display: '&8[&#8354f2&l1&8]'
     requirements:
       hours: 2
       vault: 5000
     rewards:
-      - '[broadcast] &a%player% &freached rank &e1&f.'
+      - '[broadcast] &a%player% &7reached rank &f1&7.'
       - '[console] give %player% diamond 1'
     menu-item:
       material: BLAZE_POWDER
-      display-name: '&#fcf803&lRank &#edeb4c#&l1'
+      display-name: '&#8354f2&lRank #1'
       lore:
-        - '&#fcf803&lREQUIREMENTS:'
-        - '  &#fcf803| &#edeb4cHours: &#9CFF8C{req_hours}h'
-        - '  &#fcf803| &#edeb4cMoney: &#9CFF8C${req_vault}'
+        - '&#8354f2&lREQUIREMENTS:'
+        - '  &8| &7Hours: &f{req_hours}h'
+        - '  &8| &7Money: &f${req_vault}'
 ```
 
 {% hint style="info" %}
