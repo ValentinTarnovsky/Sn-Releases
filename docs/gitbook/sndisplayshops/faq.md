@@ -52,8 +52,19 @@ are a bad idea for the same family of reasons. Pick a plain solid block.
 
 ## A shop block is gone but the shop still counts against its owner's limit
 
-The shop still exists at those coordinates. Put any block back at the same spot and it is reachable
-again. This is what the material warnings above are about.
+It should fix itself. With `shop.restore-missing-blocks` on (the default), the block is re-placed at
+its own coordinates - at startup for chunks that are already loaded, otherwise the moment that chunk
+loads - and a line in the console names the shop that was repaired.
+
+If you turned that off, the shop still exists at those coordinates and putting any block back at the
+same spot makes it reachable again. This is what the material warnings above are about.
+
+## What exactly does the block repair replace?
+
+Only air, water or lava at the shop's coordinates, and only with the CURRENT `shop-item.material`. A
+standing block of any other material is left alone: a mismatch means you reconfigured the material,
+not that a block went missing. A shop placed under an older material comes back as today's block,
+which changes nothing, since a shop is identified by its tag and never by its material.
 
 ## How many shops can a player own?
 
@@ -62,9 +73,31 @@ There is no per-rank permission for it.
 
 ## Trading says the shop's currency no longer exists
 
-That currency was skipped at startup. Check the log for a SEVERE naming it: a command-backed
-currency is refused if `give-command`, `take-command` or `balance-placeholder` is blank, or if a
-template is missing `{player}` or `{amount}`. Fix the entry and reload.
+That currency is still declared in `config.yml` but was SKIPPED at startup. Check the log for a
+SEVERE naming it: a command-backed currency is refused if `give-command`, `take-command` or
+`balance-placeholder` is blank, or if a template is missing `{player}` or `{amount}`. Fix the entry
+and reload, and the shops start trading again on their own.
+
+Shops are deliberately NOT moved off a skipped currency, because the currency is coming back as soon
+as you fix it - or as soon as EdTools is up - and a move cannot be undone.
+
+## I deleted a currency from config.yml. What happened to its shops?
+
+They were moved to the first currency in the file, at the next start or the next `/dshop reload`,
+and each move is in the console at INFO with the shop, its owner and the currency it left.
+
+{% hint style="danger" %}
+The price NUMBER is carried over untouched. Nothing in `config.yml` says what a gem is worth in
+coins, so a shop priced at 100 gems becomes a shop priced at 100 coins. Look at what your players
+are selling before you delete a currency.
+{% endhint %}
+
+## Where can I see who bought what?
+
+`plugins/SnDisplayShops/logs/<date>.log`, one file per day, one line per completed trade, with the
+buyer, the owner, the shop, the item, the quantity, the unit price, the total and the currency. Turn
+it off with `trade-log.enabled`. See [Configuration](configuration.md) for the line format and its
+two caveats.
 
 ## Players can afford things and the shop still refuses
 

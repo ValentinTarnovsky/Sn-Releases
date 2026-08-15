@@ -35,7 +35,7 @@ you: blocks that need support (torch, carpet, sapling, banner), blocks made of t
 bed, tall flower), and blocks that melt or decay (ice, coral, leaves). Pick a plain solid block.
 {% endhint %}
 
-## Shop defaults
+## Shop defaults and block repair
 
 ```yaml
 shop:
@@ -43,11 +43,29 @@ shop:
     price: 0
     mode: SELL
     start-paused: true
+  restore-missing-blocks: true
 ```
 
 `mode` is from the SHOP's point of view: `SELL` means the shop sells to players, `BUY` means it buys
 from them. A fresh shop starts paused so nobody trades with it before its owner has set the item,
 the price and the currency.
+
+The three `defaults` are read once, when a block is placed; changing them never touches a shop that
+already exists. `restore-missing-blocks` is read live and applies to every shop.
+
+`restore-missing-blocks` re-places the block of a shop whose coordinates are empty - broken while
+the plugin was not running, or removed by something that fires no event, such as a world edit or
+another plugin calling `setType`. Before it existed, that left a "ghost": the shop alive in every
+index and still counting against its owner's limit, its hologram spinning over air, and recovery a
+matter of putting a block back at coordinates nobody knew. The pass runs at startup for chunks that
+are already loaded, and then per shop as each chunk loads.
+
+{% hint style="info" %}
+Only air, water or lava counts as missing. A standing block of any other material is left exactly
+where it is, because a material that does not match `shop-item.material` means a reconfigured
+server, not a missing block. What gets placed is the CURRENT `shop-item.material` - what a shop was
+originally placed as is not recorded anywhere - and nothing is placed into a player.
+{% endhint %}
 
 ## Currencies
 
@@ -82,6 +100,21 @@ money.
 {% hint style="info" %}
 An `&` written directly before a placeholder colors the name with whatever color code that
 placeholder returns, which is how `"&%itsmyconfig_dcolor%NAME"` works.
+{% endhint %}
+
+{% hint style="danger" %}
+**Deleting a currency moves its shops, and keeps their prices.** A currency you remove from
+`currencies:` no longer strands the shops that traded in it: at the next start, and at the next
+`/dshop reload`, they are moved to the first currency in the file, and every move is logged at INFO
+naming the shop, its owner and the currency it left.
+
+The NUMBER is not converted, because nothing in the file says what one currency is worth in another.
+A shop priced at 100 gems becomes a shop priced at 100 coins. Check what deleting a currency is
+about to do to your economy before you delete it.
+
+A currency that is still declared but was SKIPPED at startup - EdTools down, a broken command
+template - is left alone, and its shops wait. Only a currency you actually removed from the file
+migrates. If nothing is left to move shops TO, the sweep does nothing and says so with a WARNING.
 {% endhint %}
 
 ## Limits
@@ -172,6 +205,44 @@ Removing a shop this way DESTROYS its stock. Everything the shop held is deleted
 dropped, not returned, not logged, and the owner is not told. For a disband that is defensible,
 since the island is being wiped anyway. For membership loss the island survives, so an ex-member
 loses stock outright. Both are switches for exactly that reason.
+{% endhint %}
+
+## Trade log
+
+```yaml
+trade-log:
+  enabled: true
+  flush-seconds: 10
+```
+
+One line per COMPLETED trade, appended to `plugins/SnDisplayShops/logs/<date>.log`, a new file per
+day, the way the server writes its own logs. A refused or aborted trade writes nothing.
+
+```
+[2026-08-15 14:03:11] BUY buyer=Steve buyer-uuid=0a1b… owner=Alex owner-uuid=7f3c… shop=2d9e…
+  loc=world:120:64:-338 item="Diamond Sword" qty=3 unit=1000 total=3000 currency=okicoins
+```
+
+(one line in the file; wrapped here to fit). `BUY` and `SELL` are the BUYER's side of the trade, so
+`BUY` is a player buying from a shop that is in SELL mode. The uuids, `loc`, `shop` and `currency`
+are the machine columns; the names beside them are for reading. `unit` and `total` are what actually
+moved, not what the shop advertises.
+
+`flush-seconds` is how long lines wait in memory before being written, and it is clamped to 1-300.
+Lines are written off the main thread; the server never waits on the disk to finish a trade.
+
+{% hint style="info" %}
+Old files are never deleted or compressed. Prune the folder yourself if the server is busy enough
+for it to matter.
+{% endhint %}
+
+{% hint style="warning" %}
+An owner the server has not named yet can appear as `owner=-` on the first line after a restart -
+resolving an offline player's name reads from disk, and that is not done during a click. The
+`owner-uuid` beside it is always correct, and the name is there from the next trade onward.
+
+Stock removed through the developer API (a sell wand, for instance) is NOT a trade and is not
+logged.
 {% endhint %}
 
 ## Reloading

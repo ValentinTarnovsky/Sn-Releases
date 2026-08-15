@@ -22,6 +22,12 @@ the block, and right-clicking it is the whole interface.
   item's enchantments and custom name are kept as their own variant.
 - **As many currencies as you configure.** Each one is independently backed by an economy plugin's
   commands or by EdTools, so coins, gems and tokens can run side by side and each shop picks one.
+  Delete one and its shops are moved to another instead of being stranded.
+- **No ghost shops.** A shop whose block went missing while the plugin was not watching gets its
+  block back as the chunk loads, so a shop is never left counting against a limit at coordinates
+  nobody can find.
+- **A trade log.** Every completed purchase and sale, one line each, in a dated file under
+  `logs/` - who traded, at which shop, what, how many, for how much and in which currency.
 - **Island aware.** With SuperiorSkyblock installed, shops on an island can be removed with it when
   the island disbands or when their owner loses membership. Both are switches, and both are off
   limits to guesswork: see the warnings in `config.yml`.
