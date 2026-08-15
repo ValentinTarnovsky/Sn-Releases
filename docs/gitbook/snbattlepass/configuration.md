@@ -60,12 +60,6 @@ database:
 presentation:
   # Bare /battlepass: gui opens the main pass menu, chat prints the generated help.
   main: gui
-  # Placeholder deciding which layout a viewer gets. Resolved per player each
-  # time a menu opens: when it reads "true" they see guis/<menu>-alt.yml, and
-  # every other value - including an unresolved placeholder - gives them
-  # guis/<menu>.yml. Leave it empty to switch the alternate set off entirely.
-  # Needs PlaceholderAPI.
-  alternate-gui-placeholder: "%snlt_enabled%"
 
 # ------------------------------------------------------------
 #  Passes. Everyone starts on Free; Gold and Diamond are the paid
@@ -456,8 +450,8 @@ Every player-visible string lives here: messages, notification titles, and the `
 
 ## guis/
 
-Six files, three menus and an alternate layout for each: `main.yml`, `challenges.yml` and `confirm-purchase.yml`, plus `main-alt.yml`, `challenges-alt.yml` and `confirm-purchase-alt.yml`.
+Three files, one per menu: `main.yml`, `challenges.yml` and `confirm-purchase.yml`.
 
 Each menu is a title, a row count, a `layout:` character grid and an `items:` map keyed by the letters in that grid. To move a button, move its letter. To remove one, delete its letter from the layout: a key the layout does not use is hidden, and because the layout is a list value rather than a key, the auto-merge never puts it back.
 
-`presentation.alternate-gui-placeholder` in `config.yml` picks between a menu and its `-alt` twin per viewer, so a rank, a world or anything else a placeholder can answer can select a different layout.
+> Removed in 3.0.0: menus used to ship a second `-alt.yml` layout each, picked per viewer by `presentation.alternate-gui-placeholder`. Both the key and the alternate files are gone, and every player now sees the one layout. Upgrading from 2.0.0 leaves the old key and the three `*-alt.yml` files behind in your data folder: nothing reads them, and you can delete them.
