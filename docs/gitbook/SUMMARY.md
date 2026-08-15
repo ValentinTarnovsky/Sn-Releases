@@ -21,6 +21,16 @@
 * [Developer API](snbans/api.md)
 * [FAQ](snbans/faq.md)
 
+## SnBattlePass
+
+* [Overview](snbattlepass/README.md)
+* [Installation](snbattlepass/installation.md)
+* [Commands](snbattlepass/commands.md)
+* [Permissions](snbattlepass/permissions.md)
+* [Configuration](snbattlepass/configuration.md)
+* [Placeholders](snbattlepass/placeholders.md)
+* [FAQ](snbattlepass/faq.md)
+
 ## SnChat
 
 * [Overview](snchat/README.md)
