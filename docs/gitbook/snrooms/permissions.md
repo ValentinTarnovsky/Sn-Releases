@@ -8,6 +8,7 @@ the parent gets the whole surface.
 | `snrooms.admin` | op | Full administrative access; also gates the `/rooms` root itself |
 | `snrooms.admin.wand` | op | Allows `/rooms wand` |
 | `snrooms.admin.create` | op | Allows `/rooms create` |
+| `snrooms.admin.redefine` | op | Allows `/rooms redefine` |
 | `snrooms.admin.delete` | op | Allows `/rooms delete` |
 | `snrooms.admin.list` | op | Allows `/rooms list` |
 | `snrooms.admin.info` | op | Allows `/rooms info` |
@@ -27,7 +28,7 @@ name for the subcommands it injects into every command root.
 
 ## The `/rooms` root is gated by the parent
 
-The root itself requires `snrooms.admin`. That means the twelve per-action nodes narrow what a
+The root itself requires `snrooms.admin`. That means the per-action nodes narrow what a
 staff member can do **once they already have the parent** - they do not, on their own, let you
 hand out a single action to someone who otherwise has no access to `/rooms`.
 

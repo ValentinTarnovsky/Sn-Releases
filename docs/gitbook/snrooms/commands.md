@@ -10,6 +10,7 @@ room.
 |---|---|---|
 | `/rooms wand` | `snrooms.admin.wand` | Get the room selection wand |
 | `/rooms create <id>` | `snrooms.admin.create` | Create a room from your current selection |
+| `/rooms redefine <id>` | `snrooms.admin.redefine` | Replace the region of a room with your current selection |
 | `/rooms delete <id>` | `snrooms.admin.delete` | Delete a room |
 | `/rooms list` | `snrooms.admin.list` | List every configured room with its live state |
 | `/rooms info <id>` | `snrooms.admin.info` | Show every setting of one room |
@@ -38,6 +39,27 @@ in capitals is accepted and stored lower case.
 `/rooms create` does no validation of what is already inside the region - that is deliberate.
 The shell only ever takes over blocks it can put back, so building a room around an existing
 structure is a supported thing to do.
+
+## Moving or resizing a room
+
+`/rooms redefine <id>` points an existing room at a new region: mark the new box with the wand,
+then run it. The room keeps its id, its exit and every setting it had - only the region changes,
+and the new one may be anywhere, including another world.
+
+The room is **reset onto the new region**, which is what makes this safe rather than clever. A
+room that was sealed, counting down or fighting has a shell standing in the world and players
+counted inside it, all of it describing the region it is about to stop having, so the shell comes
+down and the round is cancelled before the swap. Afterwards the room is reopened and reads who is
+already standing in the new area, so a room drawn around waiting players starts as soon as they
+form a valid composition.
+
+Two things worth knowing:
+
+- a round in progress is **cancelled**, not paused. Redefine an idle room unless you mean to end
+  what is happening in it;
+- if the new region ends up **containing the room's exit**, the plugin says so. Leaving it there
+  would teleport every future round's survivors back inside the room, so set a new one with
+  `/rooms setexit <id>` from outside the region.
 
 ## Editing a room
 

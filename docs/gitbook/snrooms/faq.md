@@ -92,6 +92,13 @@ set it to `0s` and also turned `leaving-counts-as-defeat` off, a player who walk
 out can keep a round running - that combination is what the safety net exists for. `/rooms reset`
 clears it immediately.
 
+### I marked the wrong region, or I need to move a room
+
+`/rooms redefine <id>` with a fresh wand selection. The room keeps its id, its exit and every
+setting; it is reset onto the new region and reopened, so anything it was doing is cancelled
+first. Deleting and recreating the room would work too, but it would hand the room back the
+`default-room` template and lose everything `/rooms set` had changed.
+
 ### Changing `default-room` did nothing to my rooms
 
 That section is the template `/rooms create` copies from. Rooms that already exist keep their
