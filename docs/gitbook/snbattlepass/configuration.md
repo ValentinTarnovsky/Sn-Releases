@@ -454,4 +454,4 @@ Three files, one per menu: `main.yml`, `challenges.yml` and `confirm-purchase.ym
 
 Each menu is a title, a row count, a `layout:` character grid and an `items:` map keyed by the letters in that grid. To move a button, move its letter. To remove one, delete its letter from the layout: a key the layout does not use is hidden, and because the layout is a list value rather than a key, the auto-merge never puts it back.
 
-> Removed in 3.0.0: menus used to ship a second `-alt.yml` layout each, picked per viewer by `presentation.alternate-gui-placeholder`. Both the key and the alternate files are gone, and every player now sees the one layout. Upgrading from 2.0.0 leaves the old key and the three `*-alt.yml` files behind in your data folder: nothing reads them, and you can delete them.
+> Removed in 2.1.0: menus used to ship a second `-alt.yml` layout each, picked per viewer by `presentation.alternate-gui-placeholder`. Both the key and the alternate files are gone, and every player now sees the one layout. Upgrading from 2.0.0 leaves the old key and the three `*-alt.yml` files behind in your data folder: nothing reads them, and you can delete them.
