@@ -207,6 +207,15 @@
 * [Configuration](snreclaim/configuration.md)
 * [FAQ](snreclaim/faq.md)
 
+## SnRooms
+
+* [Overview](snrooms/README.md)
+* [Installation](snrooms/installation.md)
+* [Commands](snrooms/commands.md)
+* [Permissions](snrooms/permissions.md)
+* [Configuration](snrooms/configuration.md)
+* [FAQ](snrooms/faq.md)
+
 ## SnRTP
 
 * [Overview](snrtp/README.md)
