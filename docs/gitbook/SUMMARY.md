@@ -226,6 +226,15 @@
 * [Configuration](snrooms/configuration.md)
 * [FAQ](snrooms/faq.md)
 
+## SnRotatinHeads
+
+* [Overview](snrotatinheads/README.md)
+* [Installation](snrotatinheads/installation.md)
+* [Commands](snrotatinheads/commands.md)
+* [Permissions](snrotatinheads/permissions.md)
+* [Configuration](snrotatinheads/configuration.md)
+* [FAQ](snrotatinheads/faq.md)
+
 ## SnRTP
 
 * [Overview](snrtp/README.md)
