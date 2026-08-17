@@ -64,11 +64,15 @@ defaults:
   # Base64 texture value used when /rotatinheads create omits one. Empty = plain player head.
   texture: ""
   # What a NEW head shows: <material>[:<custom-model-data>|:<item-model key>], for example
-  # paper:1001 or paper:mypack:crown. Empty = a player head showing the texture above.
+  # paper:1001 or paper:mypack:crown, or an engine model: meg:<id> (ModelEngine) or bm:<id>
+  # (BetterModel). Empty = a player head showing the texture above.
   model: ""
   # Item display context of a NEW head, the pivot and base scale its model renders with:
   # ground, fixed, head, gui, none, thirdperson_righthand, ... Player heads read best as ground.
+  # Ignored by engine models (meg:/bm:), which render with their own rig.
   transform: ground
+  # Animation an engine model (meg:/bm:) plays on a NEW head; empty = none. Ignored by other models.
+  animation: idle
 
 # ------------------------------------------------------------
 #  Text label above each head (requires the DecentHolograms plugin).
@@ -126,7 +130,9 @@ messages:
   head-already-exists: "&cA head with id &f{id}&c already exists."
   head-world-unloaded: "&cThe world of head &f{id}&c (&f{world}&c) is not loaded."
   invalid-texture: "&cThat is not a head texture. Use a base64 textures value or a skin URL."
-  invalid-model: "&cInvalid model &f{value}&c. Use &f<material>&c, &f<material>:<custom-model-data>&c, &f<material>:<namespace:key>&c or &fhand&c."
+  invalid-model: "&cInvalid model &f{value}&c. Use &f<material>&c, &f<material>:<custom-model-data>&c, &f<material>:<namespace:key>&c, &fmeg:<model>&c, &fbm:<model>&c or &fhand&c."
+  model-engine-missing: "&cThe model &f{model}&c needs &f{engine}&c, which is not installed or not enabled."
+  model-engine-unknown: "&f{engine}&c has no model named &f{value}&c."
   invalid-transform: "&cInvalid display context: &f{value}"
   model-hand-empty: "&cHold the item whose model the head should show in your main hand."
   not-persisted: "&cWARNING: heads.yml could not be read at the last load, so edits are kept in memory only and NOT saved. Fix or remove the file, then run &f/{label} reload&c."
@@ -140,6 +146,8 @@ messages:
   texture-set: "&aUpdated the texture of head &f{id}&a."
   texture-hidden-by-model: "&eThis head shows the model &f{model}&e, so the texture is not visible until the model is a player head again."
   model-set: "&aHead &f{id}&a now shows &f{model}&a."
+  animation-set: "&aHead &f{id}&a animation set to &f{value}&a."
+  animation-waits-for-engine: "&eThis head shows &f{model}&e; the animation plays once it shows a ModelEngine or BetterModel model."
   transform-set: "&aSet display context of head &f{id}&a to &f{value}&a."
   size-set: "&aSet size of head &f{id}&a to &f{value}&a."
   rotation-set: "&aSet rotation speed of head &f{id}&a to &f{value}&a."
@@ -153,7 +161,7 @@ messages:
   list-entry: "[noprefix]&8 - &f{id} &7@ {world} {x}, {y}, {z}"
   info-header: "&fHead &#8354f2{id}&f:"
   info-location: "[noprefix]&8 - &7Location: &f{world} {x}, {y}, {z}"
-  info-model: "[noprefix]&8 - &7Model: &f{model} &7(&f{transform}&7)"
+  info-model: "[noprefix]&8 - &7Model: &f{model} &7(&f{transform}&7, animation &f{animation}&7)"
   info-size: "[noprefix]&8 - &7Size: &f{size}"
   info-rotation: "[noprefix]&8 - &7Rotation speed: &f{rotation}"
   info-bounce: "[noprefix]&8 - &7Bounce: &fspeed {bounce-speed}&7, &fheight {bounce-height}"
@@ -194,15 +202,19 @@ status:
   unknown: "Unknown"
   # Shown as the model of a head that renders the plain textured player head. Color codes are stripped on read.
   player-head: "player head"
+  # Shown as the animation of a head that plays none. Color codes are stripped on read.
+  none: "none"
 ```
 
 ## heads.yml
 
 Created the first time you save a head. One entry per head, keyed by id. You can edit it by hand and
 run `/rh reload`; the plugin rewrites the whole file after every change. `model` is
-`<material>[:<custom-model-data>|:<item-model key>]` (empty = the textured player head) and
-`transform` is the item display context token (`ground`, `fixed`, `head`, ...); a missing key means
-the configured default and an unreadable value falls back to it with a console warning.
+`<material>[:<custom-model-data>|:<item-model key>]`, `meg:<model>` or `bm:<model>` (empty = the
+textured player head) and
+`transform` is the item display context token (`ground`, `fixed`, `head`, ...); `animation` is the
+animation an engine model (`meg:`/`bm:`) plays, empty for none. A missing key means the configured
+default and an unreadable value falls back to it with a console warning.
 
 ```yaml
 heads:
@@ -216,6 +228,7 @@ heads:
     texture: eyJ0ZXh0dXJlcyI6...
     model: ""
     transform: ground
+    animation: idle
     size: 1.0
     rotation-speed: 0.15
     bounce-speed: 0.12

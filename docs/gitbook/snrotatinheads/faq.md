@@ -42,6 +42,19 @@ Yes. Hold the item and run `/rh model <id> hand`: the head takes its material an
 goes back to the textured skull. If the model renders small, offset or tilted, change its display
 context with `/rh transform <id> fixed` (or `head`); `ground` is the default and is what skulls use.
 
+### Can a head be an animated Blockbench model (bones, idle animation)?
+
+Yes, through a model engine. Install ModelEngine (R4) or BetterModel (2.2.0 or newer; 3.x needs
+Java 25 on the server), load the `.bbmodel` in the engine, then `/rh model <id> meg:<model>` or
+`/rh model <id> bm:<model>`. The head spins, bounces, keeps its label and clicks, and plays the
+`idle` animation by default; change it with `/rh animation <id> <name>`. `size` scales the model.
+
+### My engine-model head is invisible but the label and clicks work.
+
+The engine has no such model right now: it is not installed, still loading its models, reloading,
+or the model was renamed. Check the engine's console output and `/rh info <id>` for the model name.
+The head retries on its own every second and appears as soon as the model is there.
+
 ### I set a texture and nothing changed.
 
 The head shows a model that is not a player head, so there is no skin to render; the command says

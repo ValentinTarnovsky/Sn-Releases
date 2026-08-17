@@ -1,9 +1,10 @@
 # SnRotatinHeads
 
-Decorative rotating, bouncing player heads and custom item models for lobbies and hubs. Place a
-textured head or any resource-pack model anywhere, give it a DecentHolograms text label, and bind
-left and right click actions to it. One shared animation task drives every head with client-side
-interpolation, so hundreds of heads cost almost nothing.
+Decorative rotating, bouncing player heads, item models and animated engine models for lobbies and
+hubs. Place a textured head, any resource-pack item model, or a ModelEngine / BetterModel model
+anywhere, give it a DecentHolograms text label, and bind left and right click actions to it. One
+shared animation task drives every head with client-side interpolation, so hundreds of heads cost
+almost nothing.
 
 ## Features
 
@@ -16,6 +17,9 @@ interpolation, so hundreds of heads cost almost nothing.
   `/rh model <id> hand`, so an ItemsAdder, Nexo or plain resource-pack item becomes a head. The item
   display context (`ground`, `fixed`, `head`, ...) is per head, so a model renders with the pivot it
   was made for.
+- Animated engine models: `/rh model <id> meg:<model>` (ModelEngine) or `bm:<model>` (BetterModel)
+  renders a Blockbench model with bones and animations in place of the skull. It still spins,
+  bounces, carries the label and answers clicks; `/rh animation <id> <name>` picks the animation.
 - Optional DecentHolograms label per head with any number of lines; the label can follow the bounce.
 - Left and right click action lists in the SnLib `[tag] argument` syntax: run commands as the player
   or the console, send messages, play sounds, show titles, and more.
@@ -28,6 +32,10 @@ interpolation, so hundreds of heads cost almost nothing.
   show no label; the plugin tells you so when you add a label line.
 - **PlaceholderAPI**: placeholders in messages, in click action payloads and (through DecentHolograms)
   in label lines. Without it, placeholders are left as typed.
+- **ModelEngine** (R4): `meg:<model>` heads. Without it, such a head stands hitbox-only and appears
+  the moment ModelEngine has the model; the `model` command refuses `meg:` while it is absent.
+- **BetterModel** (2.2.0 or newer; 3.x needs Java 25 on the server): `bm:<model>` heads, same
+  behavior when absent.
 
 ## Links
 

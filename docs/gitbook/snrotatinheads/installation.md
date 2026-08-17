@@ -21,9 +21,11 @@ SnRotatinHeads is licensed. The key in `plugins/.Sn-License/license.yml` is shar
 | SnLib | Yes |
 | DecentHolograms | No (optional, enables the text labels above heads) |
 | PlaceholderAPI | No (optional, enables placeholders in messages, labels and click actions) |
+| ModelEngine | No (optional, enables `meg:<model>` animated heads; R4 or newer) |
+| BetterModel | No (optional, enables `bm:<model>` animated heads; 2.2.0 or newer, and 3.x requires Java 25 on the server) |
 
 {% hint style="info" %}
-When an optional plugin is absent, the matching feature degrades gracefully. Without DecentHolograms heads spin, bounce and click normally and simply show no label; without PlaceholderAPI placeholders stay as typed.
+When an optional plugin is absent, the matching feature degrades gracefully. Without DecentHolograms heads spin, bounce and click normally and simply show no label; without PlaceholderAPI placeholders stay as typed; without its engine an engine-model head stands hitbox-only and appears within a second of the engine having the model.
 {% endhint %}
 
 **Requirements:** Java 21+, Paper 1.20.x or 1.21.x

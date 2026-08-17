@@ -21,8 +21,9 @@ are case-insensitive when you type them.
 | `/rh movehere <id>` | `snrotatinheads.admin.movehere` | Move a head to your position |
 | `/rh tp <id>` | `snrotatinheads.admin.tp` | Teleport yourself to a head (`teleport` also works) |
 | `/rh texture <id> <texture>` | `snrotatinheads.admin.texture` | Set the skin: a base64 textures value or a skin URL (visible while the head shows a skull) |
-| `/rh model <id> <material[:model]/hand>` | `snrotatinheads.admin.model` | Set the item the head shows; `hand` reads it off your main hand, `player_head` goes back to the skull |
-| `/rh transform <id> <mode>` | `snrotatinheads.admin.transform` | Item display context: `ground` (default), `fixed`, `head`, `gui`, `none`, `thirdperson_righthand`, ... |
+| `/rh model <id> <material[:model]/meg:<model>/bm:<model>/hand>` | `snrotatinheads.admin.model` | Set what the head shows: an item, a ModelEngine or BetterModel model, or `hand` for the item in your main hand; `player_head` goes back to the skull |
+| `/rh transform <id> <mode>` | `snrotatinheads.admin.transform` | Item display context of an item model: `ground` (default), `fixed`, `head`, `gui`, `none`, `thirdperson_righthand`, ... |
+| `/rh animation <id> <name/none>` | `snrotatinheads.admin.animation` | Animation an engine model (`meg:`/`bm:`) plays on the head; `none` stops it |
 | `/rh size <id> <value>` | `snrotatinheads.admin.size` | Scale of the head, minimum `0.05` |
 | `/rh rotationspeed <id> <value>` | `snrotatinheads.admin.rotationspeed` | Radians per animation frame; negative reverses, `0` stops |
 | `/rh bouncespeed <id> <value>` | `snrotatinheads.admin.bouncespeed` | Bounce speed multiplier; `0` stops the bounce |
@@ -58,6 +59,32 @@ The texture is only visible while the head shows a player head, and `/rh texture
 Most custom models are designed for one display context. `ground` is the default and is what a
 skull reads best in; if a model looks small, offset or tilted, try `/rh transform <id> fixed` or
 `/rh transform <id> head`. Every value of the vanilla item display context is accepted.
+
+## Engine models (ModelEngine, BetterModel)
+
+An item model is a static shape. A Blockbench model with bones and animations (an NPC that breathes,
+waves, walks in place) needs a model engine, and the head can be one of its models:
+
+| Token | What the head shows |
+|-------|---------------------|
+| `meg:wumpus_npc` | The ModelEngine model `wumpus_npc` |
+| `bm:wumpus_npc` | The BetterModel model `wumpus_npc` |
+
+The head keeps everything else: it spins and bounces (the engine model is moved and turned every
+frame), it carries the label, and its own hitbox still answers clicks. `size` scales the model
+(`1` is its natural size), `viewrange` is its render distance, and the click hitbox grows with the
+model's height. `transform` and `texture` do nothing for an engine model.
+
+`/rh animation <id> <name>` picks the animation the model plays (`idle` by default, from
+`defaults.animation`); `/rh animation <id> none` stops it. Tab completion lists the models the
+installed engines have and the animations of the models in use. A name the model does not have is
+ignored.
+
+{% hint style="info" %}
+The engine has to be installed and enabled, and the model loaded, when you run `/rh model`; the
+command refuses otherwise and names the engine. Later, if the engine is still loading its models at
+boot, reloads them, or restarts, the head waits hitbox-only and appears again within a second.
+{% endhint %}
 
 ## Click actions
 
