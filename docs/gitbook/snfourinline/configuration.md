@@ -94,3 +94,5 @@ Every line the plugin sends, plus a `status:` block with the short state words s
 ## guis/board.yml, guis/lobby.yml, guis/leaderboard.yml
 
 The three menus. The layout mask, the materials, the names, the lore and which cell carries which click action are all yours. The code reads the cells from the mask, so moving the sidebar or repositioning the 42 board cells works. The grid itself is always 7 columns by 6 rows.
+
+One rule when restyling player heads: the `skull-owner` lines bind from a `{curly}` placeholder (for example `{player_uuid}`), never a `%percent%` one. The percent form is claimed by PlaceholderAPI and resolves against whoever is looking at the menu, which paints the viewer's own skin on every head. Keep the braces and each head shows the right player.
