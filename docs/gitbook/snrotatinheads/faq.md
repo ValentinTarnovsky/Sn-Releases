@@ -7,6 +7,13 @@ Labels need DecentHolograms. Without it, heads spin, bounce and click normally, 
 check `hologram.enabled` in `config.yml`, then run `/rh reload`. If DecentHolograms was enabled after
 this plugin, the labels are re-anchored automatically.
 
+### The label sits too high, too low, or its lines are too far apart.
+
+Both are per head: `/rh hologram offset <id> <blocks>` moves the whole label up or down (a
+negative value sits it below the anchor) and `/rh hologram spacing <id> <blocks>` sets the distance
+between the lines (`0.25` is the DecentHolograms default). `hologram.y-offset` and
+`hologram.line-height` in `config.yml` only decide what a NEW head starts with.
+
 ### The head does not react to left click, right click works.
 
 Left click arrives as an attack on the hitbox. A plugin that cancels attacks before they reach the

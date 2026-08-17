@@ -80,8 +80,12 @@ defaults:
 hologram:
   # Master toggle of the labels. Heads work without labels when false or when DecentHolograms is absent.
   enabled: true
-  # Blocks above the head position where the label is anchored.
+  # Blocks above the head position where the label of a NEWLY created head is anchored
+  # (per head afterwards: /rotatinheads hologram offset <id> <blocks>).
   y-offset: 1.2
+  # Blocks between two label lines of a NEWLY created head
+  # (per head afterwards: /rotatinheads hologram spacing <id> <blocks>).
+  line-height: 0.25
   # Default follow-bounce for a NEWLY created head: true makes the label bob with the head.
   follow-bounce: false
 ```
@@ -167,6 +171,7 @@ messages:
   info-bounce: "[noprefix]&8 - &7Bounce: &fspeed {bounce-speed}&7, &fheight {bounce-height}"
   info-view-range: "[noprefix]&8 - &7View range: &f{view-range} blocks"
   info-hologram-lines: "[noprefix]&8 - &7Hologram lines: &f{count}"
+  info-hologram-layout: "[noprefix]&8 - &7Hologram offset: &f{offset}&7, line spacing: &f{spacing}"
   info-actions: "[noprefix]&8 - &7Actions: &fleft {left}&7, &fright {right}"
 
   # Hologram lines (0-indexed)
@@ -174,6 +179,8 @@ messages:
   hologram-line-set: "&aSet hologram line &f{line}&a of head &f{id}&a."
   hologram-cleared: "&aCleared hologram lines of head &f{id}&a."
   hologram-follow-set: "&aHologram of head &f{id}&a follow-bounce set to &f{value}&a."
+  hologram-offset-set: "&aSet hologram offset of head &f{id}&a to &f{value}&a blocks."
+  hologram-spacing-set: "&aSet hologram line spacing of head &f{id}&a to &f{value}&a blocks."
   hologram-list-header: "&fHologram lines of head &#8354f2{id}&f &7(line numbers start at 0)&f:"
   hologram-list-entry: "[noprefix]&8 - &7[{index}] &r{line}"
   hologram-list-empty: "&7Head &f{id}&7 has no hologram lines yet. Add one with &f/{label} hologram add {id} <text>&7."
@@ -213,8 +220,10 @@ run `/rh reload`; the plugin rewrites the whole file after every change. `model`
 `<material>[:<custom-model-data>|:<item-model key>]`, `meg:<model>` or `bm:<model>` (empty = the
 textured player head) and
 `transform` is the item display context token (`ground`, `fixed`, `head`, ...); `animation` is the
-animation an engine model (`meg:`/`bm:`) plays, empty for none. A missing key means the configured
-default and an unreadable value falls back to it with a console warning.
+animation an engine model (`meg:`/`bm:`) plays, empty for none; `hologram-offset` and
+`hologram-line-height` are the label height above the head and the distance between its lines. A
+missing key means the configured default and an unreadable value falls back to it with a console
+warning.
 
 ```yaml
 heads:
@@ -235,6 +244,8 @@ heads:
     bounce-height: 0.25
     view-range: 48.0
     follow-bounce: false
+    hologram-offset: 1.2
+    hologram-line-height: 0.25
     hologram-lines:
     - "&aWelcome"
     actions:

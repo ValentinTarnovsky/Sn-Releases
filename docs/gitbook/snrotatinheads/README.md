@@ -20,7 +20,8 @@ almost nothing.
 - Animated engine models: `/rh model <id> meg:<model>` (ModelEngine) or `bm:<model>` (BetterModel)
   renders a Blockbench model with bones and animations in place of the skull. It still spins,
   bounces, carries the label and answers clicks; `/rh animation <id> <name>` picks the animation.
-- Optional DecentHolograms label per head with any number of lines; the label can follow the bounce.
+- Optional DecentHolograms label per head with any number of lines; the label can follow the bounce,
+  and its height above the head and its line spacing are set per head.
 - Left and right click action lists in the SnLib `[tag] argument` syntax: run commands as the player
   or the console, send messages, play sounds, show titles, and more.
 - Heads spawn and despawn with their chunks, survive restarts and unclean shutdowns, and reload live

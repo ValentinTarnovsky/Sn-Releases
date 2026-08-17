@@ -34,6 +34,8 @@ are case-insensitive when you type them.
 | `/rh hologram set <id> <line> <text>` | `snrotatinheads.admin.hologram` | Replace the line at that index |
 | `/rh hologram clear <id>` | `snrotatinheads.admin.hologram` | Remove every label line and the label itself |
 | `/rh hologram followbounce <id> <true/false>` | `snrotatinheads.admin.hologram` | Make the label bob with the head |
+| `/rh hologram offset <id> <blocks>` | `snrotatinheads.admin.hologram` | How high above the head the label sits (negative sits it lower) |
+| `/rh hologram spacing <id> <blocks>` | `snrotatinheads.admin.hologram` | Distance between the label lines |
 | `/rh action add <id> <left/right/any> <[tag]> [argument]` | `snrotatinheads.admin.action` | Add a click action to one side or both |
 | `/rh action remove <id> <left/right/any> <index>` | `snrotatinheads.admin.action` | Remove the action at that index (starting at 0) |
 | `/rh action clear <id> <left/right/any>` | `snrotatinheads.admin.action` | Remove every action of that side |
