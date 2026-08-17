@@ -141,6 +141,16 @@
 * [Developer API](snelementalgems/api.md)
 * [FAQ](snelementalgems/faq.md)
 
+## SnFourInLine
+
+* [Overview](snfourinline/README.md)
+* [Installation](snfourinline/installation.md)
+* [Commands](snfourinline/commands.md)
+* [Permissions](snfourinline/permissions.md)
+* [Configuration](snfourinline/configuration.md)
+* [Placeholders](snfourinline/placeholders.md)
+* [FAQ](snfourinline/faq.md)
+
 ## SnGifts
 
 * [Overview](sngifts/README.md)
