@@ -31,6 +31,15 @@
 * [Placeholders](snbattlepass/placeholders.md)
 * [FAQ](snbattlepass/faq.md)
 
+## SnCaptcha
+
+* [Overview](sncaptcha/README.md)
+* [Installation](sncaptcha/installation.md)
+* [Commands](sncaptcha/commands.md)
+* [Permissions](sncaptcha/permissions.md)
+* [Configuration](sncaptcha/configuration.md)
+* [FAQ](sncaptcha/faq.md)
+
 ## SnChat
 
 * [Overview](snchat/README.md)
