@@ -19,7 +19,11 @@ almost nothing.
   was made for.
 - Animated engine models: `/rh model <id> meg:<model>` (ModelEngine) or `bm:<model>` (BetterModel)
   renders a Blockbench model with bones and animations in place of the skull. It still spins,
-  bounces, carries the label and answers clicks; `/rh animation <id> <name>` picks the animation.
+  bounces, carries the label and answers clicks; `/rh animation set <id> <name>` picks the looping
+  animation.
+- Animation sequences: `/rh animation add <id> <seconds> <name>` plays another animation once
+  every so many seconds on top of the loop (idle all the time, wave every 80s), and the engine
+  falls back to the loop on its own when it ends.
 - Optional DecentHolograms label per head with any number of lines; the label can follow the bounce,
   and its height above the head and its line spacing are set per head.
 - Left and right click action lists in the SnLib `[tag] argument` syntax: run commands as the player

@@ -71,7 +71,8 @@ defaults:
   # ground, fixed, head, gui, none, thirdperson_righthand, ... Player heads read best as ground.
   # Ignored by engine models (meg:/bm:), which render with their own rig.
   transform: ground
-  # Animation an engine model (meg:/bm:) plays on a NEW head; empty = none. Ignored by other models.
+  # Looping animation an engine model (meg:/bm:) plays on a NEW head; empty = none. Ignored by
+  # other models. Timed one-shot animations are per head: /rotatinheads animation add <id> <seconds> <name>.
   animation: idle
 
 # ------------------------------------------------------------
@@ -150,8 +151,18 @@ messages:
   texture-set: "&aUpdated the texture of head &f{id}&a."
   texture-hidden-by-model: "&eThis head shows the model &f{model}&e, so the texture is not visible until the model is a player head again."
   model-set: "&aHead &f{id}&a now shows &f{model}&a."
-  animation-set: "&aHead &f{id}&a animation set to &f{value}&a."
+  animation-set: "&aHead &f{id}&a looping animation set to &f{value}&a."
   animation-waits-for-engine: "&eThis head shows &f{model}&e; the animation plays once it shows a ModelEngine or BetterModel model."
+
+  # Timed animations (0-indexed): one-shot animations layered over the looping one.
+  animation-added: "&aHead &f{id}&a now plays &f{name}&a once every &f{seconds}&a seconds."
+  animation-removed: "&aRemoved timed animation &f#{index}&a from head &f{id}&a."
+  animation-cleared: "&aCleared the timed animations of head &f{id}&a."
+  animation-invalid-index: "&cInvalid timed animation index: &f{value}"
+  animation-list-header: "&fAnimations of head &#8354f2{id}&f:"
+  animation-list-looping: "[noprefix]&8 - &7Looping: &f{value}"
+  animation-list-entry: "[noprefix]&8 - &7[{index}] &fevery {seconds}s &8- &f{name}"
+  animation-list-empty: "[noprefix]&8 - &7No timed animations. Add one with &f/{label} animation add <id> <seconds> <name>&7."
   transform-set: "&aSet display context of head &f{id}&a to &f{value}&a."
   size-set: "&aSet size of head &f{id}&a to &f{value}&a."
   rotation-set: "&aSet rotation speed of head &f{id}&a to &f{value}&a."
@@ -166,6 +177,7 @@ messages:
   info-header: "&fHead &#8354f2{id}&f:"
   info-location: "[noprefix]&8 - &7Location: &f{world} {x}, {y}, {z}"
   info-model: "[noprefix]&8 - &7Model: &f{model} &7(&f{transform}&7, animation &f{animation}&7)"
+  info-timed-animations: "[noprefix]&8 - &7Timed animations: &f{count}"
   info-size: "[noprefix]&8 - &7Size: &f{size}"
   info-rotation: "[noprefix]&8 - &7Rotation speed: &f{rotation}"
   info-bounce: "[noprefix]&8 - &7Bounce: &fspeed {bounce-speed}&7, &fheight {bounce-height}"
@@ -220,10 +232,12 @@ run `/rh reload`; the plugin rewrites the whole file after every change. `model`
 `<material>[:<custom-model-data>|:<item-model key>]`, `meg:<model>` or `bm:<model>` (empty = the
 textured player head) and
 `transform` is the item display context token (`ground`, `fixed`, `head`, ...); `animation` is the
-animation an engine model (`meg:`/`bm:`) plays, empty for none; `hologram-offset` and
+looping animation an engine model (`meg:`/`bm:`) plays, empty for none; `timed-animations` is the
+list of one-shot animations layered over it, one `{every: <seconds>, play: <name>}` entry each
+(seconds floored at 1); `hologram-offset` and
 `hologram-line-height` are the label height above the head and the distance between its lines. A
 missing key means the configured default and an unreadable value falls back to it with a console
-warning.
+warning (an unusable `timed-animations` entry is skipped with a warning).
 
 ```yaml
 heads:
@@ -238,6 +252,9 @@ heads:
     model: ""
     transform: ground
     animation: idle
+    timed-animations:
+    - every: 80.0
+      play: wave
     size: 1.0
     rotation-speed: 0.15
     bounce-speed: 0.12

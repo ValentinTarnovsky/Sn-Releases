@@ -23,7 +23,11 @@ are case-insensitive when you type them.
 | `/rh texture <id> <texture>` | `snrotatinheads.admin.texture` | Set the skin: a base64 textures value or a skin URL (visible while the head shows a skull) |
 | `/rh model <id> <material[:model]/meg:<model>/bm:<model>/hand>` | `snrotatinheads.admin.model` | Set what the head shows: an item, a ModelEngine or BetterModel model, or `hand` for the item in your main hand; `player_head` goes back to the skull |
 | `/rh transform <id> <mode>` | `snrotatinheads.admin.transform` | Item display context of an item model: `ground` (default), `fixed`, `head`, `gui`, `none`, `thirdperson_righthand`, ... |
-| `/rh animation <id> <name/none>` | `snrotatinheads.admin.animation` | Animation an engine model (`meg:`/`bm:`) plays on the head; `none` stops it |
+| `/rh animation set <id> <name/none>` | `snrotatinheads.admin.animation` | Looping animation an engine model (`meg:`/`bm:`) plays on the head; `none` stops it |
+| `/rh animation add <id> <seconds> <name>` | `snrotatinheads.admin.animation` | Play an animation once every so many seconds, on top of the looping one (minimum 1s) |
+| `/rh animation remove <id> <index>` | `snrotatinheads.admin.animation` | Remove the timed animation at that index (starting at 0) |
+| `/rh animation list <id>` | `snrotatinheads.admin.animation` | Show the looping animation and the timed ones with their index |
+| `/rh animation clear <id>` | `snrotatinheads.admin.animation` | Remove every timed animation; the looping one stays |
 | `/rh size <id> <value>` | `snrotatinheads.admin.size` | Scale of the head, minimum `0.05` |
 | `/rh rotationspeed <id> <value>` | `snrotatinheads.admin.rotationspeed` | Radians per animation frame; negative reverses, `0` stops |
 | `/rh bouncespeed <id> <value>` | `snrotatinheads.admin.bouncespeed` | Bounce speed multiplier; `0` stops the bounce |
@@ -77,10 +81,27 @@ frame), it carries the label, and its own hitbox still answers clicks. `size` sc
 (`1` is its natural size), `viewrange` is its render distance, and the click hitbox grows with the
 model's height. `transform` and `texture` do nothing for an engine model.
 
-`/rh animation <id> <name>` picks the animation the model plays (`idle` by default, from
-`defaults.animation`); `/rh animation <id> none` stops it. Tab completion lists the models the
-installed engines have and the animations of the models in use. A name the model does not have is
-ignored.
+`/rh animation set <id> <name>` picks the animation the model plays on loop (`idle` by default,
+from `defaults.animation`); `/rh animation set <id> none` stops it. The loop is forced by the
+plugin, whatever loop mode the animation was authored with, because this is the animation that
+plays all the time. Tab completion lists the models the installed engines have and the animations
+of the models in use. A name the model does not have is ignored.
+
+### Animation sequences
+
+A model with several animations does not have to pick one: `/rh animation add <id> <seconds>
+<name>` plays `<name>` ONCE every `<seconds>` on top of the looping animation, and the engine
+falls back to the loop on its own when it ends. So "idle all the time, wave every 80 seconds" is:
+
+```
+/rh animation set npc idle
+/rh animation add npc 80 wave
+```
+
+Any number of timed animations per head, each with its own period (`/rh animation list`, `remove
+<index>`, `clear` manage them). The first play happens one full period after the head spawns, and
+the countdown pauses while the head's chunk is unloaded. Whether the one-shot replaces or blends
+with the loop on the bones they share follows the animation's own override flag in Blockbench.
 
 {% hint style="info" %}
 The engine has to be installed and enabled, and the model loaded, when you run `/rh model`; the

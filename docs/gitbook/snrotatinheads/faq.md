@@ -54,7 +54,15 @@ context with `/rh transform <id> fixed` (or `head`); `ground` is the default and
 Yes, through a model engine. Install ModelEngine (R4) or BetterModel (2.2.0 or newer; 3.x needs
 Java 25 on the server), load the `.bbmodel` in the engine, then `/rh model <id> meg:<model>` or
 `/rh model <id> bm:<model>`. The head spins, bounces, keeps its label and clicks, and plays the
-`idle` animation by default; change it with `/rh animation <id> <name>`. `size` scales the model.
+`idle` animation on loop by default; change it with `/rh animation set <id> <name>`. `size` scales
+the model.
+
+### Can the model play an extra animation every so often (a wave, a dance)?
+
+Yes: `/rh animation add <id> <seconds> <name>` plays `<name>` once every `<seconds>` on top of the
+looping animation, and the model returns to the loop by itself when it ends. Add as many timed
+animations as you want (`/rh animation list`, `remove <index>`, `clear` manage them); the minimum
+period is 1 second and the first play happens one full period after the head spawns.
 
 ### My engine-model head is invisible but the label and clicks work.
 
