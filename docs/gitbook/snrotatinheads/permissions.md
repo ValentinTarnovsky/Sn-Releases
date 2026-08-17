@@ -16,6 +16,8 @@ below; grant single nodes for finer control.
 | `snrotatinheads.admin.movehere` | op | `/rh movehere` |
 | `snrotatinheads.admin.tp` | op | `/rh tp` |
 | `snrotatinheads.admin.texture` | op | `/rh texture` |
+| `snrotatinheads.admin.model` | op | `/rh model` |
+| `snrotatinheads.admin.transform` | op | `/rh transform` |
 | `snrotatinheads.admin.size` | op | `/rh size` |
 | `snrotatinheads.admin.rotationspeed` | op | `/rh rotationspeed` |
 | `snrotatinheads.admin.bouncespeed` | op | `/rh bouncespeed` |

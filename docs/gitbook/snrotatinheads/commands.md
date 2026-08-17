@@ -20,7 +20,9 @@ are case-insensitive when you type them.
 | `/rh info <id>` | `snrotatinheads.admin.info` | Show the settings of a head and its line and action counts |
 | `/rh movehere <id>` | `snrotatinheads.admin.movehere` | Move a head to your position |
 | `/rh tp <id>` | `snrotatinheads.admin.tp` | Teleport yourself to a head (`teleport` also works) |
-| `/rh texture <id> <texture>` | `snrotatinheads.admin.texture` | Set the skin: a base64 textures value or a skin URL |
+| `/rh texture <id> <texture>` | `snrotatinheads.admin.texture` | Set the skin: a base64 textures value or a skin URL (visible while the head shows a skull) |
+| `/rh model <id> <material[:model]/hand>` | `snrotatinheads.admin.model` | Set the item the head shows; `hand` reads it off your main hand, `player_head` goes back to the skull |
+| `/rh transform <id> <mode>` | `snrotatinheads.admin.transform` | Item display context: `ground` (default), `fixed`, `head`, `gui`, `none`, `thirdperson_righthand`, ... |
 | `/rh size <id> <value>` | `snrotatinheads.admin.size` | Scale of the head, minimum `0.05` |
 | `/rh rotationspeed <id> <value>` | `snrotatinheads.admin.rotationspeed` | Radians per animation frame; negative reverses, `0` stops |
 | `/rh bouncespeed <id> <value>` | `snrotatinheads.admin.bouncespeed` | Bounce speed multiplier; `0` stops the bounce |
@@ -35,6 +37,27 @@ are case-insensitive when you type them.
 | `/rh action remove <id> <left/right/any> <index>` | `snrotatinheads.admin.action` | Remove the action at that index (starting at 0) |
 | `/rh action clear <id> <left/right/any>` | `snrotatinheads.admin.action` | Remove every action of that side |
 | `/rh action list <id> <left/right/any>` | `snrotatinheads.admin.action` | Show the actions of that side with their index |
+
+## Custom models
+
+A head shows the textured player head unless you give it a model. A model is one token:
+
+| Token | What the head shows |
+|-------|---------------------|
+| `paper:1001` | The item `paper` with `custom-model-data` 1001 (every server version) |
+| `paper:mypack:crown` | The item `paper` with the `item_model` component `mypack:crown` (1.21.2 or newer; older servers show the plain item) |
+| `diamond_sword` | The plain item |
+| `player_head:7` | A player head with a model selector; the texture still applies |
+| `player_head` | Back to the textured player head |
+| `hand` | Whatever you hold in your main hand: its material and its `item_model` (1.21.2+) or `custom-model-data` |
+
+`hand` is the easy way in: hold the ItemsAdder, Nexo or resource-pack item, run `/rh model <id> hand`,
+done. The head keeps its texture, size, rotation, bounce, label and actions; only the item changes.
+The texture is only visible while the head shows a player head, and `/rh texture` tells you so.
+
+Most custom models are designed for one display context. `ground` is the default and is what a
+skull reads best in; if a model looks small, offset or tilted, try `/rh transform <id> fixed` or
+`/rh transform <id> head`. Every value of the vanilla item display context is accepted.
 
 ## Click actions
 

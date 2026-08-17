@@ -63,6 +63,12 @@ defaults:
   view-range: 48
   # Base64 texture value used when /rotatinheads create omits one. Empty = plain player head.
   texture: ""
+  # What a NEW head shows: <material>[:<custom-model-data>|:<item-model key>], for example
+  # paper:1001 or paper:mypack:crown. Empty = a player head showing the texture above.
+  model: ""
+  # Item display context of a NEW head, the pivot and base scale its model renders with:
+  # ground, fixed, head, gui, none, thirdperson_righthand, ... Player heads read best as ground.
+  transform: ground
 
 # ------------------------------------------------------------
 #  Text label above each head (requires the DecentHolograms plugin).
@@ -120,6 +126,9 @@ messages:
   head-already-exists: "&cA head with id &f{id}&c already exists."
   head-world-unloaded: "&cThe world of head &f{id}&c (&f{world}&c) is not loaded."
   invalid-texture: "&cThat is not a head texture. Use a base64 textures value or a skin URL."
+  invalid-model: "&cInvalid model &f{value}&c. Use &f<material>&c, &f<material>:<custom-model-data>&c, &f<material>:<namespace:key>&c or &fhand&c."
+  invalid-transform: "&cInvalid display context: &f{value}"
+  model-hand-empty: "&cHold the item whose model the head should show in your main hand."
   not-persisted: "&cWARNING: heads.yml could not be read at the last load, so edits are kept in memory only and NOT saved. Fix or remove the file, then run &f/{label} reload&c."
   hologram-provider-missing: "&eDecentHolograms is not installed or labels are disabled; the head works but its text label is not shown."
 
@@ -129,6 +138,9 @@ messages:
   head-moved: "&aMoved head &f{id}&a to your location."
   head-teleported: "&aTeleported to head &f{id}&a."
   texture-set: "&aUpdated the texture of head &f{id}&a."
+  texture-hidden-by-model: "&eThis head shows the model &f{model}&e, so the texture is not visible until the model is a player head again."
+  model-set: "&aHead &f{id}&a now shows &f{model}&a."
+  transform-set: "&aSet display context of head &f{id}&a to &f{value}&a."
   size-set: "&aSet size of head &f{id}&a to &f{value}&a."
   rotation-set: "&aSet rotation speed of head &f{id}&a to &f{value}&a."
   bounce-speed-set: "&aSet bounce speed of head &f{id}&a to &f{value}&a."
@@ -141,6 +153,7 @@ messages:
   list-entry: "[noprefix]&8 - &f{id} &7@ {world} {x}, {y}, {z}"
   info-header: "&fHead &#8354f2{id}&f:"
   info-location: "[noprefix]&8 - &7Location: &f{world} {x}, {y}, {z}"
+  info-model: "[noprefix]&8 - &7Model: &f{model} &7(&f{transform}&7)"
   info-size: "[noprefix]&8 - &7Size: &f{size}"
   info-rotation: "[noprefix]&8 - &7Rotation speed: &f{rotation}"
   info-bounce: "[noprefix]&8 - &7Bounce: &fspeed {bounce-speed}&7, &fheight {bounce-height}"
@@ -179,12 +192,17 @@ status:
   side-any: "any"
   # Shown instead of a world name that no longer resolves. Color codes are stripped on read.
   unknown: "Unknown"
+  # Shown as the model of a head that renders the plain textured player head. Color codes are stripped on read.
+  player-head: "player head"
 ```
 
 ## heads.yml
 
 Created the first time you save a head. One entry per head, keyed by id. You can edit it by hand and
-run `/rh reload`; the plugin rewrites the whole file after every change.
+run `/rh reload`; the plugin rewrites the whole file after every change. `model` is
+`<material>[:<custom-model-data>|:<item-model key>]` (empty = the textured player head) and
+`transform` is the item display context token (`ground`, `fixed`, `head`, ...); a missing key means
+the configured default and an unreadable value falls back to it with a console warning.
 
 ```yaml
 heads:
@@ -196,6 +214,8 @@ heads:
     yaw: 90.0
     pitch: 0.0
     texture: eyJ0ZXh0dXJlcyI6...
+    model: ""
+    transform: ground
     size: 1.0
     rotation-speed: 0.15
     bounce-speed: 0.12

@@ -34,6 +34,19 @@ so nothing is overwritten. Every command answers with the same notice until then
 They should keep spinning at a constant rate from every angle. If they seem to face you, another
 plugin is changing the display billboard; SnRotatinHeads uses a fixed billboard on purpose.
 
+### Can a head show a custom model or an ItemsAdder / Nexo item instead of a skull?
+
+Yes. Hold the item and run `/rh model <id> hand`: the head takes its material and its model selector
+(`item_model` on 1.21.2 or newer, otherwise `custom-model-data`). You can also type it:
+`/rh model <id> paper:1001` or `/rh model <id> paper:mypack:crown`. `/rh model <id> player_head`
+goes back to the textured skull. If the model renders small, offset or tilted, change its display
+context with `/rh transform <id> fixed` (or `head`); `ground` is the default and is what skulls use.
+
+### I set a texture and nothing changed.
+
+The head shows a model that is not a player head, so there is no skin to render; the command says
+so. Run `/rh model <id> player_head` and the texture shows again.
+
 ### Which texture formats does /rh texture accept?
 
 A base64 `textures` value (the long `eyJ...` string), a `texture:` or `base64:` prefixed value, or a
