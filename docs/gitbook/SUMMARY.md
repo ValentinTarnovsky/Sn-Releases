@@ -141,6 +141,17 @@
 * [Developer API](snelementalgems/api.md)
 * [FAQ](snelementalgems/faq.md)
 
+## SnEnvoys
+
+* [Overview](snenvoys/README.md)
+* [Installation](snenvoys/installation.md)
+* [Commands](snenvoys/commands.md)
+* [Permissions](snenvoys/permissions.md)
+* [Configuration](snenvoys/configuration.md)
+* [Placeholders](snenvoys/placeholders.md)
+* [Developer API](snenvoys/api.md)
+* [FAQ](snenvoys/faq.md)
+
 ## SnFourInLine
 
 * [Overview](snfourinline/README.md)
