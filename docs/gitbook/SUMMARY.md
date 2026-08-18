@@ -238,6 +238,16 @@
 * [Configuration](snpickaxes/configuration.md)
 * [FAQ](snpickaxes/faq.md)
 
+## SnRankPerks
+
+* [Overview](snrankperks/README.md)
+* [Installation](snrankperks/installation.md)
+* [Commands](snrankperks/commands.md)
+* [Permissions](snrankperks/permissions.md)
+* [Configuration](snrankperks/configuration.md)
+* [Placeholders](snrankperks/placeholders.md)
+* [FAQ](snrankperks/faq.md)
+
 ## SnRankUp
 
 * [Overview](snrankup/README.md)
