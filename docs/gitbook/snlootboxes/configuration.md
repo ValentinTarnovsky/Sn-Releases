@@ -13,6 +13,8 @@ The `lootboxes/` folder is the exception: it is yours. The plugin never merges o
 #  comments are preserved. Do NOT add a config-version key (retired).
 #  Set update-configs: false to freeze this file (SnLib only warns about
 #  missing keys instead of inserting them).
+#  Sections marked "# sn:extensible" are yours: entries you delete there
+#  stay deleted.
 # ============================================================
 
 # Active language code; loads lang/messages_<code>.yml (falls back to en).
@@ -39,6 +41,11 @@ command:
 
 # ------------------------------------------------------------
 #  Key items. How generated keys behave in inventories.
+#  Pick an INERT key material (TRIPWIRE_HOOK, ENDER_CHEST, NETHER_STAR...).
+#  The plugin blocks the common vanilla consumption vectors (placing/using,
+#  entity interaction, crafting, furnace, dispenser) - a key in hand also
+#  blocks trading and mounting until moved off that slot - but exotic
+#  consumers of edible/smeltable/ammo materials cannot all be guarded.
 # ------------------------------------------------------------
 key-items:
   # true  -> keys of the same lootbox stack up to the vanilla max.
@@ -93,10 +100,23 @@ fast-open:
 # ------------------------------------------------------------
 session:
   # Seconds before an open GUI auto-closes (applies to every lootbox).
+  # 0 or below disables the timeout: sessions then settle only when the
+  # player closes the GUI, quits or the server stops.
   timeout-seconds: 300
   # true  -> a timed-out session rolls every missing reward and delivers them.
   # false -> only already-rolled rewards are delivered, then the GUI closes.
   auto-complete-on-timeout: true
+
+# ------------------------------------------------------------
+#  Editor. Chat-prompt behaviour of /lootbox editor.
+# ------------------------------------------------------------
+editor:
+  # Seconds before an unanswered chat prompt expires; after that the next
+  # chat message goes to normal chat again. 0 or below never expires.
+  prompt-timeout-seconds: 60
+  # Window in which a shift-click confirms an armed delete (any first click
+  # arms it). Floored at 1: the two-step confirm cannot be disabled.
+  delete-confirm-seconds: 10
 
 # ------------------------------------------------------------
 #  Delivery. Caps how many accounts sharing one IP receive keys from
@@ -129,6 +149,11 @@ access:
 
 # ------------------------------------------------------------
 #  Effects. Sounds and particles of the opening animation.
+#  Sound spec: "SOUND_ID [volume] [pitch]"; "none" disables one.
+#  complete-particle: particles that need extra spawn data (DUST, BLOCK,
+#  ITEM, ...) are not supported and disable the burst; "none" disables it.
+#  complete-particle-count is capped at 1000 (a huge count is one packet
+#  that can freeze every client in view distance).
 # ------------------------------------------------------------
 effects:
   normal-roll-sound: "BLOCK_NOTE_BLOCK_HAT"
@@ -143,12 +168,14 @@ effects:
 #    message placeholders      : {player} {display_name} {normal_rewards}
 #                                {super_reward} {hex-1/2/3} {bullet}
 #    *-line-format placeholders: {amount} {displayname} {bullet} {hex-1/2/3}
+#  NOTE: a line containing {normal_rewards} is REPLACED by one formatted line
+#  per reward - any other text on that line is discarded, so keep it alone.
 #  mode: "broadcast" (everyone) | "player" (opener only) | "none" (disable)
 #  A lootbox with announce-personal: true always announces to the opener only.
-#  NOTE: [center] works in both modes. The difference: "player" renders the
-#  full text pipeline (PAPI placeholders resolve against the opener), while
-#  broadcast renders legacy & / hex colors only - PAPI and MiniMessage tags
-#  stay as-is (there is no single viewer to resolve them against).
+#  NOTE: both modes render the full text pipeline (colors, hex, MiniMessage,
+#  [center]). The difference is PAPI context: "player" resolves placeholders
+#  against the opener, broadcast resolves them in SERVER context - global
+#  placeholders work, per-viewer ones cannot (there is no single viewer).
 # ------------------------------------------------------------
 announce:
   enabled: true
