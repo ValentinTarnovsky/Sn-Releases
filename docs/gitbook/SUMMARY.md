@@ -198,6 +198,16 @@
 * [Placeholders](snkits/placeholders.md)
 * [FAQ](snkits/faq.md)
 
+## SnLootBoxes
+
+* [Overview](snlootboxes/README.md)
+* [Installation](snlootboxes/installation.md)
+* [Commands](snlootboxes/commands.md)
+* [Permissions](snlootboxes/permissions.md)
+* [Configuration](snlootboxes/configuration.md)
+* [Placeholders](snlootboxes/placeholders.md)
+* [FAQ](snlootboxes/faq.md)
+
 ## SnMiniGames
 
 * [Overview](snminigames/README.md)
