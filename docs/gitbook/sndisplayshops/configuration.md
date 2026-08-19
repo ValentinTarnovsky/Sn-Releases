@@ -122,11 +122,19 @@ migrates. If nothing is left to move shops TO, the sweep does nothing and says s
 ```yaml
 limits:
   max-shops-per-player: 100
+  max-shops-permission-prefix: "sndisplayshops.limit"
   external-interaction-cooldown-seconds: 5
   max-pickup-stacks: 256
 ```
 
-`max-shops-per-player`: `-1` is unlimited, `0` forbids creation.
+`max-shops-per-player`: `-1` is unlimited, `0` forbids creation. This is the number for a player
+holding none of the permission nodes below.
+
+`max-shops-permission-prefix` is the prefix of the per-rank override node - see
+[Permissions](permissions.md#how-many-shops-a-player-may-own) for the full node shape and how
+several matching nodes resolve. It REPLACES `max-shops-per-player` for that player rather than
+adding to it. Leave it blank to disable the permission override entirely, so every player is
+governed by `max-shops-per-player` alone.
 
 `max-pickup-stacks` bounds how much one pickup may move. Picking a shop up hands its whole stock
 back at once, and stock is unbounded, so a shop holding ten million items would be a hundred and

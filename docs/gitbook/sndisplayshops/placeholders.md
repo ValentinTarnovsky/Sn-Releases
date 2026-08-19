@@ -7,11 +7,17 @@ Needs PlaceholderAPI. Usable anywhere on the server: scoreboards, tab, chat, oth
 | Placeholder | Returns |
 |---|---|
 | `%sndisplayshops_shops_count%` | How many shops the viewing player owns right now. |
-| `%sndisplayshops_shops_max%` | How many that player is allowed to own (`limits.max-shops-per-player`). |
+| `%sndisplayshops_shops_max%` | How many that player is allowed to own: their [permission override](permissions.md#how-many-shops-a-player-may-own) if they hold one, otherwise `limits.max-shops-per-player`. |
 | `%sndisplayshops_shops_total%` | How many shops exist on the whole server. |
 
 A scoreboard line reading `Shops: %sndisplayshops_shops_count%/%sndisplayshops_shops_max%` is the
 common use.
+
+{% hint style="info" %}
+`shops_max` is read from a cache refreshed every 5 seconds, not resolved live on every render -
+walking permissions on every scoreboard tick for every online player is not something PlaceholderAPI
+can afford. A rank granted mid-session reaches this placeholder within that window, no relog needed.
+{% endhint %}
 
 ## Tokens inside SnDisplayShops files
 
