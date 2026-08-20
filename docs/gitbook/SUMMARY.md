@@ -111,6 +111,16 @@
 * [Developer API](sndisplayshops/api.md)
 * [FAQ](sndisplayshops/faq.md)
 
+## SnDTC
+
+* [Overview](sndtc/README.md)
+* [Installation](sndtc/installation.md)
+* [Commands](sndtc/commands.md)
+* [Permissions](sndtc/permissions.md)
+* [Configuration](sndtc/configuration.md)
+* [Placeholders](sndtc/placeholders.md)
+* [FAQ](sndtc/faq.md)
+
 ## SnDrop
 
 * [Overview](sndrop/README.md)
