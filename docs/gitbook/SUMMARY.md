@@ -239,6 +239,15 @@
 * [Placeholders](snminigames/placeholders.md)
 * [FAQ](snminigames/faq.md)
 
+## SnPacketBosses
+
+* [Overview](snpacketbosses/README.md)
+* [Installation](snpacketbosses/installation.md)
+* [Commands](snpacketbosses/commands.md)
+* [Permissions](snpacketbosses/permissions.md)
+* [Configuration](snpacketbosses/configuration.md)
+* [FAQ](snpacketbosses/faq.md)
+
 ## SnPickaxes
 
 * [Overview](snpickaxes/README.md)
