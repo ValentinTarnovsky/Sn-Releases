@@ -256,6 +256,7 @@
 * [Permissions](snpets/permissions.md)
 * [Configuration](snpets/configuration.md)
 * [Placeholders](snpets/placeholders.md)
+* [Developer API](snpets/api.md)
 * [FAQ](snpets/faq.md)
 
 ## SnPickaxes
