@@ -19,7 +19,9 @@ duplicates into stronger ones, and manage everything from seven configurable men
 - Rollable traits and graded stat boosts, bought with trait tickets and dice.
 - Fusion: combine duplicates into a stronger pet that inherits levels, traits and boosts.
 - Pet boxes with weighted tables, bulk opening, cooldowns and a full refund on a failed save.
-- Seven menus you can re-skin without touching code.
+- Seven menus you can re-skin without touching code, with skippable roll animations and a
+  per-group colour every pet template can draw with.
+- Equipped pets are kept in slots 1..n with no gap, so the free slots are always the last ones.
 
 ## Optional integrations
 

@@ -6,6 +6,29 @@ Download the newer `snpets-v*` release and replace the jar. `config.yml`, the la
 and the menu layouts auto-merge on restart, so new keys appear while your values and comments
 stay. Your `pets/`, `boxes/`, `traits.yml` and `boost-grades.yml` files are never overwritten.
 
+### Can players skip the trait and boost roulette animation?
+
+Yes, since 1.3.0: clicking the spinning cell reveals the result at once. It can never change
+what came out, because the roll is decided and saved before the first frame is drawn. The
+`click-actions` key that arms it merges into `guis/boosts.yml` and `guis/traits.yml` on the
+first boot after the update; the `&eClick to skip the animation` hint is a new line in an
+existing `lore` list, so add that one by hand if you want it shown. Delete the `click-actions`
+block on the `spinning` template to force the animation to always run to the end.
+
+### A player unequipped the pet in slot 2 and the others moved. Is that a bug?
+
+No, that is 1.3.0's behaviour. Equipped pets are kept in slots `1..n` with no gap, so the free
+slots are always the last ones. The order of the pets is unchanged and the formation around the
+player looks exactly the same; only the slot numbers shift. An unequip performed while the
+player is OFFLINE leaves the gap until they next log in, where it is closed automatically.
+
+### How do I colour a pet's menu lines by its group?
+
+Give the group a `color:` in `config.yml` and use `{group-color}` in the menu templates. See
+[Configuration](configuration.md) for the full recipe. Existing configs do not receive the new
+key: until you add one, `{group-color}` reuses the colour codes that group's `display` already
+starts with.
+
 ### After updating to 1.2.1 my empty bulk delete buttons are still grey glass. Why?
 
 Because the merge adds missing keys but never overwrites a value your file already carries, and

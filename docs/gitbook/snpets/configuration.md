@@ -69,22 +69,29 @@ database:
 # ------------------------------------------------------------
 #  Groups. A group is a free-text label a pet file points at with its
 #  "group" key. It is not a rarity system: the plugin uses it for the
-#  storage sort order, the bulk delete buttons and the pet lore, nothing
-#  else. A pet whose group is not listed here sorts last and gets no bulk
-#  delete button.
+#  storage sort order, the bulk delete buttons, the pet lore and the colour
+#  the menus draw that pet's lines in, nothing else. A pet whose group is
+#  not listed here sorts last and gets no bulk delete button.
 # ------------------------------------------------------------
 # sn:extensible
 groups:
   common:
     # Name shown in the pet lore and on the bulk delete button.
     display: "&7Common"
+    # Colour prefix exposed to the menus as {group-color}: a legacy code (&7), a hex
+    # (&#55ff55) or the SnLib [rgb] gradient tag. [rgb] only works when {group-color}
+    # is the first thing on the line. Leave empty to reuse the colour display starts
+    # with, which is what every install made before this key existed does.
+    color: "&7"
     # Sort weight in the storage grid; lower sorts first.
     order: 1
   rare:
     display: "&9Rare"
+    color: "&9"
     order: 2
   epic:
     display: "&5Epic"
+    color: "&5"
     order: 3
 
 # ------------------------------------------------------------
@@ -1063,6 +1070,67 @@ close-actions:
 `[pets-forget-selection]` only clears the pick when no SnPets menu is open any more, so walking
 Boosts to the selector and back, or Traits to the trait index and back, keeps it. Remove the key
 from a file if you want a pick made there to survive closing that screen.
+
+### Skipping the roulette
+
+`boosts.yml` and `traits.yml` draw the cell of the pet being rolled with a `spinning` template
+while the animation runs, and that template is clickable:
+
+```yaml
+  spinning:
+    material: ENDER_EYE
+    key: p
+    display-name: "&e&lRolling..."
+    lore:
+      - "&7{candidate}"
+      - ""
+      - "&eClick to skip the animation"
+    glow: true
+    click-actions:
+      - "[pets-skip-spin]"
+```
+
+`[pets-skip-spin]` reveals the result immediately: the same message, the same reveal sound and
+the same redraw the animation would have produced when it ended on its own. It can never change
+what came out, because the roll is decided and saved before the first frame is ever drawn. The
+spinner is shared with pet box openings, so a skip also finishes a box reveal of the same player.
+
+Delete the `click-actions` block if you want the animation to always run to the end.
+
+{% hint style="info" %}
+Upgrading from 1.2.1 or earlier: the `click-actions` key is a new key, so SnLib inserts it into
+your `boosts.yml` and `traits.yml` on the next boot and the skip starts working. The
+`&eClick to skip the animation` line is a new element of an existing `lore` list, and the
+updater never appends to a list you already own, so add that line by hand if you want the hint
+shown.
+{% endhint %}
+
+### Colouring a pet by its group
+
+Every template that draws a pet binds `{group-color}`, the colour its group declares under
+`groups:` in `config.yml`. Use it wherever you want the group to tint a line:
+
+```yaml
+  pet-entry:
+    material: "{texture}"
+    display-name: "{group-color}{pet}"
+    lore:
+      - "&8Group: &r{group-color}{group}"
+```
+
+It is available in `main.yml`, `selector.yml`, `fusion.yml`, `boosts.yml`, `traits.yml` and
+`bulk_delete.yml`. The value is inserted before SnLib's text pipeline runs, so a legacy code, a
+hex code and the `[rgb]` gradient tag all work. `[rgb]` is a PREFIX tag: it only applies when
+`{group-color}` is the first thing on the line.
+
+None of the shipped templates use it, so nothing changes appearance until you add it yourself.
+
+{% hint style="info" %}
+`groups:` is marked `# sn:extensible`, so the `color:` key added in 1.3.0 never reaches a
+config that already exists. Until you write one, `{group-color}` falls back to the colour codes
+that group's `display` already starts with (`"&9Rare"` yields `&9`, `"&#ff00aa&lEpic"` yields
+`&#ff00aa&l`), so the placeholder is correct either way.
+{% endhint %}
 
 ### The bulk delete icons
 
