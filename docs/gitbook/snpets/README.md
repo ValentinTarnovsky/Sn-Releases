@@ -23,6 +23,9 @@ duplicates into stronger ones, and manage everything from seven configurable men
   a server-wide announcement you can switch on per pet.
 - Pet boxes with weighted tables, a per-box success chance stamped on the item, bulk opening,
   cooldowns and a full refund on a failed save.
+- Pet items: shift + right click a stored pet to take it out as a physical head carrying its
+  whole state, and let anyone right click it back into their own storage. That is how players
+  trade pets.
 - Seven menus you can re-skin without touching code, with skippable roll animations and a
   per-group colour every pet template can draw with.
 - Equipped pets are kept in slots 1..n with no gap, so the free slots are always the last ones.

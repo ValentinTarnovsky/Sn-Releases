@@ -86,6 +86,15 @@ so it sees the attempt whether or not it succeeds). A dedicated fail event may b
 later version; adding one would be a MINOR `API_VERSION` bump, never a breaking change.
 {% endhint %}
 
+{% hint style="info" %}
+Since 1.7.0 a stored pet can leave the storage as a physical item and be redeemed back by
+another player. Neither half fires an event in this version, and `API_VERSION` stays `1.0.0`
+because nothing on the surface changed. A pet that arrives by redemption is an ordinary new row,
+so every query on the facade sees it immediately; what you cannot do yet is veto or observe the
+extraction and the redemption themselves. `PetExtractEvent` and `PetRedeemEvent` are candidates
+for a later version, and adding them would be a MINOR `API_VERSION` bump, never a breaking change.
+{% endhint %}
+
 Listen like any Bukkit event:
 
 ```java

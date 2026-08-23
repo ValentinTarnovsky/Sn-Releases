@@ -143,6 +143,45 @@ have worked) reads as `false` and logs a warning naming the file.
 Fuse All never announces, whatever any pet file says. It rolls per pair and would otherwise post
 one line for every winning pair.
 
+### How do players trade pets with each other?
+
+Since 1.7.0, by turning the pet into an item. In the main menu, **shift + right click** a pet in
+the storage grid: it leaves the storage and becomes a player head in the player's inventory,
+wearing that pet's own texture and carrying its whole state - pet type, level, experience, trait
+and the three boost grades. Anyone can then **right click** that head to put the pet into *their*
+storage, with everything it had. Hand it over, drop it, put it in a chest, or sell it on a shop
+plugin: the head is an ordinary item.
+
+Nothing is destroyed by a refusal. A redeem into a full storage, into a profile that is still
+loading, in creative mode while `allow-creative` is off, or with the feature switched off hands
+the item straight back with its state intact. Taking a pet out is refused - and the pet is left
+exactly where it was - when it is EQUIPPED (unequip it first), when its `pets/<id>.yml` is gone,
+or when the player has no free inventory slot. A pet is never dropped on the floor to make the
+click work.
+
+The head is not placeable, so clicking a block with it can never place it and destroy the pet on
+it, and `boxes.blocked-blocks` applies to the redeem click too - clicking a chest opens the chest.
+
+Switch the whole feature off with `pet-items.enabled: false`, or delete
+`templates.pet-entry.shift-right-click-actions` from `guis/main.yml` to stop new pets leaving
+storage while the heads already in circulation stay redeemable.
+
+### I updated to 1.7.0 but the pet cells do not mention shift + right click. Is it working?
+
+It is. `guis/main.yml` is managed, so your install received the new
+`templates.pet-entry.shift-right-click-actions` key and the feature works immediately. What it
+did NOT receive are the two lore lines that advertise it, because those are part of a lore LIST
+you already have and the merge never rewrites your own list values. Add them by hand:
+
+```yaml
+      - ""
+      - "&e&lSHIFT + RIGHT CLICK"
+      - "&6Take this pet out as an item you can trade"
+```
+
+or delete the whole `lore:` list under `templates.pet-entry` and let the next boot write the
+shipped one back.
+
 ### Does it support Folia?
 
 No, SnPets is not Folia-compatible. Run it on Paper 1.20.4 or newer. Both the 1.20 and 1.21

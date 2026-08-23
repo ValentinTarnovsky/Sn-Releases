@@ -595,6 +595,49 @@ boxes:
     broadcast: false
 
 # ------------------------------------------------------------
+#  Pet items. A stored pet can be taken out of the storage as a physical head
+#  (shift + right click on it in the main menu) and redeemed back by anyone
+#  with a right click, which is how pets change hands. The item carries the
+#  pet's whole state - level, experience, trait and the three boost grades - so
+#  a pet that comes back is the pet that left. A redeem into a full storage
+#  hands the item straight back, and so does every other refusal: the item is
+#  the pet, and it is never destroyed by a refusal.
+#  An EQUIPPED pet cannot be taken out (unequip it first) and neither can one
+#  whose pets/<id>.yml is gone, because it has no face left to travel with.
+#  The boxes.blocked-blocks list above applies to the redeem click too, so a
+#  pet item steps aside for a chest exactly like a box does.
+# ------------------------------------------------------------
+pet-items:
+  # Master switch of extracting and redeeming. Off refuses both and hands a
+  # clicked item back. Items already in circulation stay in inventories.
+  enabled: true
+
+  # Let a creative-mode player redeem pet items. Off by default: creative
+  # middle-click copies any stack with its NBT intact, so one pet item would
+  # mint pets without limit.
+  allow-creative: false
+
+  # Look of the extracted item. Its MATERIAL is always the pet's own head and
+  # cannot be set here; the name and lore below are yours.
+  # Every pet placeholder the menus use works here:
+  #   {pet} {pet-lore} {group} {group-color} {level} {level-cap} {exp}
+  #   {exp-next} {percent} {bar} {trait} {buff} {buff-value} {boosts}
+  # {pet-lore} and {boosts} are multi-line and expand to one lore line each.
+  item:
+    display-name: "{pet}"
+    lore:
+      - "{pet-lore}"
+      - ""
+      - "&8Group: &r{group-color}{group}"
+      - "&7Level &f{level}&7/&f{level-cap}"
+      - "&7Exp &f{exp}&7/&f{exp-next} &8({percent}%)"
+      - "&7Trait: &r{trait}"
+      - "{boosts}"
+      - ""
+      - "&a&lRIGHT CLICK"
+      - "&2Redeem this pet into your storage"
+
+# ------------------------------------------------------------
 #  Worlds. TWO separate lists, on purpose: where pets are DRAWN and where their
 #  buffs APPLY are different questions, and mixing them would turn a cosmetic
 #  decision into a combat-balance one.
