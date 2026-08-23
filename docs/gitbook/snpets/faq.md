@@ -33,6 +33,28 @@ Give the group a `color:` in `config.yml` and use `{group-color}` in the menu te
 key: until you add one, `{group-color}` reuses the colour codes that group's `display` already
 starts with.
 
+### I wrote `{group-color}` in `menus.boost-line` and it printed literally. Why?
+
+Because before 1.8.1 that fragment was formatted without it. The boost lines are built one by
+one and then handed to the pet cell as the single `{boosts}` value, and a placeholder value is
+never scanned again for placeholders, so the cell's own `{group-color}` could not reach inside
+them. 1.8.1 resolves the colour while the line itself is being built. The line you already
+edited starts working on the next boot: only the COMMENT above the key changed in the shipped
+file, your value is kept.
+
+The same release binds `{group-color}` on the boosts menu's three stat cells and four roll
+buttons. It still does not exist on `menus.grade-row`, `menus.group-separator` or the
+`menus.trait-effect-*` lines, which describe a ladder rung or a trait rather than a pet.
+
+### My box has `[rgb]` in its display-name and chat shows the tag instead of the gradient.
+
+Fixed in 1.8.1. `[rgb]` is a prefix tag: SnLib reads it at the START of a finished line, and a
+box or pet name spliced into a message as `{box}` or `{pet}` sits in the middle of one, so the
+tag was left as text (`The [rgb]Basic Pet Box failed to open...`) while the ITEM, whose name IS
+the whole line, rendered fine. Both `boxes.yml` and `pets/<id>.yml` now have their display-name
+tags applied when the file is read. Nothing to change on your side - those files are seed-only
+and are not touched.
+
 ### After updating to 1.2.1 my empty bulk delete buttons are still grey glass. Why?
 
 Because the merge adds missing keys but never overwrites a value your file already carries, and

@@ -1482,6 +1482,39 @@ hex code and the `[rgb]` gradient tag all work. `[rgb]` is a PREFIX tag: it only
 
 None of the shipped templates use it, so nothing changes appearance until you add it yourself.
 
+Since **1.8.1** it also reaches two more places: `menus.boost-line` in the language file, so each
+of a pet's three boost lines can start with its group colour, and the three stat cells and four
+roll buttons of `boosts.yml`, which the file's own header had been promising since 1.3.0. On the
+roll buttons it is empty while no pet is selected, so a template that uses it never shows a
+literal token.
+
+Where it does **not** work, and why:
+
+| Place | Why |
+|---|---|
+| `menus.grade-row` | describes a ladder rung, not a pet: there is no group in scope |
+| `menus.group-separator` | joins group names on the information clock; no single pet |
+| `menus.trait-effect-exp` / `-level` / `-buff` | describe a trait in the index, not a pet |
+| the `lore:` of a `pets/<id>.yml` file | that lore is itself the value of `{pet-lore}`, and a placeholder value is never re-scanned for further placeholders. No plugin placeholder resolves there, only PlaceholderAPI tokens. Put the colour on the menu line that carries `{pet-lore}` |
+
+### Prefix tags in a display name
+
+`[rgb]`, `[small]` and `[center]` are PREFIX tags: SnLib reads them at the start of a finished
+line and nowhere else. That is why a `{group-color}` carrying `[rgb]` has to be first on its line,
+and it used to bite display names too - a box in `boxes.yml` or a pet in `pets/<id>.yml` whose
+`display-name` began with `[rgb]` drew its gradient on the ITEM but printed the literal tag in
+chat, because a name spliced into a message as `{box}` or `{pet}` lands in the middle of the line:
+
+```
+SnPets | The [rgb]Basic Pet Box failed to open (1% chance)...
+```
+
+**1.8.1 fixes this.** Both files have their display-name prefix tags applied when the file is
+read, so the name looks the same on the item and in every message that names it. Nothing in your
+files changes: `boxes.yml` and `pets/` are seed-only and untouched, and the item is still built
+from the raw yml, so a name is never expanded twice. `[center]` is the one tag dropped from the
+chat copy - centering a fragment that lives inside somebody else's line means nothing.
+
 {% hint style="info" %}
 `groups:` is marked `# sn:extensible`, so the `color:` key added in 1.3.0 never reaches a
 config that already exists. Until you write one, `{group-color}` falls back to the colour codes
