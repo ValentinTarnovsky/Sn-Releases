@@ -78,6 +78,14 @@ Notification events fire after the fact. They cannot be cancelled.
 | `PetFusedEvent` | A fusion consumed its parents | Whether it succeeded, and the pet it produced |
 | `PetRolledEvent` | A trait or boost roll was decided and written | One entry per rewritten slot, with the old and new id |
 
+{% hint style="info" %}
+Since 1.4.0 a pet box carries a success chance and can fail to open, consuming the box and
+granting nothing. A failed open fires **no** event: `PetBoxRewardEvent` only ever fires when
+there was a reward, and `PetBoxOpenEvent` has already fired by then (it runs before the roll,
+so it sees the attempt whether or not it succeeds). A dedicated fail event may be added in a
+later version; adding one would be a MINOR `API_VERSION` bump, never a breaking change.
+{% endhint %}
+
 Listen like any Bukkit event:
 
 ```java

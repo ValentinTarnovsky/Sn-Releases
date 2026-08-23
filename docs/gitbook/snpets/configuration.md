@@ -5,10 +5,12 @@ are managed by SnLib: new keys are auto-merged on boot, and your values and comm
 preserved. Set `update-configs: false` to freeze them, in which case SnLib only warns about
 missing keys instead of inserting them.
 
-`traits.yml`, `boost-grades.yml` and the `pets/` and `boxes/` folders are seeded once, on a
-fresh install, and never written to again. A pet or box file you delete stays deleted, and a
-file you add is picked up on the next reload. One file is one pet, or one box, and the file
-name is its id.
+`traits.yml`, `boost-grades.yml`, `boxes.yml` and the `pets/` folder are seeded once, on a
+fresh install, and never written to again. A pet file you delete stays deleted, and a file you
+add is picked up on the next reload; one file is one pet, and the file name is its id. Boxes
+work the same way but live as keys inside `boxes.yml` rather than as separate files - if you are
+upgrading from a version that used a `boxes/` folder, see [boxes.yml](#boxesyml), which is
+migrated for you automatically.
 
 ## config.yml
 ```yaml
@@ -65,6 +67,15 @@ database:
   database: snpets
   username: root
   password: ""
+
+# ------------------------------------------------------------
+#  Public developer API.
+# ------------------------------------------------------------
+# Public developer API events. When false, no API event is dispatched (zero
+# cost) and cancellable hooks report "not cancelled" so gameplay proceeds.
+# The query facade stays available either way.
+api-events:
+  enabled: true
 
 # ------------------------------------------------------------
 #  Groups. A group is a free-text label a pet file points at with its
@@ -327,7 +338,7 @@ traits:
   # The roulette the traits menu plays before it reveals what was rolled. Same
   # four knobs, same names and same limits as a box's "animation:" block: both
   # run on the ONE shared spinner, so a number typed here and the same number
-  # typed in boxes/<id>.yml behave identically.
+  # typed under a box's key in boxes.yml behave identically.
   roll:
     # Play the roulette at all. Off reveals the trait immediately.
     enabled: true
@@ -444,12 +455,17 @@ fusion:
   failure-sound: "ENTITY_ITEM_BREAK 1.0 0.8"
 
 # ------------------------------------------------------------
-#  Pet boxes. A box is a physical item declared by its own boxes/<id>.yml file
-#  and opened with a right click. Every box holds a weighted table of pets and
-#  ALWAYS produces one: there is no "nothing happened" outcome. What a box
-#  contains, how it looks, which sound it plays and what it says on opening
-#  lives in that file; this section holds only the rules every box obeys.
-#  Storage full: a single open refuses and hands the box straight back, a bulk
+#  Pet boxes. A box is a physical item declared in boxes.yml, one key per box,
+#  and opened with a right click. What a box contains, how it looks, which
+#  sound it plays and what it says on opening lives in that file; this section
+#  holds only the rules every box obeys.
+#  Success chance: a box carries one, drawn from its own chance.min/chance.max
+#  when it is handed out - or forced with the [chance] argument of
+#  /pets admin givebox - and written onto the item itself. A failed open
+#  CONSUMES the box and grants nothing; a successful one rolls the box's
+#  weighted table, which always produces a pet.
+#  Storage full never blocks RECEIVING a box, only OPENING it: a single open
+#  refuses and hands the box straight back with its percentage intact, a bulk
 #  open opens what fits and returns the rest. Nothing is ever lost.
 # ------------------------------------------------------------
 boxes:
@@ -932,107 +948,300 @@ incompatible:
   - gale_sprite
 ```
 
-## boxes/
+## boxes.yml
 
-One file per pet box, named after its id. Two examples are seeded: `basic.yml` and `rare.yml`.
-A box file declares the item players receive, the cooldown, how many pets one open grants, and
-the weighted table it rolls from. Copy one of the examples to add your own.
+**Every** pet box lives in this one file, one top-level key per box. The key is the box id the
+admin give commands take, and the physical item is registered as `box_<id>`. Two examples are
+seeded, `basic` and `rare`. Add, rename and delete keys freely.
 
-Here is the seeded `boxes/basic.yml` in full, as a working reference:
+The file is seed-only and its header carries `# sn:extensible-root`, so a key you delete stays
+deleted and no key ever gains a sub-key from an update. Deleting the whole FILE re-seeds the two
+examples on the next reload; delete the KEYS you do not want instead.
+
+### Upgrading from the boxes/ folder
+
+Before 1.4.0 each box was its own `boxes/<id>.yml` file. On the first boot after updating, the
+plugin folds that folder into `boxes.yml` and renames it to `boxes-migrated/`. Nothing is
+deleted, every box id is kept, and the box items already in players' inventories keep opening.
+
+Three things worth knowing:
+
+- A file name containing a dot cannot be a yml key, so `my.box.yml` migrates as `my_box` with a
+  loud console warning. Its item id changes, so the copies of THAT box already handed out stop
+  opening. Every other box is unaffected.
+- Because `boxes.yml` is seed-only, a migrated box does **not** receive the keys 1.4.0 added.
+  `chance` defaults to 100/100 and `feedback.fail-broadcast-key` to empty, which is exactly the
+  behaviour those boxes had before. Add them by hand to any box you want to turn into a gamble,
+  and add `{chance}` to its lore if you want the odds shown on the item.
+- The per-box comments do not survive the move (a YAML reader cannot carry a file header onto a
+  key). Each migrated key gets a `# Migrated from boxes/<file>` line, and the originals are all
+  still there in `boxes-migrated/`.
+
+If the migration cannot finish - an unreadable file, a full disk, a read-only data folder - the
+plugin refuses to start instead of continuing with the two example boxes, and the console names
+the cause. Your folder is left untouched; fix it and start the server again.
+
+### The success chance
+
+A box can fail to open. Each one declares a band:
+
+```yaml
+rare:
+  chance:
+    min: 60
+    max: 90
+```
+
+When a box is **handed out**, a percentage is drawn in that band, rendered into the item's
+`{chance}` name and lore, and written onto the stack itself. **Opening rolls the number on the
+stack**, not the box's current band. That means lowering the band never devalues the boxes
+already in circulation, a shop can sell guaranteed boxes beside gambled ones, and two stacks of
+the same box at different odds never merge.
+
+`/pets admin givebox <player> <box> [amount] [chance]` forces an exact percentage instead of
+drawing one - `100` is what a shop wants. `giveallbox` draws once, so everybody gets the same
+number.
+
+A failed open **consumes the box** and grants nothing. The player gets
+`messages.box-chance-failed` (or `messages.box-chance-failed-bulk` for a stack), the box's
+cooldown starts as if it had opened, and if the box declares `feedback.fail-broadcast-key` the
+loss is announced to the server. Leave both band ends at `100` for a box that always opens.
+
+A box handed out before 1.4.0 carries no percentage and counts as 100%.
+
+### The shipped file in full
 
 ```yaml
 # ============================================================
-#  SnPets - pet box: basic
-#  One file per box. The file name is the box id used by the admin give
-#  commands; the physical item is registered as "box_basic".
-#  Seeded once and never merged again: this file is yours. Copy it to add a
-#  box, delete it to remove one. A box item already in a player's inventory
-#  whose file is gone keeps its look but no longer opens.
+#  SnPets - pet boxes
+#  ONE file for every box. Every top-level key below is a box id: it is the id
+#  the admin give commands take, and the physical item is registered as
+#  "box_<id>". Add, rename and delete freely.
+#  Seeded once and never merged again: this file is yours. Deleting the FILE
+#  re-seeds the two examples on the next reload; delete the KEYS you do not
+#  want, not the file. A box item already in a player's inventory whose key is
+#  gone keeps its look but no longer opens.
 #  Right click opens one box. Shift + right click opens the whole held stack,
-#  which requires "animation.enabled: false" below.
+#  which requires "animation.enabled: false" on that box.
+#  Upgrading from an older version: a boxes/ folder is migrated into this file
+#  automatically on the first boot and the folder is renamed to boxes-migrated/.
+#  Nothing is deleted and the box items already handed out keep working.
+# sn:extensible-root
 # ============================================================
 
 # ------------------------------------------------------------
-#  The physical item. Every appearance field of the SnLib item spec works
-#  here: material, display-name, lore, glow, custom-model-data, enchantments,
-#  flags, max-stack-size and the rest.
+#  basic - the plain example: no animation, no broadcast, no cooldown, and it
+#  always opens.
 # ------------------------------------------------------------
-item:
-  # Item material, or a head texture written as "texture-<base64>",
-  # "basehead-<base64>" or an http skin URL, which makes it a player head.
-  material: CHEST
-  # Name shown on the box item, and the {box} placeholder of every box message.
-  display-name: "&f&lBasic Pet Box"
-  # Lore shown on the box item.
-  lore:
-    - "&7Right click to open."
-    - "&7Shift + right click opens the whole stack."
-    - ""
-    - "&7Contains one pet:"
-    - "&f60% &7Ember Fox"
-    - "&f30% &7Stone Golem"
-    - "&f10% &7Gale Sprite"
-  # Adds the enchantment shimmer without an enchantment.
-  glow: false
+basic:
+
+  # ----------------------------------------------------------
+  #  The physical item. Every appearance field of the SnLib item spec works
+  #  here: material, display-name, lore, glow, custom-model-data, enchantments,
+  #  flags, max-stack-size and the rest.
+  #  {chance} in the name or the lore is replaced, when the box is HANDED OUT,
+  #  by the success chance that box copy was stamped with. It is written into
+  #  the item itself, so two stacks handed out at different percentages never
+  #  merge and never lose their odds.
+  # ----------------------------------------------------------
+  item:
+    # Item material, or a head texture written as "texture-<base64>",
+    # "basehead-<base64>" or an http skin URL, which makes it a player head.
+    material: CHEST
+    # Name shown on the box item, and the {box} placeholder of every box message.
+    display-name: "&f&lBasic Pet Box"
+    # Lore shown on the box item.
+    lore:
+      - "&7Right click to open."
+      - "&7Shift + right click opens the whole stack."
+      - ""
+      - "&7Success chance: &f{chance}%"
+      - ""
+      - "&7Contains one pet:"
+      - "&f60% &7Ember Fox"
+      - "&f30% &7Stone Golem"
+      - "&f10% &7Gale Sprite"
+    # Adds the enchantment shimmer without an enchantment.
+    glow: false
+
+  # ----------------------------------------------------------
+  #  Chance of the box OPENING at all, in percent.
+  #  A box handed out without an explicit percentage is stamped with a value
+  #  drawn uniformly between min and max, and that value is what it rolls when
+  #  a player opens it. A failed open CONSUMES the box and grants nothing.
+  #  /pets admin givebox <player> <box> [amount] [chance] overrides the draw
+  #  with an exact number, which is how a shop sells guaranteed boxes.
+  #  Leave both at 100 for a box that always opens. min > max is swapped, and
+  #  both are clamped to 0-100.
+  #  A box handed out by an older version carries no percentage and counts as
+  #  100, so nothing already in circulation changes.
+  # ----------------------------------------------------------
+  chance:
+    min: 100
+    max: 100
+
+  # ----------------------------------------------------------
+  #  The drop table. One entry per pet id, which is a pets/<id>.yml file name.
+  #  The numbers are WEIGHTS, not percentages: they are normalized over whatever
+  #  the table holds, so 60/30/10 and 6/3/1 behave identically and the total does
+  #  not have to add up to anything. A box that OPENS always produces a pet;
+  #  the only way to get nothing is a failed chance roll above.
+  #  An entry naming a pet with no file is dropped when the box loads, with one
+  #  console warning, and the remaining weights renormalize on their own.
+  # ----------------------------------------------------------
+  drops:
+    ember_fox:
+      # How many of this pet one winning roll grants.
+      amount: 1
+      # Relative weight of this row.
+      weight: 60
+    stone_golem:
+      amount: 1
+      weight: 30
+    gale_sprite:
+      amount: 1
+      weight: 10
+
+  # ----------------------------------------------------------
+  #  Reveal animation. It delays only the FEEDBACK: the pet is granted the moment
+  #  the box opens, so quitting mid-spinner loses nothing.
+  #  An animated box CANNOT be bulk opened. A shift + right click on one opens a
+  #  single box instead and says so, because 64 spinners at once is what the rule
+  #  against it exists to prevent.
+  # ----------------------------------------------------------
+  animation:
+    # Delay the reveal behind a short spinner instead of showing it instantly.
+    enabled: false
+    # Ticks between the open and the reveal. 20 ticks is one second.
+    duration-ticks: 40
+    # Ticks between two spinner frames.
+    step-ticks: 4
+    # Sound played on each spinner frame, as "SOUND_ID [volume] [pitch]".
+    # "none" plays nothing.
+    step-sound: "BLOCK_NOTE_BLOCK_HAT 1.0 1.6"
+    # Sound played when the pet is revealed. "none" plays nothing.
+    reveal-sound: "ENTITY_PLAYER_LEVELUP 1.0 1.4"
+
+  # ----------------------------------------------------------
+  #  Feedback. Every key points at an entry of lang/messages_<code>.yml, so the
+  #  wording is translated and restyled with every other message rather than
+  #  living here. Leave one empty to send nothing.
+  #  Placeholders: {player} {box} {pet} {amount} {chance}
+  # ----------------------------------------------------------
+  feedback:
+    # Line sent to the player who opened the box. Applies to a SINGLE open; a bulk
+    # open sends messages.box-opened-bulk instead, which summarizes the stack.
+    message-key: "messages.box-opened"
+    # Line announced to the whole server. Empty announces nothing.
+    broadcast-key: ""
+    # Line announced to the whole server when an open FAILS its chance roll.
+    # Empty announces nothing. A bulk open only announces when
+    # boxes.bulk.broadcast is on in config.yml.
+    # Placeholders: {player} {box} {amount} {chance}
+    fail-broadcast-key: ""
+
+  # Seconds a player must wait between two opens of THIS box. 0 disables the
+  # cooldown entirely and costs nothing at runtime. A refused open never starts
+  # it; a FAILED open does, because the box was consumed all the same.
+  cooldown-seconds: 0
 
 # ------------------------------------------------------------
-#  The drop table. One entry per pet id, which is a pets/<id>.yml file name.
-#  The numbers are WEIGHTS, not percentages: they are normalized over whatever
-#  the table holds, so 60/30/10 and 6/3/1 behave identically and the total does
-#  not have to add up to anything. A box ALWAYS produces a pet; there is no
-#  "nothing happened" outcome.
-#  An entry naming a pet with no file is dropped when the box loads, with one
-#  console warning, and the remaining weights renormalize on their own.
+#  rare - the other half of the feature set: a reveal animation, a server
+#  broadcast, a cooldown, a row worth more than one pet, and a chance band that
+#  makes an open a gamble.
 # ------------------------------------------------------------
-drops:
-  ember_fox:
-    # How many of this pet one winning roll grants.
-    amount: 1
-    # Relative weight of this row.
-    weight: 60
-  stone_golem:
-    amount: 1
-    weight: 30
-  gale_sprite:
-    amount: 1
-    weight: 10
+rare:
 
-# ------------------------------------------------------------
-#  Reveal animation. It delays only the FEEDBACK: the pet is granted the moment
-#  the box opens, so quitting mid-spinner loses nothing.
-#  An animated box CANNOT be bulk opened. A shift + right click on one opens a
-#  single box instead and says so, because 64 spinners at once is what the rule
-#  against it exists to prevent.
-# ------------------------------------------------------------
-animation:
-  # Delay the reveal behind a short spinner instead of showing it instantly.
-  enabled: false
-  # Ticks between the open and the reveal. 20 ticks is one second.
-  duration-ticks: 40
-  # Ticks between two spinner frames.
-  step-ticks: 4
-  # Sound played on each spinner frame, as "SOUND_ID [volume] [pitch]".
-  # "none" plays nothing.
-  step-sound: "BLOCK_NOTE_BLOCK_HAT 1.0 1.6"
-  # Sound played when the pet is revealed. "none" plays nothing.
-  reveal-sound: "ENTITY_PLAYER_LEVELUP 1.0 1.4"
+  # ----------------------------------------------------------
+  #  The physical item.
+  # ----------------------------------------------------------
+  item:
+    # Item material, or a head texture written as "texture-<base64>",
+    # "basehead-<base64>" or an http skin URL, which makes it a player head.
+    material: ENDER_CHEST
+    # Name shown on the box item, and the {box} placeholder of every box message.
+    display-name: "&5&lRare Pet Box"
+    # Lore shown on the box item.
+    lore:
+      - "&7Right click to open."
+      - ""
+      - "&7Success chance: &f{chance}%"
+      - "&8A failed open destroys the box."
+      - ""
+      - "&7Contains:"
+      - "&f50% &7Stone Golem"
+      - "&f30% &7Gale Sprite"
+      - "&f20% &7Ember Fox &8x2"
+    # Adds the enchantment shimmer without an enchantment.
+    glow: true
 
-# ------------------------------------------------------------
-#  Feedback. Both keys point at an entry of lang/messages_<code>.yml, so the
-#  wording is translated and restyled with every other message rather than
-#  living here. Leave one empty to send nothing.
-#  Placeholders: {player} {box} {pet} {amount}
-# ------------------------------------------------------------
-feedback:
-  # Line sent to the player who opened the box. Applies to a SINGLE open; a bulk
-  # open sends messages.box-opened-bulk instead, which summarizes the stack.
-  message-key: "messages.box-opened"
-  # Line announced to the whole server. Empty announces nothing.
-  broadcast-key: ""
+  # ----------------------------------------------------------
+  #  Chance of the box OPENING at all, in percent. Handed out without an
+  #  explicit percentage, this box is stamped somewhere between 60 and 90 and
+  #  keeps that number for good.
+  # ----------------------------------------------------------
+  chance:
+    min: 60
+    max: 90
 
-# Seconds a player must wait between two opens of THIS box. 0 disables the
-# cooldown entirely and costs nothing at runtime. A refused open never starts it.
-cooldown-seconds: 0
+  # ----------------------------------------------------------
+  #  The drop table. The numbers are WEIGHTS, not percentages: they are
+  #  normalized over whatever the table holds. A box that OPENS always produces
+  #  a pet. A row naming a pet with no file is dropped when the box loads and
+  #  the remaining weights renormalize on their own.
+  # ----------------------------------------------------------
+  drops:
+    stone_golem:
+      # How many of this pet one winning roll grants.
+      amount: 1
+      # Relative weight of this row.
+      weight: 50
+    gale_sprite:
+      amount: 1
+      weight: 30
+    ember_fox:
+      # A row worth more than one pet. The box is opened only when the WHOLE row
+      # fits in the storage, so a bulk open never splits one box in half.
+      amount: 2
+      weight: 20
+
+  # ----------------------------------------------------------
+  #  Reveal animation. It delays only the FEEDBACK: the pet is granted the moment
+  #  the box opens, so quitting mid-spinner loses nothing.
+  #  An animated box CANNOT be bulk opened. A shift + right click on this one
+  #  opens a single box instead and says so.
+  # ----------------------------------------------------------
+  animation:
+    # Delay the reveal behind a short spinner instead of showing it instantly.
+    enabled: true
+    # Ticks between the open and the reveal. 20 ticks is one second.
+    duration-ticks: 50
+    # Ticks between two spinner frames.
+    step-ticks: 4
+    # Sound played on each spinner frame, as "SOUND_ID [volume] [pitch]".
+    # "none" plays nothing.
+    step-sound: "BLOCK_NOTE_BLOCK_HAT 1.0 1.8"
+    # Sound played when the pet is revealed. "none" plays nothing.
+    reveal-sound: "ENTITY_PLAYER_LEVELUP 1.0 1.2"
+
+  # ----------------------------------------------------------
+  #  Feedback. Every key points at an entry of lang/messages_<code>.yml.
+  #  Placeholders: {player} {box} {pet} {amount} {chance}
+  # ----------------------------------------------------------
+  feedback:
+    # Line sent to the player who opened the box. Applies to a SINGLE open.
+    message-key: "messages.box-opened"
+    # Line announced to the whole server. A bulk open only announces when
+    # boxes.bulk.broadcast is on in config.yml, and this box cannot be bulk
+    # opened anyway, because its animation is on.
+    broadcast-key: "messages.box-broadcast"
+    # Line announced to the whole server when an open FAILS its chance roll.
+    fail-broadcast-key: "messages.box-fail-broadcast"
+
+  # Seconds a player must wait between two opens of THIS box. 0 disables the
+  # cooldown entirely and costs nothing at runtime. A refused open never starts
+  # it; a FAILED open does, because the box was consumed all the same.
+  cooldown-seconds: 3
 ```
 
 ## guis/

@@ -65,8 +65,8 @@ The `<what>` argument of `clear` is `storage` (every pet that is not equipped), 
 | Command | Permission | Description |
 |---------|-----------|-------------|
 | `/pets admin give <player> <pet> [amount] [level]` | `snpets.admin.give` | Gives pets to a player |
-| `/pets admin givebox <player> <box> [amount]` | `snpets.admin.givebox` | Gives pet boxes to an online player |
-| `/pets admin giveallbox <box> [amount]` | `snpets.admin.giveallbox` | Gives pet boxes to every online player |
+| `/pets admin givebox <player> <box> [amount] [chance]` | `snpets.admin.givebox` | Gives pet boxes to an online player. Never refused: a box is an item, and a full pet storage only blocks OPENING it |
+| `/pets admin giveallbox <box> [amount] [chance]` | `snpets.admin.giveallbox` | Gives pet boxes to every online player, all at one success chance |
 | `/pets admin slots <mode> <player> <amount>` | `snpets.admin.slots` | Adds or sets the equip slots a player bought |
 | `/pets admin storage <mode> <player> <amount>` | `snpets.admin.storage` | Adds or sets the storage a player bought |
 | `/pets admin currency <currency> <mode> <player> <amount>` | `snpets.admin.currency` | Changes one of a player's three balances |

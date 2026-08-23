@@ -56,13 +56,18 @@ On a clean install the plugin writes its own files into `plugins/SnPets/`:
 | `traits.yml` | Trait definitions and their roll weights |
 | `boost-grades.yml` | The boost grade ladder |
 | `pets/*.yml` | One file per pet type, three examples seeded |
-| `boxes/*.yml` | One file per pet box, two examples seeded |
+| `boxes.yml` | Every pet box, one top-level key each, two examples seeded |
 
-The `pets/`, `boxes/`, `traits.yml` and `boost-grades.yml` files are seeded exactly once, on
-a true fresh install. After that they belong to you. A pet or box file you delete stays
-deleted and is never restored on the next boot. `config.yml`, the language files and the menu
-layouts are managed instead: new keys are merged in on boot while your values and comments
-are preserved.
+The `pets/` folder and the `traits.yml`, `boost-grades.yml` and `boxes.yml` files are seeded
+exactly once, on a true fresh install. After that they belong to you. A pet file you delete
+stays deleted and is never restored on the next boot, and the three keyed files carry a
+`# sn:extensible-root` header so a key you delete stays deleted too. `config.yml`, the language
+files and the menu layouts are managed instead: new keys are merged in on boot while your
+values and comments are preserved.
+
+Upgrading from a version older than 1.4.0? Your `boxes/` folder is folded into `boxes.yml`
+automatically on the first boot and kept as `boxes-migrated/`. Nothing is deleted and the box
+items already handed out keep working.
 
 {% hint style="success" %}
 Once the server starts cleanly, run `/pets admin give <player> ember_fox` to hand out the

@@ -4,7 +4,11 @@
 
 Download the newer `snpets-v*` release and replace the jar. `config.yml`, the language files
 and the menu layouts auto-merge on restart, so new keys appear while your values and comments
-stay. Your `pets/`, `boxes/`, `traits.yml` and `boost-grades.yml` files are never overwritten.
+stay. Your `pets/` folder and your `traits.yml`, `boost-grades.yml` and `boxes.yml` files are
+never overwritten.
+
+Updating **to 1.4.0** also moves your `boxes/` folder into a single `boxes.yml` automatically -
+see the question about `boxes-migrated/` below.
 
 ### Can players skip the trait and boost roulette animation?
 
@@ -76,11 +80,46 @@ because the player genuinely receives nothing there. That is configuration, not 
 Yes, unless the viewer ran `/pets hide` or the world gates rendering off. Each viewer's own
 preference is respected, so one player hiding pets never affects anyone else's view.
 
+### My boxes/ folder was renamed to boxes-migrated/. Where did my boxes go?
+
+Into `boxes.yml`, which is where every box lives from 1.4.0 on: one top-level key per box,
+named after the file it came from. The migration runs once, on the first boot after updating,
+and it never deletes anything - `boxes-migrated/` is your original folder, kept exactly as it
+was, including the per-box comments that a YAML reader cannot carry onto a key.
+
+Every box id is preserved, so the box items already in players' inventories and shulkers keep
+opening. The one exception is a file name containing a dot (`my.box.yml`), which cannot be a
+yml key: it becomes `my_box` and the console says so loudly, because that box's item id changes
+and the copies already handed out stop opening.
+
+Once you are happy with `boxes.yml` you can delete `boxes-migrated/` yourself. Nothing reads it.
+
+### My migrated boxes never fail to open. Where is the success chance?
+
+`boxes.yml` is seed-only, so an update never adds keys to it - which is exactly what protects
+the boxes you wrote. That means a migrated box has no `chance` block, and a box without one
+always opens: identical to how it behaved before 1.4.0. Add the band by hand to any box you
+want to turn into a gamble:
+
+```yaml
+rare:
+  chance:
+    min: 60
+    max: 90
+```
+
+Add `{chance}` to that box's lore too if you want the odds shown on the item.
+
 ### A player opened a box and got nothing. Are the pets lost?
 
-No. If the database write fails, the boxes are handed straight back and the player is told, so
-nothing is consumed. If storage filled up between the click and the grant, the open lands
-partially on purpose and reports how many pets did not fit. Free storage and open the rest.
+If the box **failed its success roll**, that is working as designed: the box is consumed, the
+player is told which percentage it was rolling against, and nothing is granted. Only boxes with
+a `chance` band below 100 can do this, and the percentage is written on the item itself.
+
+Otherwise, no, nothing is lost. If the database write fails, the boxes are handed straight back
+and the player is told, so nothing is consumed. If storage filled up between the click and the
+grant, the open lands partially on purpose and reports how many pets did not fit. Free storage
+and open the rest.
 
 ### How do I give a rank more pet slots or storage?
 
@@ -91,5 +130,6 @@ rank change applies the next time the player logs in.
 ### Can I add my own pets?
 
 Yes. Copy a file in `pets/` and rename it: the file name is the pet id. The folder is yours
-after the first boot, so nothing you add or delete there is ever undone by an update. The same
-is true for `boxes/`.
+after the first boot, so nothing you add or delete there is ever undone by an update. Boxes
+work the same way, except they are keys inside `boxes.yml` rather than separate files: copy a
+whole top-level block and rename the key.
