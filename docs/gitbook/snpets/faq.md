@@ -82,11 +82,24 @@ back and opens out at the flanks.
 
 `config.yml` is managed, which means SnLib inserts the two new keys into your existing file but
 never overwrites a value you already had. So your server became an OVAL with your own old
-`radius` at the sides and `1.4` blocks behind. Set `formation.shape: CIRCLE` and run
-`/pets reload` to get exactly the old look back - it is the same geometry to the last decimal,
-not an approximation.
+`radius` at the sides and `1.4` blocks behind.
+
+In practice that is a very small change, because a 180-degree arc puts its two ends exactly on
+the owner's sides, where an oval and a circle coincide. With the old `arc-degrees: 180`, one pet
+and two pets do not move at all, and from three pets up nothing moves more than 0.2 blocks. Set
+`formation.shape: CIRCLE` and run `/pets reload` to pin the old look exactly.
+
+Two behaviours are worth knowing before you keep the oval. The pets take an even share of the
+*angle*, which is an even spacing on the ground only on a circle - on an oval the ones near the
+ends bunch up (about 23% at four pets, 28% at six; one, two and three pets are unaffected). And
+`formation.facing: OUTWARD` / `CENTER` point along the circle's radius rather than the oval's true
+normal, off by up to 10 degrees; that costs nothing under the default `OWNER_YAW`, which ignores
+the angle entirely.
 
 An unknown value is not fatal: the plugin logs one warning per load and falls back to `CIRCLE`.
+An **absent** value falls back to `CIRCLE` silently - that is deliberate, and it is what keeps a
+config written before 1.6.0 on its old circle. So deleting the key does not restore `OVAL`, it
+gives you `CIRCLE`.
 
 ### I updated to 1.6.0 but my pets are still the old size and height. Why?
 
@@ -96,9 +109,11 @@ Because that is deliberate. 1.6.0 also changed the SHIPPED defaults - `formation
 gains missing KEYS, never new VALUES. A new install gets the new look; an existing one keeps
 every number you set. Copy the values above into your `config.yml` by hand if you want it.
 
-One to watch: `models.height-offset` is SUMMED with `formation.height-offset`. If you adopt
-`1.9` and you use BetterModel models that should stand on the ground, set `models.height-offset`
-to about `-1.9`.
+One to watch: `models.height-offset` is SUMMED with `formation.height-offset`. A BetterModel pet
+that should stand on the ground wants roughly the negative of whatever `formation.height-offset`
+is on **your** server - about `-1.9` if you adopt the new `1.9`, but still about `-0.35` if you
+kept your old value. Copying `-1.9` onto a server that never adopted `1.9` sinks the model about
+1.55 blocks into the floor.
 
 ### Can I announce only SOME fusions?
 
@@ -118,6 +133,12 @@ you announce a fusion by writing the key on the pet players fuse AWAY, not on th
 Leave the key out and that pet follows the global setting. `pets/` is seed-only, so no pet file
 you already have receives the key on update: everything keeps following `fusion.broadcast` until
 you write it yourself.
+
+On a **fresh** install the two shipped pet files already set it - `stone_golem.yml` has
+`broadcast: true` and `ember_fox.yml` has `broadcast: false` - and seed-only means they stay that
+way. So turning the global on will not make Ember Fox announce; edit or delete the key in its file
+for that. A value that is present but not a boolean (`broadcast: 1`, where `yes` and `on` would
+have worked) reads as `false` and logs a warning naming the file.
 
 Fuse All never announces, whatever any pet file says. It rolls per pair and would otherwise post
 one line for every winning pair.

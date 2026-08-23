@@ -127,9 +127,12 @@ slots:
 # ------------------------------------------------------------
 #  Formation. The equipped pets stand on an arc around their owner that turns
 #  with the owner's camera. The arc is always used whole, end to end: the pets
-#  spread evenly across it and slide over to keep the gaps identical whenever
-#  one is equipped or unequipped. The arc is cut from a circle or from an oval,
-#  see "shape" below.
+#  spread evenly across it and slide over whenever one is equipped or unequipped.
+#  The arc is cut from a circle or from an oval, see "shape" below.
+#  "Evenly" means an even share of the ANGLE, which is an even spacing on the
+#  ground only on a CIRCLE. On an OVAL the pets near the ends sit closer together
+#  than the ones near the middle - about 23% closer at 4 pets and 28% at 6, at the
+#  values below. 1, 2 and 3 pets are unaffected.
 # ------------------------------------------------------------
 formation:
   # Blocks between the owner and the arc at their SIDES. Under shape CIRCLE this
@@ -139,15 +142,22 @@ formation:
   # CIRCLE keeps every pet at "radius" blocks. OVAL keeps "radius" at the owner's
   # sides and "back-radius" straight behind (and in front), so the arc hugs the
   # owner's back and opens out at the flanks.
+  # Delete this key and the plugin uses CIRCLE, not the OVAL shipped here: that is
+  # what keeps a config written before 1.6.0 on the circle it always had. A value
+  # that is neither logs one warning and falls back to CIRCLE too.
   shape: OVAL
-  # Blocks between the owner and the arc straight behind them. Only read when
-  # shape is OVAL.
+  # Blocks between the owner and the arc straight behind them. Read on every load
+  # but only USED when shape is OVAL; a CIRCLE ignores it in favour of radius.
   back-radius: 1.4
   # Blocks above the owner's feet the pets float at.
   height-offset: 1.9
-  # Total width of the arc in degrees, capped at 360. With 180 the first pet
-  # stands exactly at the owner's right and the second exactly at their left;
-  # past 180 the two ends pass a little in FRONT of the owner's shoulders.
+  # Total width of the arc in degrees, capped at 360. Read together with
+  # arc-center-offset below: at the default centre of 180, an arc of 180 puts the
+  # first pet exactly at the owner's right and the second exactly at their left,
+  # and going past 180 swings both ends a little in FRONT of the shoulders (at the
+  # 190 shipped here, 0.12 blocks). A LONE pet takes the right END of the arc, not
+  # the middle, so a single pet moves forward with them. At a different
+  # arc-center-offset "past 180" swings the ends somewhere else entirely.
   arc-degrees: 190.0
   # Degrees from the owner's facing to the centre of the arc. 180 puts the arc
   # behind the owner, 0 in front of them, 90 at their right.
@@ -156,8 +166,11 @@ formation:
   # the owner) or CENTER (at the owner).
   facing: OWNER_YAW
   # Degrees added to every pet's facing, to correct a head texture that is not
-  # drawn looking forward. 180 turns the heads around to face the camera when the
-  # owner looks back at them; note that it also swaps OUTWARD and CENTER.
+  # drawn looking forward. Under the default facing of OWNER_YAW, 180 points every
+  # head OPPOSITE the owner's yaw - which is what faces them toward the camera in
+  # third person, and toward anyone standing behind the owner. (Turning around
+  # never shows you your own pets: the arc is camera-relative and comes with you.)
+  # Note that 180 also swaps OUTWARD and CENTER.
   facing-offset: 180.0
 
 # ------------------------------------------------------------
@@ -462,6 +475,10 @@ fusion:
   # fusions and stay quiet about the common ones. Fuse All never broadcasts,
   # whatever any pet says: it rolls per pair, so a good run would post one line
   # per winning pair.
+  # HEADS UP: two shipped pet files already override this - stone_golem.yml sets
+  # broadcast: true and ember_fox.yml sets false - and pets/ is seed-only, so
+  # those stay whatever they are no matter what you put here. Turning this on will
+  # NOT make Ember Fox announce; edit or delete the key in its file to do that.
   broadcast: false
 
   # Sound played to the owner when a fusion produces a pet. "none" plays nothing.
