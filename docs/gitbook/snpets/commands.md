@@ -28,7 +28,7 @@ instance id shown by `/pets admin list`, not the pet type id.
 | Command | Permission | Description |
 |---------|-----------|-------------|
 | `/pets admin info <player>` | `snpets.admin.info` | Shows a summary of a player's pets |
-| `/pets admin list <player>` | `snpets.admin.list` | Lists every pet a player owns |
+| `/pets admin list <player> [page]` | `snpets.admin.list` | Lists every pet a player owns |
 | `/pets admin pet <player> <instance>` | `snpets.admin.pet` | Shows the full card of one pet |
 | `/pets admin open <player>` | `snpets.admin.open` | Opens a player's own pet menu on their screen |
 
@@ -74,6 +74,43 @@ The `<what>` argument of `clear` is `storage` (every pet that is not equipped), 
 The `<mode>` argument is `give` or `set` for slots and storage, and `give`, `take` or `set`
 for a currency. Capacity cannot be taken: lowering a purchase is a `set`. The three currencies
 are `trait-ticket`, `dice-normal` and `dice-special`.
+
+## Silent flags
+
+Every `/pets admin` command accepts two optional flags, in any order and combinable:
+
+| Flag | Effect |
+|---|---|
+| `-s` | Do not message the target player |
+| `-sf` | Do not message yourself |
+
+```
+/pets admin give Bob ember_fox 3 5 -s -sf
+/pets admin currency dice-normal give Bob 10 -s
+/pets admin clear Bob all -sf
+```
+
+{% hint style="info" %}
+`-sf` silences **success confirmations only**. An error, a refusal (storage full, no such pet, an
+unknown box) or a failed query always reaches the admin who ran the command - an admin command that
+fails in silence is the worst possible outcome.
+{% endhint %}
+
+`-s` silences the message the RECEIVER gets. Four commands send one: `give`
+(`messages.pet-received`), `givebox` and `giveallbox` (`messages.box-received`) and `currency`
+(`messages.currency-received`). The other seventeen have never messaged their target, so `-s` is
+accepted there and simply has nothing to silence. An offline receiver is never messaged either way.
+
+{% hint style="warning" %}
+Put the flags **last**. Everything after the first flag is treated as part of the flag tail, so
+`/pets admin give Bob ember_fox -s 5` grants one pet, not five - the `5` is read as trailing noise.
+Only the five commands with an optional argument (`list`, `clear`, `give`, `givebox`,
+`giveallbox`) are sensitive to the order; the rest have nothing to confuse.
+{% endhint %}
+
+Tab completion offers the flags once you type a leading `-` in the position of an optional
+argument. After a command's last declared argument the server stops completing, so there you type
+them from memory. They do not apply to `/pets reload`, `/pets help` or `/pets debug`.
 
 {% hint style="danger" %}
 These commands are destructive and cannot be undone: `/pets admin removepet` deletes one pet,

@@ -1360,3 +1360,15 @@ Every user facing string lives in `lang/messages_<code>.yml`. English and Spanis
 the plugin. Pick the active one with the `lang` key at the top of `config.yml`, which falls
 back to English when the named file is missing. To add a language, copy `messages_en.yml` to
 `messages_<code>.yml`, translate the values, and point `lang` at the new code.
+
+New keys are merged into your existing file on boot, with your values and your comments left
+alone, so an update never overwrites a line you restyled. **1.5.0 adds two**, both sent to the
+player who RECEIVES something from an admin command:
+
+| Key | Sent by | Placeholders |
+|---|---|---|
+| `messages.pet-received` | `/pets admin give` | `{amount}` `{pet}` `{level}` |
+| `messages.box-received` | `/pets admin givebox`, `/pets admin giveallbox` | `{amount}` `{box}` `{chance}` |
+
+Blank either value to switch that notification off for everyone, or suppress it per command with
+the `-s` flag (see [Commands](commands.md#silent-flags)). Offline players are never messaged.

@@ -46,6 +46,33 @@ Yes, since 1.2.1. Closing every SnPets menu forgets the pick, while moving betwe
 it. It is driven by the `close-actions` key each `guis/*.yml` now carries; the key merges in on
 the first boot after the update.
 
+### Can I run an admin command without telling anyone?
+
+Yes. Add `-s` to skip the message the target player would get, `-sf` to skip your own confirmation,
+or both, in any order:
+
+```
+/pets admin give Bob ember_fox 3 5 -s -sf
+/pets admin givebox Bob basic 10 -s
+/pets admin clear Bob all -sf
+```
+
+`-sf` only hides confirmations of things that WORKED. If the command is refused - a full storage,
+a pet that does not exist, an unknown box - or if a query fails, you are told regardless. Silence
+under `-sf` therefore means "it worked", never "something went wrong and you missed it".
+
+Put the flags at the END of the line. Anything typed after the first flag is ignored, so
+`/pets admin give Bob ember_fox -s 5` gives one pet rather than five.
+
+### My players never used to be told when I gave them a pet. Did that change?
+
+Yes, in 1.5.0. `/pets admin give`, `/pets admin givebox` and `/pets admin giveallbox` now send the
+receiver a line of their own - `messages.pet-received` and `messages.box-received`, both new keys
+in `lang/messages_<code>.yml`. They are merged into your existing lang file automatically on the
+first boot after the update, so you can restyle or blank them like any other message, and you can
+suppress them per command with `-s`. `/pets admin currency` already worked this way and is
+unchanged. Offline players are never messaged.
+
 ### Does it support Folia?
 
 No, SnPets is not Folia-compatible. Run it on Paper 1.20.4 or newer. Both the 1.20 and 1.21
