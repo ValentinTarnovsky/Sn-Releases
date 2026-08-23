@@ -281,6 +281,13 @@ holograms:
   see-through: false
   # Pixels before a line wraps.
   line-width: 200
+  # How the text turns towards the player.
+  #   vertical   - stays upright and turns only around the vertical axis, so the
+  #                lines never lean however far above or below you stand
+  #   center     - turns on both axes and tilts towards the camera
+  #   horizontal - turns around the horizontal axis only
+  #   fixed      - never turns, keeping the facing it was spawned at
+  billboard: vertical
   # Lines of a pet whose file declares no hologram block. Empty draws nothing.
   default-lines:
     - "{pet}"
@@ -827,6 +834,34 @@ and what they bought.
 It also never lowers a row on its own. If you reduce `slots.max-count` on a live server, players
 already above it keep what they have until the next `slots give`/`set` on them, which then clamps
 them down to the new ceiling.
+{% endhint %}
+
+### How the label turns
+
+Added in 1.10.0. `holograms.billboard` decides whether the text above a pet leans towards the
+player or stays upright.
+
+| Value | What the text does |
+|---|---|
+| `vertical` (default) | turns only around the vertical axis, so the lines stay upright at every angle |
+| `center` | turns on both axes and tilts towards the camera |
+| `horizontal` | turns around the horizontal axis only |
+| `fixed` | never turns, keeping the facing it was spawned at |
+
+`vertical` is the DecentHolograms look and the shipped default from 1.10.0 on: a label read from a
+rooftop or from the bottom of a ravine is as straight as one read at eye level. `center` is what
+the labels did before the key existed - write it if you preferred the tilt, and nothing else
+changes. `horizontal` and `fixed` complete the set of what a text display can do; neither reads
+well on a name plate.
+
+An unknown value falls back to `vertical` and logs one line in the console naming what it read. The
+setting is global: there is no per-pet override, so a server has one label aesthetic rather than a
+mix. It applies on the next formation rebuild, which `/pets reload` performs.
+
+{% hint style="info" %}
+`config.yml` is managed, so servers upgrading from 1.9.0 or earlier receive `billboard: vertical`
+on the next boot and their labels straighten up with no file editing. Set it to `center` if you
+want the old look back.
 {% endhint %}
 
 ## traits.yml

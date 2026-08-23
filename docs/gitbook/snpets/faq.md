@@ -261,9 +261,21 @@ What SnPets sends instead is a client-side text entity MOUNTED on the pet. The c
 from the pet on every one of its own ticks, and the plugin never sends a single position packet for
 a label. Nothing has to be installed and nothing can fall behind.
 
-Two deliberate limits come with that: the text does not bob along with a head pet's bounce (the
-bounce is a rendering transformation, which passengers do not inherit), and it always turns to face
-the reader rather than staying fixed.
+One deliberate limit comes with that: the text does not bob along with a head pet's bounce (the
+bounce is a rendering transformation, which passengers do not inherit). The DecentHolograms LOOK is
+not a limit though - see the next question.
+
+### The text above my pets leans towards me and it looks bad. Can it stay straight?
+
+Yes, and from 1.10.0 it does by default. Labels are drawn with the `vertical` billboard: they turn
+only around the vertical axis, so the lines stay upright however far above or below them you stand,
+which is the DecentHolograms look. Before 1.10.0 they used `center`, which turns on both axes and
+tilts the whole stack towards the camera.
+
+`config.yml` is managed, so upgrading is enough - `holograms.billboard: vertical` arrives on the
+next boot. If you preferred the tilt, set that key to `center` and everything else stays as it is.
+`horizontal` and `fixed` are also accepted; neither reads well on a name plate. The setting is
+global, with no per-pet override, so a server has one label aesthetic rather than a mix.
 
 ### Does it support Folia?
 
