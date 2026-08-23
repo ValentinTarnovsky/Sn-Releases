@@ -228,6 +228,47 @@ models:
   # beside them, and the client interpolates that carrier on its own.
 
 # ------------------------------------------------------------
+#  Holograms. Text drawn above every pet, riding the pet itself: the client
+#  moves it with the pet, so it never lags behind. One line of text is one
+#  packet entity; nothing is spawned for a pet whose lines are empty.
+#  A pet file may declare its own "hologram:" block (enabled, lines,
+#  height-offset); a pet that declares none uses default-lines below.
+#  Placeholders: every pet placeholder of the menus ({pet} {level} {level-cap}
+#  {exp} {exp-next} {percent} {group} {group-color} {trait} {buff} {buff-value})
+#  plus {owner}. PlaceholderAPI tokens resolve against the OWNER.
+#  The text is only rewritten when something on the pet changes - a level up, a
+#  trait or boost roll, an admin edit - never on the animation tick.
+# ------------------------------------------------------------
+holograms:
+  # Master switch. Off spawns nothing at all.
+  enabled: true
+  # Blocks above the pet's origin the FIRST (top) line sits at. Careful: the
+  # origin is not the same for both kinds of pet. A head pet's is the head
+  # itself (formation.height-offset above the owner's feet); a model pet's is
+  # its carrier, which also carries models.height-offset - so a model pushed
+  # down to stand on the ground needs a LARGER offset here, or the text lands
+  # inside it. A pet file can override this per pet, which is what the golem
+  # example does.
+  height-offset: 0.9
+  # Blocks between two lines.
+  line-spacing: 0.25
+  # Uniform scale of the text.
+  scale: 1.0
+  # Background colour as ARGB hex; empty for no background. 40000000 is the
+  # vanilla translucent black.
+  background: ""
+  # Draw the text with a shadow.
+  shadow: false
+  # Let the text show through blocks.
+  see-through: false
+  # Pixels before a line wraps.
+  line-width: 200
+  # Lines of a pet whose file declares no hologram block. Empty draws nothing.
+  default-lines:
+    - "{pet}"
+    - "&7Lv. &f{level}&7/&f{level-cap}"
+
+# ------------------------------------------------------------
 #  Visibility. Two independent switches per player, stored in the database and
 #  kept across relogs, so all four combinations are valid:
 #    /pets toggle -> hides the player's OWN pets, from themselves AND from
@@ -933,7 +974,16 @@ mythic:
 One file per pet type, named after its id. Three examples are seeded on a fresh install:
 `ember_fox.yml`, `gale_sprite.yml` and `stone_golem.yml`. A pet file declares the display
 name, the group it belongs to, the head or BetterModel it renders as, its level cap and
-experience curve, and the buffs it grants per level. Copy one of the examples to add your own.
+experience curve, the buffs it grants per level and, since 1.8.0, the hologram drawn above
+it. Copy one of the examples to add your own.
+
+The `hologram:` block is optional and, because this folder is seeded once and never merged
+again, it is never added to the pet files you already have. That is what
+`holograms.default-lines` in `config.yml` is for: a pet that declares no block uses those
+lines, so you only write a block for the pets that should differ. Only an explicit
+`enabled: false` silences a pet - `gale_sprite.yml` ships that way as the mute example, and
+`stone_golem.yml` ships its own `height-offset` because a model pet's label is measured from
+the carrier its bones ride, which also carries `models.height-offset`.
 
 Here is the seeded `pets/ember_fox.yml` in full, as a working reference:
 
@@ -974,6 +1024,25 @@ head-texture: "eyJ0ZXh0dXJlcyI6eyJTS0lOIjp7InVybCI6Imh0dHA6Ly90ZXh0dXJlcy5taW5lY
 #   animation-move: walk
 #   # Size multiplier of the model.
 #   scale: 1.0
+
+# ------------------------------------------------------------
+#  Hologram. The text drawn above this pet, riding the pet itself so the two
+#  move as one thing. Leave the whole block out and the pet uses
+#  holograms.default-lines from config.yml; the look (spacing, scale, shadow,
+#  background) always comes from the holograms band there.
+# ------------------------------------------------------------
+hologram:
+  # Draw a label above this pet. False silences this pet alone.
+  enabled: true
+  # This pet's own lines, top first. Every menu placeholder works here, plus
+  # {owner}; PlaceholderAPI tokens resolve against the owner.
+  lines:
+    - "{group-color}{pet}"
+    - "&7Lv. &f{level}&7/&f{level-cap}"
+    - "&8{owner}"
+  # Blocks above the pet the top line sits at. Leave it out to follow
+  # holograms.height-offset.
+  # height-offset: 0.9
 
 # This pet's own level cap, before trait and boost bonuses.
 max-level: 50

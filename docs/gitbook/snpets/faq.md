@@ -182,6 +182,67 @@ you already have and the merge never rewrites your own list values. Add them by 
 or delete the whole `lore:` list under `templates.pet-entry` and let the next boot write the
 shipped one back.
 
+### How do I put a name above every pet?
+
+Since 1.8.0 that is built in. `config.yml` has a `holograms` band controlling how the text LOOKS -
+`height-offset`, `line-spacing`, `scale`, `background` (ARGB hex, empty for none), `shadow`,
+`see-through` and `line-width` - plus `default-lines`, the lines used by any pet that does not name
+its own. What each pet SAYS is in its `pets/<id>.yml`:
+
+```yaml
+hologram:
+  enabled: true
+  lines:
+    - "{group-color}{pet}"
+    - "&7Lv. &f{level}&7/&f{level-cap}"
+    - "&8{owner}"
+  # height-offset: 0.9
+```
+
+You can use every placeholder a pet cell of any menu uses - `{pet}`, `{level}`, `{level-cap}`,
+`{exp}`, `{exp-next}`, `{percent}`, `{group}`, `{group-color}`, `{trait}`, `{buff}`,
+`{buff-value}` - plus `{owner}`. PlaceholderAPI tokens work too and resolve against the pet's
+OWNER, not against whoever is reading, because one label is shown to everyone who can see the pet.
+
+Note that `pets/` is seeded once and never merged again, so your existing pet files will NOT
+receive a `hologram:` block. They use `holograms.default-lines` instead until you write one. Only
+an explicit `enabled: false` silences a pet.
+
+### I updated to 1.8.0 and every pet suddenly has text over it. How do I turn that off?
+
+`config.yml` is managed, so your server received the whole `holograms` band on the first boot after
+the update, with `enabled: true` and a two-line default. Set `holograms.enabled: false` and run
+`/pets reload` to go back to bare pets, or replace `holograms.default-lines` with `[]` to keep the
+feature available for the pets that declare their own lines while every other pet stays silent.
+
+### My model pets have the text inside them. Why?
+
+Because the offset is measured from the pet, and "the pet" is not the same object in both cases. A
+head pet's label rides the head itself, which already sits `formation.height-offset` above the
+owner's feet. A model pet's label rides the invisible carrier its bones ride, which also carries
+`models.height-offset` - so on a server that pushed models down to stand on the ground
+(`models.height-offset: -1.9`), a label at `0.9` lands 0.9 blocks above the model's FEET.
+
+Give those pets a bigger `hologram.height-offset` of their own. The shipped `stone_golem.yml` does
+exactly that, with `1.2`.
+
+### Why is there no DecentHolograms option? I already run it.
+
+Because a DecentHolograms hologram cannot ride the pet, and riding the pet is the whole point. It
+is a server-side hologram with its own tick and its own teleports, per line and per viewer: a
+second stream of position updates on a second clock, which is exactly the drift that makes a
+follower hologram look wrong when the server hitches. SnLib's own `HologramUtil` cannot be used
+either - it has no move call at all and does not expose the entity id, so following a pet would
+mean deleting and respawning a real entity several times a second.
+
+What SnPets sends instead is a client-side text entity MOUNTED on the pet. The client positions it
+from the pet on every one of its own ticks, and the plugin never sends a single position packet for
+a label. Nothing has to be installed and nothing can fall behind.
+
+Two deliberate limits come with that: the text does not bob along with a head pet's bounce (the
+bounce is a rendering transformation, which passengers do not inherit), and it always turns to face
+the reader rather than staying fixed.
+
 ### Does it support Folia?
 
 No, SnPets is not Folia-compatible. Run it on Paper 1.20.4 or newer. Both the 1.20 and 1.21
