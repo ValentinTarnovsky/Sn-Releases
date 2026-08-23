@@ -662,7 +662,7 @@ boxes:
 
 # ------------------------------------------------------------
 #  Pet items. A stored pet can be taken out of the storage as a physical head
-#  (shift + right click on it in the main menu) and redeemed back by anyone
+#  (shift + right click on it in the main menu, or Q) and redeemed back by anyone
 #  with a right click, which is how pets change hands. The item carries the
 #  pet's whole state - level, experience, trait and the three boost grades - so
 #  a pet that comes back is the pet that left. A redeem into a full storage
@@ -1620,6 +1620,46 @@ its name and lore, so the row never changes shape under the cursor.
 Upgrading from 1.2.0 or earlier: `group-empty` used to be a `GRAY_STAINED_GLASS_PANE`, and SnLib
 never overwrites a value your file already has. Set `templates.group-empty.material` to
 `"{icon}"` by hand, or delete `guis/bulk_delete.yml` and restart to have it reseeded.
+{% endhint %}
+
+### Taking a pet out: the two triggers
+
+`templates.pet-entry` in `main.yml` declares two lists that both run the same action, so a stored
+pet leaves the storage either way:
+
+```yaml
+    shift-right-click-actions:
+      - "[pets-extract] {instance}"
+    drop-click-actions:      # 1.11.0. Q, and Ctrl+Q with it.
+      - "[pets-extract] {instance}"
+```
+
+`drop-click-actions` is new in 1.11.0 and needs SnLib 1.31.0. Declaring it is also what lets Q
+reach the cell at all: `main.yml` runs with `strict-clicks: true`, which discards every key
+outside the four basic mouse clicks *unless the item under the cursor declares that key itself*.
+So Q takes a pet out over a storage cell and does nothing anywhere else in the menu, and the
+hotbar numbers, F and the offhand swap stay inert everywhere, as before.
+
+The equipped slot markers on the top row deliberately declare neither list. Taking an equipped pet
+out is refused anyway - it would strand its slot and its buff - so the key is simply absent there
+rather than present and rejected.
+
+{% hint style="warning" %}
+**Deleting either list does not stick.** `guis/main.yml` is managed and carries no extensible
+marker, so the next boot merges any key you delete straight back. (This is not new in 1.11.0 -
+it was equally true of `shift-right-click-actions` in 1.7.0, which older documentation wrongly
+offered as an opt-out.) What holds instead:
+
+- `pet-items.enabled: false` in `config.yml` - the intended switch, and it stops both triggers.
+- `update-configs: false` in `config.yml` - freezes merging for **every** file, so you take on
+  adding future keys by hand.
+- a `# sn:extensible` comment line written directly above `pet-entry:` in your own `main.yml` -
+  SnLib treats a marker you type as your decision and stops inserting anything under that
+  template, including keys a future SnPets version adds there, logging one warning naming what it
+  withholds.
+
+The last one is how you keep exactly one of the two triggers: delete the list you do not want and
+mark the template.
 {% endhint %}
 
 ## lang/

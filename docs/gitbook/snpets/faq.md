@@ -168,7 +168,8 @@ one line for every winning pair.
 ### How do players trade pets with each other?
 
 Since 1.7.0, by turning the pet into an item. In the main menu, **shift + right click** a pet in
-the storage grid: it leaves the storage and becomes a player head in the player's inventory,
+the storage grid - or, since 1.11.0, press **Q** over it, the drop key, Ctrl+Q included: it
+leaves the storage and becomes a player head in the player's inventory,
 wearing that pet's own texture and carrying its whole state - pet type, level, experience, trait
 and the three boost grades. Anyone can then **right click** that head to put the pet into *their*
 storage, with everything it had. Hand it over, drop it, put it in a chest, or sell it on a shop
@@ -184,25 +185,36 @@ click work.
 The head is not placeable, so clicking a block with it can never place it and destroy the pet on
 it, and `boxes.blocked-blocks` applies to the redeem click too - clicking a chest opens the chest.
 
-Switch the whole feature off with `pet-items.enabled: false`, or delete
-`templates.pet-entry.shift-right-click-actions` from `guis/main.yml` to stop new pets leaving
-storage while the heads already in circulation stay redeemable.
+Both triggers run the same action with the same refusals. `pet-items.enabled: false` switches the
+whole feature off, both triggers at once, and leaves the heads already in circulation redeemable.
 
-### I updated to 1.7.0 but the pet cells do not mention shift + right click. Is it working?
+{% hint style="warning" %}
+**Correction to what this page used to say.** Up to 1.10.0 this answer told you that deleting
+`templates.pet-entry.shift-right-click-actions` from `guis/main.yml` stops new pets leaving
+storage. It does not, and never did: `guis/main.yml` is managed and carries no extensible marker,
+so the next boot merges the deleted key straight back. The same applies to `drop-click-actions`.
+See [Taking a pet out: the two triggers](configuration.md#taking-a-pet-out-the-two-triggers) for
+the ways that do hold.
+{% endhint %}
 
-It is. `guis/main.yml` is managed, so your install received the new
-`templates.pet-entry.shift-right-click-actions` key and the feature works immediately. What it
-did NOT receive are the two lore lines that advertise it, because those are part of a lore LIST
-you already have and the merge never rewrites your own list values. Add them by hand:
+### I updated but the pet cells do not mention shift + right click or Q. Is it working?
+
+It is. `guis/main.yml` is managed, so your install received the
+`templates.pet-entry.shift-right-click-actions` key (1.7.0) and `drop-click-actions` (1.11.0) and
+both triggers work immediately. What it did NOT receive are the lore lines that advertise them,
+because those are part of a lore LIST you already have and the merge never rewrites your own list
+values. Add them by hand:
 
 ```yaml
       - ""
       - "&e&lSHIFT + RIGHT CLICK"
+      - "&e&lQ (DROP)"
       - "&6Take this pet out as an item you can trade"
 ```
 
 or delete the whole `lore:` list under `templates.pet-entry` and let the next boot write the
-shipped one back.
+shipped one back. Upgrading from 1.10.0 or earlier, `&e&lQ (DROP)` is the single line you are
+missing.
 
 ### How do I put a name above every pet?
 

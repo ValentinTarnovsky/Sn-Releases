@@ -11,8 +11,12 @@ your key, then restart.
 
 {% hint style="warning" %}
 SnLib is required and must be installed as its own plugin in `plugins/`. This build targets
-`com.sn:snlib` 1.30.0, so run that version or newer. SnLib is never bundled inside the jar,
-so an older SnLib will fail the startup API check.
+`com.sn:snlib` 1.31.0, so run that version or newer. SnLib is never bundled inside the jar.
+
+1.31.0 is what the drop key (Q) in the storage menu needs, and it is a requirement the startup
+API check cannot enforce: SnLib 1.31.0 grew no new Java surface, so its API level is the same as
+1.28.0's. On an SnLib older than 1.31.0 SnPets still enables normally and everything else works -
+only Q over a stored pet does nothing.
 {% endhint %}
 
 {% hint style="info" %}
