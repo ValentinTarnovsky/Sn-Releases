@@ -248,6 +248,16 @@
 * [Configuration](snpacketbosses/configuration.md)
 * [FAQ](snpacketbosses/faq.md)
 
+## SnPets
+
+* [Overview](snpets/README.md)
+* [Installation](snpets/installation.md)
+* [Commands](snpets/commands.md)
+* [Permissions](snpets/permissions.md)
+* [Configuration](snpets/configuration.md)
+* [Placeholders](snpets/placeholders.md)
+* [FAQ](snpets/faq.md)
+
 ## SnPickaxes
 
 * [Overview](snpickaxes/README.md)
