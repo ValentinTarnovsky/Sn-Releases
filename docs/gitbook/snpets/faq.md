@@ -12,12 +12,33 @@ see the question about `boxes-migrated/` below.
 
 ### Can players skip the trait and boost roulette animation?
 
-Yes, since 1.3.0: clicking the spinning cell reveals the result at once. It can never change
-what came out, because the roll is decided and saved before the first frame is drawn. The
-`click-actions` key that arms it merges into `guis/boosts.yml` and `guis/traits.yml` on the
-first boot after the update; the `&eClick to skip the animation` hint is a new line in an
-existing `lore` list, so add that one by hand if you want it shown. Delete the `click-actions`
-block on the `spinning` template to force the animation to always run to the end.
+Since **1.12.0** they do better than skip it: they switch it off once, on the button at slot 8
+of the traits and boosts menus, and the choice is saved on their own row so it holds across
+relogs and restarts. `Roll Animation: Off` shows the result at once, with the same reveal sound,
+the same chat line and the same redraw. It can never change what came out, because the roll is
+decided and saved before the first frame would have been drawn.
+
+The click-to-skip 1.3.0 put on the spinning cell is retired - the setting replaced it. Both
+templates (`anim-on`, `anim-off`) merge into your `guis/boosts.yml` and `guis/traits.yml` on the
+first boot after the update. See [The roll animation switch](configuration.md#the-roll-animation-switch)
+for what happens to the old `click-actions` block on your `spinning` template.
+
+The switch covers the two roulettes only: a pet box keeps its own `animation:` block in
+`boxes.yml`, and a roulette you turned off with `traits.roll.enabled: false` or
+`boosts.roll.enabled: false` stays off for everyone regardless.
+
+### I updated to 1.12.0. Does anything happen to my database?
+
+Yes, once, and it needs nothing from you. `snpets_players` gains one column, `roll_animation`,
+which is where each player's answer to the question above is kept. It is the first schema
+migration this plugin has ever needed, and it runs on the boot after the update: right after the
+tables are created, before any player row is read, on SQLite and MySQL alike.
+
+Every player who already has a row keeps the animation **on**, which is what they had. Nothing
+else on the row is touched, no row is rewritten, and a boot that finds the column already there
+does nothing at all - so a downgrade and a re-upgrade are both uneventful. If the migration
+cannot run, the plugin refuses to enable and says so in the console rather than running against
+a table it cannot read, exactly as it already does when a table cannot be created.
 
 ### A player unequipped the pet in slot 2 and the others moved. Is that a bug?
 

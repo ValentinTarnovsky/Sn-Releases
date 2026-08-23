@@ -1515,38 +1515,66 @@ close-actions:
 Boosts to the selector and back, or Traits to the trait index and back, keeps it. Remove the key
 from a file if you want a pick made there to survive closing that screen.
 
-### Skipping the roulette
+### The roll animation switch
 
-`boosts.yml` and `traits.yml` draw the cell of the pet being rolled with a `spinning` template
-while the animation runs, and that template is clickable:
+Since **1.12.0** each player decides whether their own trait and boost roulettes play, on a
+button `boosts.yml` and `traits.yml` both draw at **slot 8**. Two templates, one bound per
+render depending on what that player chose:
 
 ```yaml
-  spinning:
-    material: ENDER_EYE
-    key: p
-    display-name: "&e&lRolling..."
-    lore:
-      - "&7{candidate}"
-      - ""
-      - "&eClick to skip the animation"
+  anim-on:
+    material: CLOCK
+    slots: [8]
     glow: true
+    display-name: "&e&lRoll Animation: &aOn"
+    lore:
+      - "&7Your trait and boost rolls play a short"
+      - "&7roulette before showing what they rolled."
     click-actions:
-      - "[pets-skip-spin]"
+      - "[pets-toggle-roll-anim]"
+      - "[sound] UI_BUTTON_CLICK"
+
+  anim-off:
+    material: CLOCK
+    slots: [8]
+    display-name: "&e&lRoll Animation: &cOff"
+    lore:
+      - "&7Your trait and boost rolls show what they"
+      - "&7rolled at once, with no roulette."
+    click-actions:
+      - "[pets-toggle-roll-anim]"
+      - "[sound] UI_BUTTON_CLICK"
 ```
 
-`[pets-skip-spin]` reveals the result immediately: the same message, the same reveal sound and
-the same redraw the animation would have produced when it ended on its own. It can never change
-what came out, because the roll is decided and saved before the first frame is ever drawn. The
-spinner is shared with pet box openings, so a skip also finishes a box reveal of the same player.
+`[pets-toggle-roll-anim]` flips the setting, says so in chat and redraws the menu. The choice is
+stored on the player's own database row, so it survives a relog and a restart. With the animation
+off the result appears at once with the same reveal sound, the same message and the same redraw
+the spin would have produced at its end - it can never change what came out, because the roll is
+decided and saved before the first frame would have been drawn.
 
-Delete the `click-actions` block if you want the animation to always run to the end.
+It covers the two roulettes only. A pet box keeps its own `animation:` block in `boxes.yml`, which
+is your setting rather than the player's, and a roulette you switched off entirely with
+`traits.roll.enabled: false` or `boosts.roll.enabled: false` stays off and silent for everyone no
+matter what a player picks.
+
+Both templates place themselves with `slots: [8]` instead of a letter of the `layout:` mask, on
+purpose: that is what puts them in the right cell on a server whose layout was edited before this
+button existed. Move the button by editing the two `slots:` lines; give each template a different
+slot if you want the two states in different cells.
 
 {% hint style="info" %}
-Upgrading from 1.2.1 or earlier: the `click-actions` key is a new key, so SnLib inserts it into
-your `boosts.yml` and `traits.yml` on the next boot and the skip starts working. The
-`&eClick to skip the animation` line is a new element of an existing `lore` list, and the
-updater never appends to a list you already own, so add that line by hand if you want the hint
-shown.
+**Upgrading from 1.11.0 or earlier.** `anim-on` and `anim-off` are new keys, so SnLib inserts
+both into your `boosts.yml` and `traits.yml` on the next boot, comments included, and the button
+starts working.
+
+The click-to-skip that 1.3.0 put on the `spinning` template is **retired** in the same release.
+Its `click-actions` block and its `&eClick to skip the animation` lore line are gone from the
+shipped file, but removing a value is not something the updater propagates, so your file keeps
+both and the line stays on screen. Clicking the spinning cell now does nothing:
+`[pets-skip-spin]` is still registered, as a deliberate no-op, so an install that kept the block
+gets silence instead of a console warning on every click. Delete the lore line and the
+`click-actions:` block from your `templates.spinning` whenever you like - the tag itself is
+removed in the next minor version.
 {% endhint %}
 
 ### Colouring a pet by its group
@@ -1670,8 +1698,17 @@ back to English when the named file is missing. To add a language, copy `message
 `messages_<code>.yml`, translate the values, and point `lang` at the new code.
 
 New keys are merged into your existing file on boot, with your values and your comments left
-alone, so an update never overwrites a line you restyled. **1.5.0 adds two**, both sent to the
-player who RECEIVES something from an admin command:
+alone, so an update never overwrites a line you restyled.
+
+**1.12.0 adds two**, both sent to the player who clicks the roll animation switch described
+under [guis/](#the-roll-animation-switch). Neither takes a placeholder:
+
+| Key | Sent when |
+|---|---|
+| `messages.roll-animation-on` | the player switches their roulette animation back on |
+| `messages.roll-animation-off` | the player switches it off, so results appear instantly |
+
+**1.5.0 added two**, both sent to the player who RECEIVES something from an admin command:
 
 | Key | Sent by | Placeholders |
 |---|---|---|

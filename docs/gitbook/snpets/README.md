@@ -28,8 +28,9 @@ duplicates into stronger ones, and manage everything from seven configurable men
   is how players trade pets.
 - Holograms: configurable text above every pet, per pet type, drawn as packet entities that
   RIDE the pet, so the text and the pet can never move at different times.
-- Seven menus you can re-skin without touching code, with skippable roll animations and a
-  per-group colour every pet template can draw with.
+- Seven menus you can re-skin without touching code, with a per-player switch that decides
+  whether that player's roll animation plays or the result appears instantly, and a per-group
+  colour every pet template can draw with.
 - Equipped pets are kept in slots 1..n with no gap, so the free slots are always the last ones.
 
 ## Optional integrations
