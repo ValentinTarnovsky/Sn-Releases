@@ -6,6 +6,19 @@ Download the newer `snpets-v*` release and replace the jar. `config.yml`, the la
 and the menu layouts auto-merge on restart, so new keys appear while your values and comments
 stay. Your `pets/`, `boxes/`, `traits.yml` and `boost-grades.yml` files are never overwritten.
 
+### After updating to 1.2.1 my empty bulk delete buttons are still grey glass. Why?
+
+Because the merge adds missing keys but never overwrites a value your file already carries, and
+that material is a value. Open `guis/bulk_delete.yml`, set `templates.group-empty.material` to
+`"{icon}"`, and restart. Deleting the file and restarting reseeds the whole thing instead. New
+installs already ship the fixed value.
+
+### A player picked a pet in Boosts, closed the menu and it was still picked. Is that fixed?
+
+Yes, since 1.2.1. Closing every SnPets menu forgets the pick, while moving between menus keeps
+it. It is driven by the `close-actions` key each `guis/*.yml` now carries; the key merges in on
+the first boot after the update.
+
 ### Does it support Folia?
 
 No, SnPets is not Folia-compatible. Run it on Paper 1.20.4 or newer. Both the 1.20 and 1.21

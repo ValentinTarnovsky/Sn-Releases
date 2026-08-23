@@ -1048,6 +1048,35 @@ cell count of `main.yml`, the extra pets cannot be shown. The plugin warns about
 runtime, and `/pets admin unequip` always recovers a pet that ended up out of reach.
 {% endhint %}
 
+### close-actions
+
+All seven files carry the same top-level key, and it is what makes the pet a player picked in
+Boosts or Traits last exactly one visit to the menus:
+
+```yaml
+# Runs on the natural close of this menu (ESC). Navigating to another SnPets
+# menu keeps the selected pet; leaving the menus entirely forgets it.
+close-actions:
+  - "[pets-forget-selection]"
+```
+
+`[pets-forget-selection]` only clears the pick when no SnPets menu is open any more, so walking
+Boosts to the selector and back, or Traits to the trait index and back, keeps it. Remove the key
+from a file if you want a pick made there to survive closing that screen.
+
+### The bulk delete icons
+
+`bulk_delete.yml` draws a group with two templates, `group-button` and `group-empty`, and both
+take their material from the same `{icon}` the group names under `menus.bulk-delete.icons` in
+`config.yml`. A group the player stores nothing of therefore keeps its own icon and only greys
+its name and lore, so the row never changes shape under the cursor.
+
+{% hint style="info" %}
+Upgrading from 1.2.0 or earlier: `group-empty` used to be a `GRAY_STAINED_GLASS_PANE`, and SnLib
+never overwrites a value your file already has. Set `templates.group-empty.material` to
+`"{icon}"` by hand, or delete `guis/bulk_delete.yml` and restart to have it reseeded.
+{% endhint %}
+
 ## lang/
 
 Every user facing string lives in `lang/messages_<code>.yml`. English and Spanish ship with
