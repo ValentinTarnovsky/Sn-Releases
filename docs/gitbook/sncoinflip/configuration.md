@@ -50,6 +50,7 @@ There are three backends, chosen with two flags: `vault` and `edtoolapi`.
 | `display-name` | Yes | Name shown wherever the currency is named. PlaceholderAPI is resolved before colour, so a placeholder that returns a colour code may be written right after a `&`. |
 | `vault` | Yes | `true` selects this backend. No id, no commands and no placeholder are read. |
 | `broadcast-min` | No | Overrides `broadcast.min-amount` (see [Broadcasts](#broadcasts)) for this currency alone. |
+| `result-broadcast-min` | No | Overrides `broadcast.result-min-amount` (see [Broadcasts](#broadcasts)) for this currency alone. |
 
 **Command-backed** (neither flag):
 
@@ -60,6 +61,7 @@ There are three backends, chosen with two flags: `vault` and `edtoolapi`.
 | `take-command` | Yes | Console command that debits a wager. `{player}` and `{amount}` are replaced. |
 | `balance-placeholder` | Yes | Placeholder read to learn a player's balance. |
 | `broadcast-min` | No | Overrides `broadcast.min-amount` (see [Broadcasts](#broadcasts)) for this currency alone. |
+| `result-broadcast-min` | No | Overrides `broadcast.result-min-amount` (see [Broadcasts](#broadcasts)) for this currency alone. |
 
 **EdTools-backed** (`edtoolapi: true`, `vault` absent or false):
 
@@ -68,6 +70,7 @@ There are three backends, chosen with two flags: `vault` and `edtoolapi`.
 | `display-name` | Yes | As above. |
 | `currency-id` | Yes | EdTools currency id. The three command fields are ignored. |
 | `broadcast-min` | No | Overrides `broadcast.min-amount` (see [Broadcasts](#broadcasts)) for this currency alone. |
+| `result-broadcast-min` | No | Overrides `broadcast.result-min-amount` (see [Broadcasts](#broadcasts)) for this currency alone. |
 
 {% hint style="info" %}
 Vault is a hard dependency of SnCoinFlip, but Vault itself provides no economy - it brokers whatever an economy plugin (EssentialsX, CMI, XConomy, ...) registers with it. A `vault: true` currency is never skipped at startup over a missing provider: it registers, refuses wagers as unverifiable while there is nothing to read, and starts working the moment a provider appears. No restart and no `/coinflip reload` are needed, which is what makes an economy plugin that enables after SnCoinFlip a non-event.
@@ -141,21 +144,29 @@ The right numbers depend on your balance provider, not on this plugin. If a take
 | Key | Default | Description |
 |-----|---------|-------------|
 | `broadcast.min-amount` | `0` | Smallest wager whose *creation* is announced in chat, inclusive. `0` announces every coinflip. |
+| `broadcast.result-min-amount` | `0` | Smallest wager whose *result* (who won) is announced in chat, inclusive. `0` announces every finished match. |
 
-A currency's own entry under `currencies:` may also carry `broadcast-min`, overriding `broadcast.min-amount` for that currency alone:
+A currency's own entry under `currencies:` may also carry either floor, overriding the global value for that currency alone:
 
 | Key | Required | Description |
 |-----|----------|-------------|
 | `broadcast-min` | No | Overrides `broadcast.min-amount` for this currency, in this currency's own units. Omit it to follow the global value. |
+| `result-broadcast-min` | No | Overrides `broadcast.result-min-amount` for this currency, in this currency's own units. Omit it to follow the global value. |
 
 {% hint style="warning" %}
-`currencies:` is owner-owned (`# sn:extensible`), so SnLib never inserts a new key into a currency entry that already exists on disk. On a server upgrading from an earlier version, `broadcast-min` will **not** appear on its own - add the line by hand to the currencies that need their own floor.
+`currencies:` is owner-owned (`# sn:extensible`), so SnLib never inserts a new key into a currency entry that already exists on disk. On a server upgrading from an earlier version, neither `broadcast-min` nor `result-broadcast-min` will appear on its own - add the line by hand to the currencies that need their own floor.
 {% endhint %}
 
 {% hint style="info" %}
-A coinflip below the floor is otherwise unaffected: it is still created, still listed in the lobby and still joinable. Only its own creation announcement is silenced - the creator still gets their normal confirmation message.
+The two floors are **independent**: a currency may throttle its creation noise and still announce every winner, or the reverse. Neither one implies the other, and both are `0` out of the box, so a server that never touches them keeps announcing everything exactly as before.
 
-The **result** broadcast (who won) is never filtered by this setting. Every finished match is announced, whatever the wager.
+Both compare against the **wager**, not against the doubled prize, so the same number means the same match in either key. A result floor of `1000` silences exactly the matches a creation floor of `1000` silences.
+{% endhint %}
+
+{% hint style="info" %}
+A coinflip below the creation floor is otherwise unaffected: it is still created, still listed in the lobby and still joinable. Only its own creation announcement is silenced - the creator still gets their normal confirmation message.
+
+A match below the result floor is still played and still paid. The winner receives the pot and the statistics are recorded before the announcement is ever reached, and both players still see their own outcome in the animation. Only the server-wide chat line is skipped.
 {% endhint %}
 
 ### Sounds

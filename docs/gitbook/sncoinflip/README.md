@@ -9,6 +9,7 @@ SnCoinFlip is PvP coinflip gambling with as many currencies as you care to confi
 - Lifetime totals per player per currency: wins, losses, amount wagered and amount won, exposed through eight PlaceholderAPI placeholders.
 - One active coinflip per player, as creator or as joiner.
 - Wager bounds, a creation cooldown and tab-completed suggested amounts.
+- Independent chat floors for the creation and the result broadcast, global or per currency, so small wagers can stay out of chat without touching the game itself.
 - Configurable sounds for the animation tick, the winner, the loser and the creation broadcast.
 - English and Spanish language files, both shipped.
 
