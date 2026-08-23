@@ -340,6 +340,22 @@ and the player is told, so nothing is consumed. If storage filled up between the
 grant, the open lands partially on purpose and reports how many pets did not fit. Free storage
 and open the rest.
 
+### A player has more pets stored than their capacity allows. How?
+
+They opened boxes faster than the pets could be written. Before 1.8.2 the capacity check ran the
+instant you clicked, while the pets themselves were saved a few ticks later, so a second click
+that arrived in between still saw the old count and was let in again. Shift-clicking six or seven
+stacks in a row could leave a storage of 54 holding 107 pets.
+
+Update to 1.8.2. Each open now holds the places it was granted for as long as its pets are in
+flight, so a simultaneous open sees them as already taken: the excess is trimmed on the click
+that does not fit, the boxes it would have opened are returned, and `storage-full` and
+`box-partial` quote the corrected numbers. Nothing to configure.
+
+Storages that are already over capacity stay as they are - the update stops the overfill, it does
+not delete anyone's pets. Nothing new enters until the player is back under their limit, which is
+the same rule that has always applied after unequipping a pet into a full storage.
+
 ### How do I give a rank more pet slots or storage?
 
 Grant `snpets.slots.<n>` or `snpets.storage.<n>` in your permissions plugin. The highest value
