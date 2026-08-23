@@ -67,8 +67,8 @@ The `<what>` argument of `clear` is `storage` (every pet that is not equipped), 
 | `/pets admin give <player> <pet> [amount] [level]` | `snpets.admin.give` | Gives pets to a player |
 | `/pets admin givebox <player> <box> [amount] [chance]` | `snpets.admin.givebox` | Gives pet boxes to an online player. Never refused: a box is an item, and a full pet storage only blocks OPENING it |
 | `/pets admin giveallbox <box> [amount] [chance]` | `snpets.admin.giveallbox` | Gives pet boxes to every online player, all at one success chance |
-| `/pets admin slots <mode> <player> <amount>` | `snpets.admin.slots` | Adds or sets the equip slots a player bought |
-| `/pets admin storage <mode> <player> <amount>` | `snpets.admin.storage` | Adds or sets the storage a player bought |
+| `/pets admin slots <mode> <player> <amount>` | `snpets.admin.slots` | Adds or sets the equip slots a player bought, capped at `slots.max-count` |
+| `/pets admin storage <mode> <player> <amount>` | `snpets.admin.storage` | Adds or sets the storage a player bought, capped at `storage.max-capacity` |
 | `/pets admin currency <currency> <mode> <player> <amount>` | `snpets.admin.currency` | Changes one of a player's three balances |
 
 The `<mode>` argument is `give` or `set` for slots and storage, and `give`, `take` or `set`
@@ -108,9 +108,25 @@ Only the five commands with an optional argument (`list`, `clear`, `give`, `give
 `giveallbox`) are sensitive to the order; the rest have nothing to confuse.
 {% endhint %}
 
-Tab completion offers the flags once you type a leading `-` in the position of an optional
-argument. After a command's last declared argument the server stops completing, so there you type
-them from memory. They do not apply to `/pets reload`, `/pets help` or `/pets debug`.
+### Tab completion
+
+Since 1.9.0 both flags are declared as the last two optional parameters of every `/pets admin`
+command, so they complete on tab and show up in the usage line as `[-s] [-sf]`. Type a command's
+own arguments, press tab, and you get `-s` and `-sf`; press tab again after typing one and you
+still get the other.
+
+Before 1.9.0 they were accepted but not declared, and completion stops at a command's last declared
+argument - so on the sixteen commands whose arguments are all required they were suggested nowhere
+and had to be typed from memory.
+
+Inside the position of a real optional argument (the `[page]` of `list`, the `[amount]` of `give`)
+the flags still appear only once you type a leading `-`, so they never crowd the list of values you
+were actually reaching for. A trailing token that is neither an argument nor a flag is still
+accepted in silence, exactly as before.
+
+The flags do not apply to `/pets reload`, `/pets help` or `/pets debug`, which SnLib owns at root
+level, nor to `/pets toggle` and `/pets hide`, which act on you alone and have no second party to
+silence.
 
 {% hint style="danger" %}
 These commands are destructive and cannot be undone: `/pets admin removepet` deletes one pet,

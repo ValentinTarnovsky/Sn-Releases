@@ -112,12 +112,30 @@ storage:
   # Pets a player may keep before permissions or purchases raise it.
   base-capacity: 54
 
+  # Ceiling of the PURCHASED storage that "/pets admin storage give|set" may
+  # leave on a player. 0 disables it, which is the shipped value: storage is
+  # paginated, so unlike the equip slots it has no visual limit to agree with.
+  # A command that would go past the ceiling is NOT cancelled - it is clamped to
+  # the ceiling and says so. This does not limit the "snpets.storage.<n>"
+  # permission grants, which are a separate half of the same total.
+  max-capacity: 0
+
 # ------------------------------------------------------------
 #  Equip slots.
 # ------------------------------------------------------------
 slots:
   # Pets a player may equip at once before permissions or purchases raise it.
   base-count: 1
+
+  # Ceiling of the PURCHASED slots that "/pets admin slots give|set" may leave on
+  # a player. 0 disables it. Keep it equal to the number of 's' cells in the
+  # layout of guis/main.yml (7 in the shipped menu): the menu can only draw that
+  # many, so slots past it are bought and never usable. The two files are not
+  # read from each other on purpose - this comment is the link.
+  # A command that would go past the ceiling is NOT cancelled - it is clamped to
+  # the ceiling and says so. This does not limit the "snpets.slots.<n>"
+  # permission grants, which are a separate half of the same total.
+  max-count: 7
 
   # Forbid equipping two pets that belong to the same group. Off by default: a
   # player may equip as many pets of one group as they have slots for. Pets that
@@ -776,6 +794,40 @@ placeholders:
   # are never abbreviated.
   compact-numbers: false
 ```
+
+### Capacity ceilings
+
+Added in 1.9.0. `slots.max-count` and `storage.max-capacity` cap what the two admin capacity
+commands may leave on a player.
+
+| Key | Default | Caps |
+|---|---|---|
+| `slots.max-count` | `7` | the purchased equip slots `/pets admin slots give\|set` may leave |
+| `storage.max-capacity` | `0` (off) | the purchased storage `/pets admin storage give\|set` may leave |
+
+A command that would go past its ceiling is **not cancelled**. It writes the ceiling and tells the
+admin it did, so on a stock install `/pets admin slots give Snopeyy 100` leaves 7 purchased slots
+and prints `messages.admin-slots-clamped` before the usual confirmation. That notice is shown even
+to an admin who typed `-sf`: that flag mutes success confirmations, and a number other than the one
+typed is corrective information. Set a key to `0` to remove its ceiling.
+
+{% hint style="info" %}
+Keep `slots.max-count` equal to the number of `s` cells in the layout of `guis/main.yml` - 7 in the
+shipped menu. The menu can only draw that many, so slots past it are bought and never usable.
+SnPets does not read `guis/main.yml` to derive the ceiling, on purpose: two files you edit
+independently should not silently depend on each other.
+{% endhint %}
+
+{% hint style="warning" %}
+The ceiling bounds **purchases only**. It does not limit the `snpets.slots.<n>` /
+`snpets.storage.<n>` permission grants, so a rank may still grant more than an admin command can -
+the effective total a player ends up with is the highest of the config base, what their rank grants
+and what they bought.
+
+It also never lowers a row on its own. If you reduce `slots.max-count` on a live server, players
+already above it keep what they have until the next `slots give`/`set` on them, which then clamps
+them down to the new ceiling.
+{% endhint %}
 
 ## traits.yml
 

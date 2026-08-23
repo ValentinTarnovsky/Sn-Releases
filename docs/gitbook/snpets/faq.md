@@ -362,6 +362,32 @@ Grant `snpets.slots.<n>` or `snpets.storage.<n>` in your permissions plugin. The
 a player holds wins, so stacking nodes across ranks is safe. The value is read on join, so a
 rank change applies the next time the player logs in.
 
+### I gave someone 100 slots and they only got 7. Why?
+
+`slots.max-count` in `config.yml`, which ships at `7` from 1.9.0 on. It is the ceiling on the
+purchased slots an admin command may leave, and a command past it is clamped rather than
+cancelled - so the grant went through, it just stopped at 7, and the admin was told so before the
+usual confirmation. `7` is the number of pet cells the shipped `guis/main.yml` layout can draw;
+anything past it would be bought and never usable.
+
+Raise the key if you widened the menu layout, or set it to `0` to remove the ceiling entirely.
+`storage.max-capacity` is the same knob for storage and ships at `0`, so storage grants are
+unlimited out of the box.
+
+Two things it does not do: it does not cap `snpets.slots.<n>` permission grants, so a rank can
+still grant more than a command can; and it never lowers a row by itself. Lowering the key on a
+live server leaves players above it alone until the next `slots give`/`set` on them.
+
+### Can I still type `-s` and `-sf` the way I always did?
+
+Yes, nothing about them changed in 1.9.0 - they just tab-complete now, as the last two optional
+parameters of every `/pets admin` command. Trailing junk is still accepted in silence, and the
+flags are still trailing and order-independent.
+
+Your `lang/messages_en.yml` will grow an `args` entry for each of them under every admin command
+on the first boot after the update. That block is only the visible labels of each argument in the
+usage line; editing or deleting an entry never changes how a command is typed.
+
 ### Can I add my own pets?
 
 Yes. Copy a file in `pets/` and rename it: the file name is the pet id. The folder is yours
