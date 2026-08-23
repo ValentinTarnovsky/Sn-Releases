@@ -178,11 +178,9 @@ models:
   # Heads float; a model usually wants to sit lower or stand on the ground, so a
   # negative value here lowers only the pets drawn as models.
   height-offset: 0.0
-  # Ticks the model takes to close the gap to where it should be. Leave it at 0:
-  # the shared animation tick is already the fixed render clock and the client
-  # smooths every step on its own, so easing here only makes a model trail the
-  # heads beside it. Raise it for a pet that follows lazily on purpose.
-  smoothing-ticks: 0
+  # There is nothing to smooth here, which is why no setting for it exists: a
+  # model pet's bones ride an invisible carrier that moves exactly like the heads
+  # beside them, and the client interpolates that carrier on its own.
 
 # ------------------------------------------------------------
 #  Visibility. Two independent switches per player, stored in the database and
