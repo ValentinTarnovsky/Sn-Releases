@@ -128,16 +128,27 @@ slots:
 #  Formation. The equipped pets stand on an arc around their owner that turns
 #  with the owner's camera. The arc is always used whole, end to end: the pets
 #  spread evenly across it and slide over to keep the gaps identical whenever
-#  one is equipped or unequipped.
+#  one is equipped or unequipped. The arc is cut from a circle or from an oval,
+#  see "shape" below.
 # ------------------------------------------------------------
 formation:
-  # Blocks between the owner and the arc the pets stand on.
-  radius: 1.6
+  # Blocks between the owner and the arc at their SIDES. Under shape CIRCLE this
+  # is the distance in every direction; under shape OVAL the back of the arc uses
+  # back-radius instead.
+  radius: 2.0
+  # CIRCLE keeps every pet at "radius" blocks. OVAL keeps "radius" at the owner's
+  # sides and "back-radius" straight behind (and in front), so the arc hugs the
+  # owner's back and opens out at the flanks.
+  shape: OVAL
+  # Blocks between the owner and the arc straight behind them. Only read when
+  # shape is OVAL.
+  back-radius: 1.4
   # Blocks above the owner's feet the pets float at.
-  height-offset: 0.35
+  height-offset: 1.9
   # Total width of the arc in degrees, capped at 360. With 180 the first pet
-  # stands at the owner's right, the second at their left.
-  arc-degrees: 180.0
+  # stands exactly at the owner's right and the second exactly at their left;
+  # past 180 the two ends pass a little in FRONT of the owner's shoulders.
+  arc-degrees: 190.0
   # Degrees from the owner's facing to the centre of the arc. 180 puts the arc
   # behind the owner, 0 in front of them, 90 at their right.
   arc-center-offset: 180.0
@@ -145,8 +156,9 @@ formation:
   # the owner) or CENTER (at the owner).
   facing: OWNER_YAW
   # Degrees added to every pet's facing, to correct a head texture that is not
-  # drawn looking forward.
-  facing-offset: 0.0
+  # drawn looking forward. 180 turns the heads around to face the camera when the
+  # owner looks back at them; note that it also swaps OUTWARD and CENTER.
+  facing-offset: 180.0
 
 # ------------------------------------------------------------
 #  Animation. ONE shared task moves every pet of every player; there is no task
@@ -157,7 +169,7 @@ animation:
   # updates, so 2 already looks fluid and a lower value would only cost tick.
   interval-ticks: 2
   # Uniform scale of a floating pet head.
-  head-size: 0.7
+  head-size: 1.3
   # Blocks a client keeps rendering a pet for, and the radius the plugin scans
   # for viewers.
   view-range: 48
@@ -167,9 +179,9 @@ animation:
   # Vertical bob of a pet.
   bounce:
     # Blocks the pet rises and falls; 0 keeps the pets perfectly still.
-    height: 0.08
+    height: 0.06
     # Radians of bob phase advanced per animation tick; higher bobs faster.
-    speed: 0.15
+    speed: 0.1
 
 # ------------------------------------------------------------
 #  BetterModel models. A pet whose file declares a "model" block is drawn as an
@@ -194,7 +206,9 @@ models:
   idle-delay-ticks: 8
   # Blocks added to a model pet's height, on top of formation.height-offset.
   # Heads float; a model usually wants to sit lower or stand on the ground, so a
-  # negative value here lowers only the pets drawn as models.
+  # negative value here lowers only the pets drawn as models. The two are SUMMED,
+  # so with formation.height-offset at 1.9 a model that should walk on the floor
+  # needs roughly -1.9 here.
   height-offset: 0.0
   # There is nothing to smooth here, which is why no setting for it exists: a
   # model pet's bones ride an invisible carrier that moves exactly like the heads
@@ -443,9 +457,11 @@ fusion:
     # Clamped to 1-60.
     confirm-seconds: 5
 
-  # Announce a successful SINGLE fusion to the whole server. Fuse All never
-  # broadcasts: it rolls per pair, so a good run would post one line per
-  # winning pair.
+  # Default for a pet whose pets/<id>.yml fusion block declares no broadcast key
+  # of its own; a pet file overrides it either way, so you can announce the rare
+  # fusions and stay quiet about the common ones. Fuse All never broadcasts,
+  # whatever any pet says: it rolls per pair, so a good run would post one line
+  # per winning pair.
   broadcast: false
 
   # Sound played to the owner when a fusion produces a pet. "none" plays nothing.
@@ -942,6 +958,9 @@ fusion:
   chance: 50.0
   # Money charged per attempt; 0 is free.
   cost: 0
+  # Announce a successful fusion of two of THIS pet to the whole server. Leave the
+  # key out to follow config.yml fusion.broadcast.
+  broadcast: false
 
 # Pet ids that cannot be equipped alongside this one.
 incompatible:

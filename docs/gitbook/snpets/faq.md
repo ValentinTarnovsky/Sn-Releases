@@ -73,6 +73,55 @@ first boot after the update, so you can restyle or blank them like any other mes
 suppress them per command with `-s`. `/pets admin currency` already worked this way and is
 unchanged. Offline players are never messaged.
 
+### My pets changed shape after updating to 1.6.0. What happened?
+
+1.6.0 added `formation.shape`, which picks the curve the arc is cut from. `CIRCLE` is the old
+behaviour: every pet sits `formation.radius` blocks out. `OVAL` keeps `radius` at the owner's
+SIDES and uses the new `formation.back-radius` straight behind them, so the arc hugs the owner's
+back and opens out at the flanks.
+
+`config.yml` is managed, which means SnLib inserts the two new keys into your existing file but
+never overwrites a value you already had. So your server became an OVAL with your own old
+`radius` at the sides and `1.4` blocks behind. Set `formation.shape: CIRCLE` and run
+`/pets reload` to get exactly the old look back - it is the same geometry to the last decimal,
+not an approximation.
+
+An unknown value is not fatal: the plugin logs one warning per load and falls back to `CIRCLE`.
+
+### I updated to 1.6.0 but my pets are still the old size and height. Why?
+
+Because that is deliberate. 1.6.0 also changed the SHIPPED defaults - `formation.radius` 1.6 to
+2.0, `height-offset` 0.35 to 1.9, `arc-degrees` 180 to 190, `facing-offset` 0 to 180,
+`animation.head-size` 0.7 to 1.3 and the bounce to 0.06 / 0.1 - but a managed file only ever
+gains missing KEYS, never new VALUES. A new install gets the new look; an existing one keeps
+every number you set. Copy the values above into your `config.yml` by hand if you want it.
+
+One to watch: `models.height-offset` is SUMMED with `formation.height-offset`. If you adopt
+`1.9` and you use BetterModel models that should stand on the ground, set `models.height-offset`
+to about `-1.9`.
+
+### Can I announce only SOME fusions?
+
+Yes, since 1.6.0. `config.yml`'s `fusion.broadcast` is now only the DEFAULT. Any pet can override
+it in its own `pets/<id>.yml`:
+
+```yaml
+fusion:
+  into: gale_sprite
+  chance: 35.0
+  cost: 25000
+  broadcast: true
+```
+
+The flag belongs to the PARENT - the pet being consumed, the one whose file declares `into` - so
+you announce a fusion by writing the key on the pet players fuse AWAY, not on the one they get.
+Leave the key out and that pet follows the global setting. `pets/` is seed-only, so no pet file
+you already have receives the key on update: everything keeps following `fusion.broadcast` until
+you write it yourself.
+
+Fuse All never announces, whatever any pet file says. It rolls per pair and would otherwise post
+one line for every winning pair.
+
 ### Does it support Folia?
 
 No, SnPets is not Folia-compatible. Run it on Paper 1.20.4 or newer. Both the 1.20 and 1.21

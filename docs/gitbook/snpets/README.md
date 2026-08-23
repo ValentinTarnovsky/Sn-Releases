@@ -1,7 +1,8 @@
 # SnPets
 
-SnPets gives every player a squad of floating pets that follow them in a half-circle
-formation. The formation rotates with the owner's camera, so the pets always stay in view.
+SnPets gives every player a squad of floating pets that follow them on an arc formation, cut
+from a circle or from an oval that hugs their back. The formation rotates with the owner's
+camera, so the pets always stay in view.
 Pets are drawn with packets instead of entities, so they never collide, never despawn and
 never wander off. The whole server shares one animation tick, so pet count adds no scheduler
 tasks and unequipped pets cost nothing.
@@ -13,11 +14,13 @@ duplicates into stronger ones, and manage everything from seven configurable men
 
 ## Features
 
-- Half-circle packet formation with configurable radius, height, bob and rotation speed.
+- Packet arc formation, circle or oval, with configurable radius, back radius, arc width,
+  height and bob.
 - Levels and experience per pet type, with per-type level caps.
 - Damage, resistance and speed buffs, each with a global cap and a per-world gate.
 - Rollable traits and graded stat boosts, bought with trait tickets and dice.
-- Fusion: combine duplicates into a stronger pet that inherits levels, traits and boosts.
+- Fusion: combine duplicates into a stronger pet that inherits levels, traits and boosts, with
+  a server-wide announcement you can switch on per pet.
 - Pet boxes with weighted tables, a per-box success chance stamped on the item, bulk opening,
   cooldowns and a full refund on a failed save.
 - Seven menus you can re-skin without touching code, with skippable roll animations and a
