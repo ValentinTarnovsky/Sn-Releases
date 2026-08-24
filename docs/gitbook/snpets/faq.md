@@ -458,9 +458,10 @@ whole top-level block and rename the key.
 
 ### Do I need EdTools?
 
-No. It is optional, exactly like BetterModel. Without it no pet grants a booster, no EdTools class
-is ever loaded and everything else works unchanged. Install it only if you want an equipped pet to
-boost your server's currencies or its global enchant multiplier.
+No. It is optional, exactly like BetterModel. Without it no pet grants a booster, no pet can use the
+`EDTOOLS_BLOCK_BREAK` experience source, no EdTools class is ever loaded and everything else works
+unchanged. Install it only if you want an equipped pet to boost your server's currencies or its
+global enchant multiplier, or to level from the blocks your omnitools break.
 
 ### I gave a pet `edtools-boosts` and it grants nothing. Why?
 
@@ -497,3 +498,41 @@ No, only the **global** enchant multiplier. That is the whole of what EdTools ex
 plugins, so it is a limit of the integration rather than a decision SnPets made. Use one of
 `enchants`, `enchant`, `global-enchants` or `encantamientos` as the key.
 
+### My pets get no experience from EdTools mining. Why?
+
+Because `BLOCK_BREAK` does not see it. EdTools consumes the blocks its omnitools break without ever
+firing a vanilla `BlockBreakEvent`, so on a farming server those two count completely different
+things. Set the pet's `experience.source` to **`EDTOOLS_BLOCK_BREAK`** instead, and leave
+`experience.sources.edtools-block-break` on in `config.yml`. `pets/<id>.yml` is seed only, so you
+edit the pet files you already have by hand; the config key arrives on its own.
+
+### Can a pet level from only one of my EdTools tools?
+
+Yes. Add an optional `experience.tools` list to that pet's file, holding the EdTools tool ids as
+EdTools itself names them:
+
+```yaml
+experience:
+  source: EDTOOLS_BLOCK_BREAK
+  ratio: 0.5
+  tools:
+    - crop-tool
+```
+
+The ids are matched case-insensitively and are never validated against EdTools, so one that names no
+tool simply never matches. Leave the list out (or empty) and every omnitool counts. The
+`experience.materials` whitelist still applies on top, exactly as it does for `BLOCK_BREAK`.
+
+### Does the EdTools experience source lag the server?
+
+No. It is the busiest event a farming server produces - thousands a second with bulk enchants - and
+EdTools fires it off the main thread, so the handler does one cancel check and one counter
+increment and nothing else. A single shared task pays the totals out coalesced per
+`(player, block, tool)` every 5 ticks. There is no task per block, no one-tick timer, and no task
+per player. On a server without EdTools the listener is never registered and the task never runs.
+
+### I turned EdTools off mid-session. Do I have to restart?
+
+No. Disabling or enabling EdTools unregisters or registers the break listener on its own, and stops
+or starts the drain with it. The same is true if you install EdTools after SnPets has already
+started.

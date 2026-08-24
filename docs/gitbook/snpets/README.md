@@ -16,7 +16,8 @@ duplicates into stronger ones, and manage everything from seven configurable men
 
 - Packet arc formation, circle or oval, with configurable radius, back radius, arc width,
   height and bob.
-- Levels and experience per pet type, with per-type level caps.
+- Levels and experience per pet type, with per-type level caps and a choice of six experience
+  sources: vanilla XP, blocks, EdTools omnitool breaks, mobs, damage dealt or playtime.
 - Damage, resistance and speed buffs, each with a global cap and a per-world gate.
 - Rollable traits and graded stat boosts, bought with trait tickets and dice.
 - Fusion: combine duplicates into a stronger pet that inherits levels, traits and boosts, with
@@ -41,7 +42,10 @@ duplicates into stronger ones, and manage everything from seven configurable men
   animations. Without it every pet renders as a player head, which is the built-in default.
 - **EdTools**: lets an equipped pet grant EdTools currency boosters and the global enchant
   multiplier, summed across every equipped pet and widened by that pet's boost grade and trait.
-  Without it nothing is granted, no EdTools class is ever loaded and the plugin runs normally.
+  It also unlocks the `EDTOOLS_BLOCK_BREAK` experience source, so a pet can level from the blocks
+  an EdTools omnitool consumes - blocks a vanilla `BlockBreakEvent` never sees. Without it nothing
+  is granted, that source earns nothing, no EdTools class is ever loaded and the plugin runs
+  normally.
 
 ## Links
 

@@ -363,6 +363,13 @@ experience:
     # its own file; without one every block counts, which on a mine or generator
     # world is thousands of events a second.
     block-break: true
+    # Pet experience per block broken through an EdTools omnitool. This is NOT
+    # the same event as block-break above: EdTools consumes the blocks its tools
+    # break without ever firing a vanilla BlockBreakEvent, so a pet has to pick
+    # the source its server actually produces. Needs EdTools installed; without
+    # it nothing is registered and no class of it is ever loaded. A pet may also
+    # restrict itself to certain tool ids with `experience.tools` in its own file.
+    edtools-block-break: true
     # Pet experience per mob killed. A dead player is not a mob kill: PvP feeds
     # the damage-dealt source instead.
     mob-kill: true
@@ -1182,10 +1189,26 @@ experience:
   base: 500
   # Added to that requirement by each further level.
   per-level: 500
-  # VANILLA_XP, BLOCK_BREAK, MOB_KILL, DAMAGE_DEALT or PLAYTIME.
+  # VANILLA_XP, BLOCK_BREAK, EDTOOLS_BLOCK_BREAK, MOB_KILL, DAMAGE_DEALT or
+  # PLAYTIME.
+  #
+  # EDTOOLS_BLOCK_BREAK is NOT the same source as BLOCK_BREAK: EdTools consumes
+  # the blocks its omnitools break without ever firing a vanilla
+  # BlockBreakEvent, so on a farming server the two count completely different
+  # things and this pet has to name the one your server actually produces. It
+  # needs EdTools installed; without it a pet on this source simply earns
+  # nothing.
   source: VANILLA_XP
   # Gain per unit of the source; here, per point of vanilla XP picked up.
   ratio: 1.0
+  # Only for EDTOOLS_BLOCK_BREAK: count only the breaks made with these EdTools
+  # tool ids, spelled as EdTools itself names them. Left out or empty, every
+  # omnitool counts. A break EdTools reports with no tool at all never matches a
+  # filter, so a pet listed here earns from that tool and nothing else.
+  #
+  # tools:
+  #   - crop-tool
+  #   - mining-tool
 
 # ------------------------------------------------------------
 #  Buff. Only equipped pets apply it, and the totals of every equipped pet are
