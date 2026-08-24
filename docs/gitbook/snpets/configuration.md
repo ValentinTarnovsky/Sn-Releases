@@ -957,6 +957,21 @@ studious:
       type: ""
       # Percentage points added to the buff named above.
       percent: 0.0
+    # Optional. FLAT percentage points added to an EdTools currency booster while
+    # a pet carrying this trait is EQUIPPED. One child per currency id, or one of
+    # enchants / enchant / global-enchants / encantamientos for the GLOBAL
+    # enchant multiplier.
+    # Unlike a pet's own edtools-boosts block, these do NOT scale with the pet's
+    # level and are not widened by its boost grades, and the pet does not need an
+    # edtools-boosts block of its own to pay them - any equipped pet carrying the
+    # trait does. They are not bounded by an entry's "max" either: that ceiling
+    # belongs to the entry that declared it.
+    # Remember the one-decimal rule of the integration: the total of every
+    # equipped pet is handed to EdTools with a single decimal, so the granted
+    # boost moves in steps of 10% and a total under 5 points grants nothing.
+    # edtools:
+    #   essence: 15.0
+    #   enchants: 10.0
 
 veteran:
   display-name: "&eVeteran"
@@ -1028,6 +1043,56 @@ prodigy:
       type: ""
       percent: 0.0
 ```
+
+### A trait that boosts an EdTools currency
+
+**Added in 1.16.0.** Beside its three original effects, a trait can carry an `effects.edtools`
+block: FLAT percentage points added to one or more EdTools boosters while a pet carrying the
+trait is EQUIPPED. One child per currency id, or one of `enchants` / `enchant` /
+`global-enchants` / `encantamientos` for the GLOBAL enchant multiplier. The key is optional and
+absent from every shipped entry; `traits.yml` is seeded once and never merged again, so on an
+existing server you add it by hand.
+
+```yaml
+lucrative:
+  display-name: "&6Lucrative"
+  weight: 10.0
+  effects:
+    exp-percent: 0.0
+    level-bonus: 0
+    buff:
+      type: ""
+      percent: 0.0
+    edtools:
+      essence: 15.0
+      enchants: 10.0
+```
+
+Four rules decide what that is actually worth, and they are what makes this effect different
+from a pet's own [`edtools-boosts`](#petsid-yml) block:
+
+| Rule | What it means |
+|---|---|
+| **The pet needs nothing of its own** | Any equipped pet carrying the trait pays these points, whether or not its `pets/<id>.yml` declares an `edtools-boosts` block. That is the point of the effect: it turns a trait into an economy upgrade for the whole collection rather than for one pet family. |
+| **Flat, always** | They do not scale with the pet's level and are not widened by its buff boost grade or by the trait's own buff percentage. `15.0` is `15.0` on a level 1 pet and on a level 1000 one, exactly like `exp-percent`. |
+| **Never clamped by `max:`** | A pet entry's optional `max:` ceiling bounds the contribution of the entry that declared it. A trait's points are not that entry's, so a pet capped at 10 carrying a trait worth 50 contributes 60. |
+| **The one-decimal rule still applies** | The points join the same per-currency total every equipped pet feeds, and that total is handed to EdTools with a single decimal. The granted boost therefore moves in steps of 10%, and a total under 5 points grants nothing at all. |
+
+Every equipped pet carrying the trait pays it, so two of them are worth double, and a trait's
+points and a pet's own entry for the same currency simply add up. Currency ids are not checked
+when the file is read - EdTools may still be starting - so an id it does not serve produces one
+console warning per id per load and is applied anyway, in case the currency registers later.
+
+Switching `traits.enabled` off in `config.yml` takes the points away with everything else a
+trait grants and clears the boosters on the next sync; nothing is deleted, and switching it back
+on restores them. Without EdTools installed, or with `edtools.enabled: false`, the block is
+simply inert.
+
+The trait index shows one line per currency a trait boosts, so a trait whose ONLY effect is a
+currency no longer reads as "no effect". Those lines come from the two language keys
+`menus.trait-effect-edtools` (which takes `{currency}` and `{percent}`) and
+`menus.trait-effect-edtools-enchant` (which takes `{percent}` only, since the global enchant
+multiplier has no currency id worth printing).
 
 ## boost-grades.yml
 
@@ -1740,7 +1805,7 @@ Where it does **not** work, and why:
 |---|---|
 | `menus.grade-row` | describes a ladder rung, not a pet: there is no group in scope |
 | `menus.group-separator` | joins group names on the information clock; no single pet |
-| `menus.trait-effect-exp` / `-level` / `-buff` | describe a trait in the index, not a pet |
+| `menus.trait-effect-exp` / `-level` / `-buff` / `-edtools` / `-edtools-enchant` | describe a trait in the index, not a pet |
 | the `lore:` of a `pets/<id>.yml` file | that lore is itself the value of `{pet-lore}`, and a placeholder value is never re-scanned for further placeholders. No plugin placeholder resolves there, only PlaceholderAPI tokens. Put the colour on the menu line that carries `{pet-lore}` |
 
 ### Prefix tags in a display name
@@ -1830,6 +1895,14 @@ back to English when the named file is missing. To add a language, copy `message
 
 New keys are merged into your existing file on boot, with your values and your comments left
 alone, so an update never overwrites a line you restyled.
+
+**1.16.0 adds two**, both lore lines of the trait index rather than messages, described under
+[traits.yml](#a-trait-that-boosts-an-edtools-currency):
+
+| Key | Shown for | Placeholders |
+|---|---|---|
+| `menus.trait-effect-edtools` | a trait boosting one EdTools currency | `{currency}` `{percent}` |
+| `menus.trait-effect-edtools-enchant` | a trait boosting the global enchant multiplier | `{percent}` |
 
 **1.12.0 adds two**, both sent to the player who clicks the roll animation switch described
 under [guis/](#the-roll-animation-switch). Neither takes a placeholder:

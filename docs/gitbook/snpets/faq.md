@@ -498,6 +498,31 @@ The `edtools` band of `config.yml` does arrive on its own, because that file is 
 Set `edtools.enabled: false` and run `/pets reload`. The boosters already granted are removed
 immediately; you do not need to restart. Turning it back on and reloading writes them again.
 
+### Can a TRAIT boost an EdTools currency?
+
+Yes, since **1.16.0**. Give the trait an `effects.edtools` block in `traits.yml` and list flat
+percentage points per currency id, or under one of `enchants` / `enchant` / `global-enchants` /
+`encantamientos` for the global enchant multiplier:
+
+```yaml
+lucrative:
+  weight: 10.0
+  effects:
+    edtools:
+      essence: 15.0
+```
+
+The difference from a pet's own `edtools-boosts` is what makes it useful: **the pet does not need
+to declare anything**. Any equipped pet carrying the trait pays those points, so the trait upgrades
+the whole collection instead of one pet family. They are also FLAT - no level scaling, no widening
+by boost grades, and no clamping by a pet entry's `max:` - and they join the same per-currency
+total, so the one-decimal rule in the answer above still decides what actually lands. Two equipped
+pets carrying the trait pay it twice.
+
+`traits.yml` is seeded once and never merged again, so on an existing server you add the key by
+hand; a fresh install gets a commented example inside the `studious` entry. Full rules in
+[Configuration](configuration.md#a-trait-that-boosts-an-edtools-currency).
+
 ### Can a pet boost one specific enchant?
 
 No, only the **global** enchant multiplier. That is the whole of what EdTools exposes to other

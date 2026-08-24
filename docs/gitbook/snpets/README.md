@@ -42,7 +42,9 @@ duplicates into stronger ones, and manage everything from seven configurable men
   animations. Without it every pet renders as a player head, which is the built-in default.
 - **EdTools**: lets an equipped pet grant EdTools currency boosters and the global enchant
   multiplier, summed across every equipped pet and widened by that pet's boost grade and trait,
-  with an optional per-pet `max:` ceiling on each entry. It also unlocks the `EDTOOLS_BLOCK_BREAK`
+  with an optional per-pet `max:` ceiling on each entry. A TRAIT can grant them too, as flat
+  percentage points that any equipped pet carrying it pays whether or not the pet declares
+  boosters of its own. It also unlocks the `EDTOOLS_BLOCK_BREAK`
   experience source, so a pet can level from the blocks
   an EdTools omnitool consumes - blocks a vanilla `BlockBreakEvent` never sees. Without it nothing
   is granted, that source earns nothing, no EdTools class is ever loaded and the plugin runs
