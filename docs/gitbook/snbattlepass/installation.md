@@ -25,5 +25,6 @@ Requires **SnLib** installed (`depend: [SnLib]`), version 1.28.0 or later, and *
 | SnEnvoys | No |
 | PlaceholderAPI | No |
 | RivalPets | No |
+| SnPets | No |
 
 The plugin writes `config.yml`, `challenges.yml`, `rewards.yml`, `lang/messages_en.yml` and `guis/*.yml` on first boot, so there is nothing to create by hand.

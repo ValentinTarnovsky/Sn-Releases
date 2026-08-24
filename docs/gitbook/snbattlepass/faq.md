@@ -34,4 +34,4 @@ Challenges already running in the removed slots freeze: they stop earning and st
 Stored levels above the new ceiling are clamped to it, and that clamp is written back. Raising the ceiling again does not restore them, so lower this value deliberately.
 
 ### Which settings need a restart?
-The `database` block and `integrations.rival-pets.*`. Everything else applies on `/battlepass reload`.
+The `database` block, `integrations.rival-pets.*` and `integrations.sn-pets.*`. Everything else applies on `/battlepass reload`.

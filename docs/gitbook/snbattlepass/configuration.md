@@ -198,6 +198,29 @@ integrations:
     enabled: true
     # RivalPets buff name read as the farming boost.
     buff-name: battlepass-farm
+  sn-pets:
+    # Reads the equipped SnPets pets whose id starts with the prefix below and
+    # boosts PASSIVE farming XP by their summed boost. Challenge rewards are never
+    # boosted. Needs the SnPets plugin.
+    #
+    # Per pet:  min(level x percent-per-level,
+    #               max-percent-base + (rarity - 1) x max-percent-per-tier)
+    # where the rarity is the number the pet id ends with (Pase_3 is rarity 3, so
+    # its ceiling is 20 + 2 x 2 = 24%). Each pet is capped on its own and the
+    # results are added, so a level-100 Pase_3 pays 24% -> x1.24.
+    #
+    # If rival-pets and sn-pets are BOTH active, the two multipliers multiply.
+    # ALL the keys here need a RESTART, not a reload: the boost provider is built
+    # once at boot.
+    enabled: true
+    # Pet ids starting with this prefix count as battle-pass pets. Case-sensitive.
+    pet-id-prefix: "Pase_"
+    # Percentage points each pet level is worth.
+    percent-per-level: 0.4
+    # Ceiling of a rarity-1 pet, in percentage points.
+    max-percent-base: 20.0
+    # Percentage points the ceiling widens by for each rarity above 1.
+    max-percent-per-tier: 2.0
 
 # ------------------------------------------------------------
 #  Feedback. Timing of the tier-up and challenge-complete title;
