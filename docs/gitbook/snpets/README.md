@@ -39,6 +39,9 @@ duplicates into stronger ones, and manage everything from seven configurable men
   Without it the plugin runs normally and simply skips the expansion.
 - **BetterModel**: lets a pet type render as an animated model with separate idle and moving
   animations. Without it every pet renders as a player head, which is the built-in default.
+- **EdTools**: lets an equipped pet grant EdTools currency boosters and the global enchant
+  multiplier, summed across every equipped pet and widened by that pet's boost grade and trait.
+  Without it nothing is granted, no EdTools class is ever loaded and the plugin runs normally.
 
 ## Links
 

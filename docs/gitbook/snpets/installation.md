@@ -34,11 +34,14 @@ startup.
 | packetevents | Yes |
 | PlaceholderAPI | No |
 | BetterModel | No |
+| EdTools | No |
 
 SnLib is the engine behind the config, language, database, item, menu and command layers.
 packetevents draws every pet and sends the formation updates, so the plugin cannot run
 without it. PlaceholderAPI adds the `%snpets_...%` expansion. BetterModel lets a pet type
-render as an animated model instead of a head.
+render as an animated model instead of a head. EdTools lets an equipped pet grant currency and
+global-enchant boosters, and is read only through one isolated class, so a server without it never
+loads an EdTools type.
 
 {% hint style="warning" %}
 Folia is not supported. The plugin does not declare `folia-supported`, so run it on Paper.

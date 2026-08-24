@@ -455,3 +455,45 @@ Yes. Copy a file in `pets/` and rename it: the file name is the pet id. The fold
 after the first boot, so nothing you add or delete there is ever undone by an update. Boxes
 work the same way, except they are keys inside `boxes.yml` rather than separate files: copy a
 whole top-level block and rename the key.
+
+### Do I need EdTools?
+
+No. It is optional, exactly like BetterModel. Without it no pet grants a booster, no EdTools class
+is ever loaded and everything else works unchanged. Install it only if you want an equipped pet to
+boost your server's currencies or its global enchant multiplier.
+
+### I gave a pet `edtools-boosts` and it grants nothing. Why?
+
+Almost certainly the one-decimal rule. SnPets never hands EdTools more than one decimal of the
+fraction it wants, so the granted boost moves in **steps of 10%**: a summed total below 5% rounds to
+zero and the booster is removed rather than written at nothing. A pet with `initial: 2.0` at level 1
+is worth 2%, which rounds away.
+
+| Summed percent across every equipped pet | What EdTools receives |
+|---|---|
+| under 5% | nothing |
+| 5% to 14% | +10% |
+| 15% to 24% | +20% |
+| 25% to 34% | +30% |
+
+Write your pets in tens if you want what you wrote. Two other things to check: the console line at
+boot must say `EdTools detected`, and an unknown currency id logs one warning naming it.
+
+### I already run SnPets. Why do my pets have no `edtools-boosts` block?
+
+Because `pets/` is seeded once and never merged again, which is the same reason your pet files did
+not grow a `hologram:` block in 1.8.0. The commented example ships in `pets/ember_fox.yml` for a
+fresh install only; on a server you already run you paste the block into the pet files yourself.
+The `edtools` band of `config.yml` does arrive on its own, because that file is managed.
+
+### How do I turn the pet boosters off without uninstalling EdTools?
+
+Set `edtools.enabled: false` and run `/pets reload`. The boosters already granted are removed
+immediately; you do not need to restart. Turning it back on and reloading writes them again.
+
+### Can a pet boost one specific enchant?
+
+No, only the **global** enchant multiplier. That is the whole of what EdTools exposes to other
+plugins, so it is a limit of the integration rather than a decision SnPets made. Use one of
+`enchants`, `enchant`, `global-enchants` or `encantamientos` as the key.
+

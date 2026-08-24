@@ -246,6 +246,38 @@ models:
   # beside them, and the client interpolates that carrier on its own.
 
 # ------------------------------------------------------------
+#  EdTools boosters. An equipped pet whose file declares an "edtools-boosts"
+#  block grants EdTools boosters: one per currency it names, plus the GLOBAL
+#  enchant multiplier. EdTools is optional - without it, or with the switch
+#  below off, nothing is granted and nothing breaks.
+#
+#  How the numbers work, because it surprises people:
+#   - A pet declares its boost in PERCENT, exactly like its buff: 10.0 is +10%.
+#     Every equipped pet's percentages for the same currency are SUMMED, and the
+#     pet's BUFF boost grade and its trait widen them the same way they widen
+#     its buff.
+#   - EdTools is then handed a fraction (0.5 is "+50%", 1.0 is "double"),
+#     ROUNDED TO ONE DECIMAL. That is a hard rule of this integration and it
+#     means the granted boost moves in steps of 10%: a total of 4% rounds down
+#     to nothing and grants no booster at all, 5% rounds up to +10%, and 26%
+#     lands on +30%. Write your pets in tens if you want what you wrote.
+#   - The boosters never expire and are never saved by EdTools. They exist for
+#     exactly as long as the pet is equipped, and are re-applied on every join.
+#
+#  Only the GLOBAL enchant multiplier can be boosted, never one named enchant:
+#  that is the whole of what EdTools exposes to other plugins.
+# ------------------------------------------------------------
+edtools:
+  # Let equipped pets grant EdTools boosters. Turning this off and reloading
+  # removes the ones already granted; it does not wait for a restart.
+  enabled: true
+  # Name EdTools shows for this plugin's boosters in its own booster list.
+  booster-display-name: "&dPets"
+  # Ticks to wait after a player joins before writing their boosters, so EdTools
+  # has finished restoring its own state first. 20 ticks = 1 second.
+  join-delay-ticks: 20
+
+# ------------------------------------------------------------
 #  Holograms. Text drawn above every pet, riding the pet itself: the client
 #  moves it with the pet, so it never lags behind. One line of text is one
 #  packet entity; nothing is spawned for a pet whose lines are empty.
@@ -1061,8 +1093,8 @@ mythic:
 One file per pet type, named after its id. Three examples are seeded on a fresh install:
 `ember_fox.yml`, `gale_sprite.yml` and `stone_golem.yml`. A pet file declares the display
 name, the group it belongs to, the head or BetterModel it renders as, its level cap and
-experience curve, the buffs it grants per level and, since 1.8.0, the hologram drawn above
-it. Copy one of the examples to add your own.
+experience curve, the buffs it grants per level, since 1.8.0 the hologram drawn above it and,
+since 1.13.0, the optional `edtools-boosts` block. Copy one of the examples to add your own.
 
 The `hologram:` block is optional and, because this folder is seeded once and never merged
 again, it is never added to the pet files you already have. That is what
@@ -1071,6 +1103,14 @@ lines, so you only write a block for the pets that should differ. Only an explic
 `enabled: false` silences a pet - `gale_sprite.yml` ships that way as the mute example, and
 `stone_golem.yml` ships its own `height-offset` because a model pet's label is measured from
 the carrier its bones ride, which also carries `models.height-offset`.
+
+The `edtools-boosts:` block, added in 1.13.0, is optional and ships **commented out**: it does
+something only on a server running EdTools. Each child key is an EdTools currency id, or one of
+`enchants`, `enchant`, `global-enchants`, `encantamientos` for the global enchant multiplier, and
+both numbers are percentages exactly like the `buff:` block above. It has the same seeded-once
+caveat as `hologram:` - the pet files you already have are never merged again, so you add the block
+to them by hand. See the `edtools` band of `config.yml` above for the one-decimal rule that decides
+what those percentages actually grant.
 
 Here is the seeded `pets/ember_fox.yml` in full, as a working reference:
 
@@ -1158,6 +1198,33 @@ buff:
   initial: 2.0
   # Percent added by each level above 1.
   per-level: 0.1
+
+# ------------------------------------------------------------
+#  EdTools boosters. Optional, and left commented out on purpose: uncomment it
+#  only on a server that runs EdTools. Only equipped pets grant these, the
+#  values of every equipped pet are summed per currency, and the pet's buff
+#  boost grade and its trait widen them exactly as they widen the buff above.
+#
+#  Each child key is an EdTools currency id, or one of "enchants", "enchant",
+#  "global-enchants", "encantamientos" for the GLOBAL enchant multiplier. There
+#  is no way to boost one named enchant: the global multiplier is all EdTools
+#  exposes to other plugins.
+#
+#  READ THIS BEFORE PICKING NUMBERS. The percentages here are summed and then
+#  handed to EdTools rounded to ONE decimal of the fraction it wants, which
+#  means the granted boost moves in steps of 10%: a total below 5% grants no
+#  booster at all, 5% to 14% grants +10%, 15% to 24% grants +20%. The rounding
+#  is a hard rule of this integration, so write your pets in tens.
+# ------------------------------------------------------------
+# edtools-boosts:
+#   money:
+#     # Percent granted at level 1.
+#     initial: 10.0
+#     # Percent added by each level above 1.
+#     per-level: 1.0
+#   enchants:
+#     initial: 10.0
+#     per-level: 0.0
 
 # Group label declared in config.yml; drives the storage order, the bulk delete
 # buttons and the lore, nothing else.
