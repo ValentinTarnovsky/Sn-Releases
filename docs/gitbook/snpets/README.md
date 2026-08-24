@@ -41,8 +41,9 @@ duplicates into stronger ones, and manage everything from seven configurable men
 - **BetterModel**: lets a pet type render as an animated model with separate idle and moving
   animations. Without it every pet renders as a player head, which is the built-in default.
 - **EdTools**: lets an equipped pet grant EdTools currency boosters and the global enchant
-  multiplier, summed across every equipped pet and widened by that pet's boost grade and trait.
-  It also unlocks the `EDTOOLS_BLOCK_BREAK` experience source, so a pet can level from the blocks
+  multiplier, summed across every equipped pet and widened by that pet's boost grade and trait,
+  with an optional per-pet `max:` ceiling on each entry. It also unlocks the `EDTOOLS_BLOCK_BREAK`
+  experience source, so a pet can level from the blocks
   an EdTools omnitool consumes - blocks a vanilla `BlockBreakEvent` never sees. Without it nothing
   is granted, that source earns nothing, no EdTools class is ever loaded and the plugin runs
   normally.

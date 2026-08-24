@@ -263,6 +263,10 @@ models:
 #     lands on +30%. Write your pets in tens if you want what you wrote.
 #   - The boosters never expire and are never saved by EdTools. They exist for
 #     exactly as long as the pet is equipped, and are re-applied on every join.
+#   - Each entry of a pet's "edtools-boosts" block accepts an optional "max":
+#     a ceiling in percentage points for THAT pet, applied before the summing
+#     and before the rounding. It caps one pet, never the player's total.
+#     Documented in pets/ember_fox.yml and in the GitBook.
 #
 #  Only the GLOBAL enchant multiplier can be boosted, never one named enchant:
 #  that is the whole of what EdTools exposes to other plugins.
@@ -1119,6 +1123,33 @@ caveat as `hologram:` - the pet files you already have are never merged again, s
 to them by hand. See the `edtools` band of `config.yml` above for the one-decimal rule that decides
 what those percentages actually grant.
 
+Since **1.15.0** each entry of that block also accepts an optional `max:`, a ceiling in percentage
+points:
+
+```yaml
+edtools-boosts:
+  money:
+    initial: 0.4
+    per-level: 0.4
+    max: 30.0
+```
+
+Three things about where the ceiling sits, because they are what make it useful:
+
+- It applies to the value **this pet** produced *after* its buff boost grade and its trait have
+  widened it, not to the raw `initial + per-level` figure. A pet the grades pushed to 45 with
+  `max: 30` contributes 30.
+- It applies **before** the equipped pets are summed, so it caps one pet and never the player's
+  total. Two equipped pets that each declare `max: 10` still grant 20 together. There is no cap on
+  a player's total, deliberately.
+- The one-decimal rounding still happens **afterwards**, on the sum. Capping first and rounding
+  after is what lets three pets capped at 4 grant +10% instead of nothing.
+
+Absent, `0` and any negative number all mean **no ceiling**, which is why every pet file written
+before 1.15.0 keeps granting exactly what it granted. A negative value is logged once on load,
+naming the pet and the entry, and then read as no ceiling. The key exists for a per-level ramp
+running on a level cap it was not sized for: `per-level: 0.4` is +300% at level 750.
+
 Here is the seeded `pets/ember_fox.yml` in full, as a working reference:
 
 ```yaml
@@ -1238,6 +1269,11 @@ buff:
 #  means the granted boost moves in steps of 10%: a total below 5% grants no
 #  booster at all, 5% to 14% grants +10%, 15% to 24% grants +20%. The rounding
 #  is a hard rule of this integration, so write your pets in tens.
+#
+#  The optional "max" below feeds that same rule from the other end: it is
+#  applied FIRST, to this pet alone, and the rounding happens afterwards on the
+#  sum. It does NOT bound the player's total - two equipped pets that each cap
+#  at 10 still add up to 20.
 # ------------------------------------------------------------
 # edtools-boosts:
 #   money:
@@ -1245,6 +1281,11 @@ buff:
 #     initial: 10.0
 #     # Percent added by each level above 1.
 #     per-level: 1.0
+#     # Optional ceiling, in percentage points, applied to the value THIS pet
+#     # produced once its boost grade and trait have already widened it, before
+#     # the totals of your equipped pets are summed. Absent or 0 = no ceiling.
+#     # Use it when a per-level ramp would run away at a high level cap.
+#     max: 30.0
 #   enchants:
 #     initial: 10.0
 #     per-level: 0.0

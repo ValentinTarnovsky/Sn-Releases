@@ -480,6 +480,12 @@ is worth 2%, which rounds away.
 Write your pets in tens if you want what you wrote. Two other things to check: the console line at
 boot must say `EdTools detected`, and an unknown currency id logs one warning naming it.
 
+Since **1.15.0**, check the entry's `max:` too if it has one. The ceiling is applied to that pet
+BEFORE the totals are summed and before this rounding, so a pet capped at `max: 4` contributes 4
+and, on its own, still rounds away to nothing. That ordering is also what makes the ceiling safe to
+use: three pets capped at 4 sum to 12 and grant +10%, which capping after the rounding would have
+lost. A `max:` of `0`, a negative one, or no `max:` at all all mean no ceiling.
+
 ### I already run SnPets. Why do my pets have no `edtools-boosts` block?
 
 Because `pets/` is seeded once and never merged again, which is the same reason your pet files did
