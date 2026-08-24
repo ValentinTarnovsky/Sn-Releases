@@ -394,12 +394,28 @@ stacks in a row could leave a storage of 54 holding 107 pets.
 
 Update to 1.8.2. Each open now holds the places it was granted for as long as its pets are in
 flight, so a simultaneous open sees them as already taken: the excess is trimmed on the click
-that does not fit, the boxes it would have opened are returned, and `storage-full` and
-`box-partial` quote the corrected numbers. Nothing to configure.
+that does not fit, and the boxes it would have opened are returned. Nothing to configure.
 
 Storages that are already over capacity stay as they are - the update stops the overfill, it does
 not delete anyone's pets. Nothing new enters until the player is back under their limit, which is
 the same rule that has always applied after unequipping a pet into a full storage.
+
+### The refusal said `(57/54)` on a storage of 54. Is the limit being bypassed?
+
+No, and on 1.12.1 the message no longer says that. The limit was always enforced - what you were
+reading was a counting artefact in the message itself. While an open's pets are being written, the
+places they will take are held for them, and for a fraction of a second a pet can be visible as
+both "held" and "already stored". The decision was correct throughout (there really was no room),
+but the number quoted added those places twice, so a stack spammed fast enough produced `(57/54)`,
+`(62/54)`, `(67/54)`.
+
+Update to 1.12.1. Held places may now raise the quoted number up to the capacity and no further,
+so the refusals read `(54/54)`. Nothing to configure, and nothing about what is accepted or refused
+changed - only the number shown.
+
+A number above the capacity is still shown when it is real: a storage left over its limit by a
+historic overfill, an admin grant or a capacity you lowered will correctly say `(107/54)`, because
+that is the player's actual state and not a pet counted twice.
 
 ### How do I give a rank more pet slots or storage?
 
