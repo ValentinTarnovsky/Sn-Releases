@@ -244,12 +244,74 @@ creates belongs to whoever redeemed it - so a player who redeems a head and late
 pet out again is stamped as its owner in their turn.
 
 {% hint style="warning" %}
-**This deliberately narrows item trading.** Up to 1.16.0 handing over the head handed over the
-pet, and that is no longer true for a head taken out on 1.17.0 or later: the receiver holds an
-item they cannot redeem. A pet still changes hands through `/pets admin`, and heads extracted
-before 1.17.0 are unaffected. If free head-for-head trading is what your server runs on, hold on
-1.16.0 until the ownership transfer that this release is the groundwork for.
+**This deliberately narrowed item trading, and 1.18.0 is the way back out.** Up to 1.16.0 handing
+over the head handed over the pet, and that stopped being true for a head taken out on 1.17.0 or
+later: the receiver held an item they could not redeem. Since **1.18.0** the OWNERSHIP scroll
+transfers it - the receiver drops one onto the head and it becomes theirs. Give the scroll a price
+and head-for-head trading works again, on your terms. A pet also still changes hands through
+`/pets admin`, and heads extracted before 1.17.0 were never locked at all.
 {% endhint %}
+
+### How does somebody claim a pet item that is not theirs?
+
+With an **ownership scroll**, added in 1.18.0. Hand one out with
+`/pets admin givescroll <player> ownership [amount]`, then have the player pick it up onto their
+cursor and left or right click the pet head **in their own inventory**. The head becomes theirs:
+its owner tags are rewritten, its `{owner}` lore line is repainted with their name, and one scroll
+is consumed. Nothing is written to the database - a pet item's owner lives in the item's own tags
+until it is redeemed.
+
+It refuses, and consumes nothing, when the head already names them, when the slot holds more than
+one head (a stack carries ONE set of tags, so a single scroll would re-stamp every copy - split it
+first), when the pet is outside that scroll's `whitelist` / `blacklist`, when the pet's
+`pets/<id>.yml` is gone, when `pet-items.enabled` is off, or in creative while
+`pet-items.allow-creative` is off.
+
+Dropping the scroll on anything that is not a pet item does nothing at all and costs nothing: the
+click is the ordinary inventory swap it looks like.
+
+### I gave someone a level or rarity scroll and nothing happens. Is it broken?
+
+No - **those two are not applicable yet in 1.18.0.** All three scrolls are defined, given and
+stamped in this release, but only the OWNERSHIP scroll has a surface that consumes it. The level
+and rarity scrolls exist as real items, render their lore, and a level scroll carries its
+`[levels]` value in its item data; what does not exist yet is the pets-menu interaction that spends
+them. That arrives in a later version.
+
+Handing them out now is safe, and is the point of shipping them early: the number a level scroll is
+worth is stamped on the stack it was given on, so lowering `scrolls.level.default-levels` later
+never devalues one already in circulation.
+
+### Can I stop a scroll being used on certain pets?
+
+Yes, per scroll, in the `scrolls` band of `config.yml`:
+
+```yaml
+scrolls:
+  ownership:
+    whitelist: []                 # EMPTY means every pet
+    blacklist:
+      - stone_golem
+```
+
+The whitelist runs **first** - an empty one means every pet - and the blacklist after it, so an id
+in both is refused. Neither list is checked when the file loads: an id that names no pet simply
+never matches, which is the same outcome as a typo minus a false alarm on every boot.
+
+To switch a whole scroll off instead, set `scrolls.<type>.enabled: false`. The give command then
+refuses it, and every copy already in circulation goes inert - nothing is taken away from anybody,
+and switching it back on restores them.
+
+### I already run SnPets. Do I get the scrolls band automatically?
+
+Yes. `config.yml` is **managed**, so the whole `scrolls:` band is merged into your file on the
+first boot after updating, comments and all, with your existing values untouched. The same goes for
+the 13 new `lang/messages_*.yml` keys.
+
+The one thing that does **not** arrive on its own is `upgrades-to` in your pet files: `pets/` is
+seed-only, seeded once and never merged again, so you add that key to your own `pets/<id>.yml`
+files by hand. Only a fresh install receives the commented example. Nothing reads it in 1.18.0
+anyway - it is there for the rarity scroll that will.
 
 ### I updated but the pet cells do not mention shift + right click or Q. Is it working?
 

@@ -786,6 +786,135 @@ whether or not the item advertises an owner.
 1.17.0 it is an ordinary pet placeholder and works in `pet-items.item.lore` and in the pet cells of
 `guis/main.yml` and `guis/selector.yml` too.
 
+### Scrolls
+
+**Added in 1.18.0.** A new managed band declares three consumable ITEMS, handed out with
+`/pets admin givescroll <player> <scroll> [amount] [levels]`. They are not balances: a scroll sits
+in an inventory, drops, and can be traded or sold like any other item, and nothing about it lives
+in the database.
+
+| Scroll | Applied to | Effect | Works in 1.18.0? |
+|---|---|---|---|
+| `ownership` | a pet ITEM in your own inventory | re-stamps that head as yours | **yes** |
+| `level` | a pet in the pets menu | raises its level by the number stamped on the stack | not yet |
+| `rarity` | a pet in the pets menu | turns it into the pet its `upgrades-to` names | not yet |
+
+{% hint style="warning" %}
+**Only the ownership scroll can be used in 1.18.0.** The level and rarity scrolls are fully
+defined, given and stamped - their items exist, their lore renders, and a level scroll carries its
+`[levels]` value in its item data - but nothing consumes them yet. Applying them to a pet arrives
+in a later version. Handing them out now is safe: the number a level scroll carries is stamped on
+the stack it was given on, so lowering `default-levels` later never devalues one already in
+circulation.
+{% endhint %}
+
+**The ownership scroll is the way out of the 1.17.0 owner lock.** Since 1.17.0 a pet head remembers
+who took it out and only that player can redeem it, so handing a freshly extracted head over no
+longer hands the pet over. Pick an ownership scroll up onto your cursor, left or right click a pet
+head sitting in **your own** inventory, and the head becomes yours: the owner tags are rewritten,
+the `{owner}` line of its lore is repainted with your name, and one scroll is consumed. Nothing is
+written to the database, because a pet item's owner lives in the item's own tags until it is
+redeemed.
+
+It refuses, and consumes nothing, when:
+
+| Situation | Message |
+|---|---|
+| the head already names you | `messages.scroll-owner-already` |
+| the slot holds more than one head | `messages.scroll-owner-stacked` |
+| the pet is outside that scroll's lists | `messages.scroll-not-applicable` |
+| the pet's `pets/<id>.yml` is gone | `messages.pet-item-unknown` |
+| `pet-items.enabled` is off | `messages.pet-items-disabled` |
+| creative, and `pet-items.allow-creative` is off | `messages.scroll-creative` |
+
+A stack holds ONE set of item tags, which is why a stacked head is refused: a single scroll would
+otherwise re-stamp every copy in it. Split the stack first.
+
+Dropping a scroll onto anything that is **not** a pet item does nothing at all - the click is the
+ordinary inventory swap it looks like, and the scroll is not consumed. A level or rarity scroll
+dropped onto a pet item is likewise inert.
+
+| Key | Default | Meaning |
+|---|---|---|
+| `scrolls.<type>.enabled` | `true` | Master switch of one scroll. Off refuses the give command and makes every copy already in circulation inert; nothing is taken away from anybody |
+| `scrolls.level.default-levels` | `1` | Levels one level scroll is worth when `givescroll` omits `[levels]` |
+| `scrolls.<type>.item` | see below | The golden item spec, the same one `boxes.yml` and `pet-items` use. `{levels}` exists only on the level scroll |
+| `scrolls.<type>.whitelist` | `[]` | Pet ids this scroll may be used on. An EMPTY list means every pet |
+| `scrolls.<type>.blacklist` | `[]` | Pet ids it may NOT be used on, applied AFTER the whitelist |
+
+Neither list is checked when the file loads, the same rule the EdTools currency ids follow: an id
+naming no pet simply never matches, which is the same outcome as a typo minus a false alarm on
+every boot.
+
+{% hint style="info" %}
+`config.yml` is **managed**, so the whole `scrolls:` band is merged into an existing install on the
+first boot, comments and all, and your existing values are untouched.
+{% endhint %}
+
+```yaml
+# ------------------------------------------------------------
+#  Scrolls. Three consumable items handed out with
+#  /pets admin givescroll <player> <scroll> [amount] [levels].
+# ------------------------------------------------------------
+scrolls:
+
+  level:
+    # Master switch of this scroll. Off refuses the give command and makes
+    # every copy already in circulation inert; nothing is taken away.
+    enabled: true
+    # Levels one scroll is worth when the give command omits [levels].
+    default-levels: 1
+    # Look of the item. {levels} is resolved when the scroll is handed out and
+    # stamped onto the stack, so the lore and the effect can never disagree.
+    item:
+      material: BOOK
+      display-name: "&fScroll &a&lLEVEL"
+      lore:
+        - "&8Pet consumable"
+        - ""
+        - "&7Drag and drop this scroll onto"
+        - "&7a pet in your pets menu to raise"
+        - "&7its level by &f+{levels}&7."
+        - ""
+        - "&aDrag onto a pet"
+    # Pet ids this scroll may be used on. An EMPTY list means every pet.
+    whitelist: []
+    # Pet ids this scroll may NOT be used on, applied after the whitelist.
+    blacklist: []
+
+  ownership:
+    enabled: true
+    item:
+      material: BOOK
+      display-name: "&fScroll &e&lOWNERSHIP"
+      lore:
+        - "&8Pet consumable"
+        - ""
+        - "&7Drag and drop this scroll onto"
+        - "&7a pet item in your inventory to"
+        - "&7claim its ownership."
+        - ""
+        - "&eDrag onto a pet item"
+    whitelist: []
+    blacklist: []
+
+  rarity:
+    enabled: true
+    item:
+      material: BOOK
+      display-name: "&fScroll &d&lRARITY"
+      lore:
+        - "&8Pet consumable"
+        - ""
+        - "&7Drag and drop this scroll onto"
+        - "&7a pet in your pets menu to upgrade"
+        - "&7it to the next rarity."
+        - ""
+        - "&dDrag onto a pet"
+    whitelist: []
+    blacklist: []
+```
+
 ```yaml
 # ------------------------------------------------------------
 #  Worlds. TWO separate lists, on purpose: where pets are DRAWN and where their
@@ -1210,8 +1339,9 @@ mythic:
 One file per pet type, named after its id. Three examples are seeded on a fresh install:
 `ember_fox.yml`, `gale_sprite.yml` and `stone_golem.yml`. A pet file declares the display
 name, the group it belongs to, the head or BetterModel it renders as, its level cap and
-experience curve, the buffs it grants per level, since 1.8.0 the hologram drawn above it and,
-since 1.13.0, the optional `edtools-boosts` block. Copy one of the examples to add your own.
+experience curve, the buffs it grants per level, since 1.8.0 the hologram drawn above it,
+since 1.13.0 the optional `edtools-boosts` block and, since 1.18.0, the optional `upgrades-to`
+target. Copy one of the examples to add your own.
 
 The `hologram:` block is optional and, because this folder is seeded once and never merged
 again, it is never added to the pet files you already have. That is what
@@ -1255,6 +1385,32 @@ Absent, `0` and any negative number all mean **no ceiling**, which is why every 
 before 1.15.0 keeps granting exactly what it granted. A negative value is logged once on load,
 naming the pet and the entry, and then read as no ceiling. The key exists for a per-level ramp
 running on a level cap it was not sized for: `per-level: 0.4` is +300% at level 750.
+
+### The rarity ladder: `upgrades-to`
+
+**Added in 1.18.0.** A pet file may name the pet a RARITY scroll turns it into:
+
+```yaml
+# pets/ember_fox.yml
+upgrades-to: stone_golem
+```
+
+Leave the key out and the rarity scroll refuses on that pet - a pet at the top of its ladder
+declares no target.
+
+It is **not** the same ladder as `fusion.into`. A fusion eats two pets and can fail; an upgrade
+eats one scroll and cannot. A pet may declare either, both, or neither, and the two may point at
+different pets.
+
+The target is not checked when the file loads - it may name a pet whose file arrives an hour later
+- so a typo surfaces when the scroll is used rather than as a warning on every boot.
+
+{% hint style="warning" %}
+`pets/` is **seed-only**: it is seeded once and never merged again, so `upgrades-to` does **not**
+arrive on the pet files you already have. Add it by hand. Only a fresh install receives the
+commented example that now ships in `pets/ember_fox.yml`. The key parses in 1.18.0 and nothing
+reads it yet - the rarity scroll that will read it arrives in a later version.
+{% endhint %}
 
 Here is the seeded `pets/ember_fox.yml` in full, as a working reference:
 
@@ -1414,6 +1570,15 @@ fusion:
   # Announce a successful fusion of two of THIS pet to the whole server. Leave the
   # key out to follow config.yml fusion.broadcast.
   broadcast: false
+
+# Pet a RARITY scroll turns this one into. Leave the key out and the scroll
+# refuses on this pet: a pet at the top of its ladder declares no target.
+# NOT the same ladder as fusion.into above - a fusion eats two pets and can
+# fail, an upgrade eats one scroll and cannot - so a pet may declare either,
+# both, or neither.
+# This folder is seeded once and never merged again, so an existing install
+# adds the key by hand; only a fresh install receives this example.
+# upgrades-to: stone_golem
 
 # Pet ids that cannot be equipped alongside this one.
 incompatible:

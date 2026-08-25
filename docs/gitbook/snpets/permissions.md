@@ -40,6 +40,7 @@ granted per rank.
 | `snpets.admin.give` | op | Allows `/pets admin give` |
 | `snpets.admin.givebox` | op | Allows `/pets admin givebox` |
 | `snpets.admin.giveallbox` | op | Allows `/pets admin giveallbox` |
+| `snpets.admin.givescroll` | op | Allows `/pets admin givescroll` |
 | `snpets.admin.slots` | op | Allows `/pets admin slots` |
 | `snpets.admin.storage` | op | Allows `/pets admin storage` |
 | `snpets.admin.currency` | op | Allows `/pets admin currency` |
