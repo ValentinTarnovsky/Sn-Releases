@@ -192,9 +192,12 @@ Since 1.7.0, by turning the pet into an item. In the main menu, **shift + right 
 the storage grid - or, since 1.11.0, press **Q** over it, the drop key, Ctrl+Q included: it
 leaves the storage and becomes a player head in the player's inventory,
 wearing that pet's own texture and carrying its whole state - pet type, level, experience, trait
-and the three boost grades. Anyone can then **right click** that head to put the pet into *their*
+and the three boost grades. A **right click** with that head puts the pet into the clicker's
 storage, with everything it had. Hand it over, drop it, put it in a chest, or sell it on a shop
 plugin: the head is an ordinary item.
+
+Since **1.17.0** the head also remembers WHO took it out, and only that player can redeem it -
+see [Can somebody else redeem my pet item?](#can-somebody-else-redeem-my-pet-item) below.
 
 Nothing is destroyed by a refusal. A redeem into a full storage, into a profile that is still
 loading, in creative mode while `allow-creative` is off, or with the feature switched off hands
@@ -216,6 +219,36 @@ storage. It does not, and never did: `guis/main.yml` is managed and carries no e
 so the next boot merges the deleted key straight back. The same applies to `drop-click-actions`.
 See [Taking a pet out: the two triggers](configuration.md#taking-a-pet-out-the-two-triggers) for
 the ways that do hold.
+{% endhint %}
+
+### Can somebody else redeem my pet item?
+
+Not since **1.17.0**, if the head was taken out on 1.17.0 or later. Extracting a pet now stamps
+the head with your UUID and your name; a player who right clicks a head that is not theirs is
+refused with `messages.pet-item-not-yours`, which names the owner, and the head goes back into
+their inventory untouched. Nothing is destroyed and nothing is consumed.
+
+The UUID is what the lock matches on, never the name. Changing your nick does not cost you your
+pets, and a player who takes your old nick does not gain them.
+
+{% hint style="info" %}
+**Every pet head extracted before 1.17.0 stays redeemable by anyone.** Those items carry no owner
+tag at all, and nothing on the server records who took them out, so there is no owner to restore -
+they keep the exact behaviour they were traded under. Only pets taken out from 1.17.0 onwards are
+locked.
+{% endhint %}
+
+There is no config switch for this: an item with no owner tag is free and an item with one is
+locked, which is the whole rule. Redeeming your own head works exactly as before, and the pet it
+creates belongs to whoever redeemed it - so a player who redeems a head and later takes the same
+pet out again is stamped as its owner in their turn.
+
+{% hint style="warning" %}
+**This deliberately narrows item trading.** Up to 1.16.0 handing over the head handed over the
+pet, and that is no longer true for a head taken out on 1.17.0 or later: the receiver holds an
+item they cannot redeem. A pet still changes hands through `/pets admin`, and heads extracted
+before 1.17.0 are unaffected. If free head-for-head trading is what your server runs on, hold on
+1.16.0 until the ownership transfer that this release is the groundwork for.
 {% endhint %}
 
 ### I updated but the pet cells do not mention shift + right click or Q. Is it working?

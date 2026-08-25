@@ -87,9 +87,11 @@ later version; adding one would be a MINOR `API_VERSION` bump, never a breaking 
 {% endhint %}
 
 {% hint style="info" %}
-Since 1.7.0 a stored pet can leave the storage as a physical item and be redeemed back by
-another player. Neither half fires an event in this version, and `API_VERSION` stays `1.0.0`
-because nothing on the surface changed. A pet that arrives by redemption is an ordinary new row,
+Since 1.7.0 a stored pet can leave the storage as a physical item and be redeemed back into
+somebody's storage - since 1.17.0 only by the player who took it out, unless the item predates
+that version. Neither half fires an event in this version, and `API_VERSION` stays `1.0.0`
+because nothing on the surface changed, the 1.17.0 owner lock included: it is a refusal inside
+the redemption, not a new type or method. A pet that arrives by redemption is an ordinary new row,
 so every query on the facade sees it immediately; what you cannot do yet is veto or observe the
 extraction and the redemption themselves. `PetExtractEvent` and `PetRedeemEvent` are candidates
 for a later version, and adding them would be a MINOR `API_VERSION` bump, never a breaking change.

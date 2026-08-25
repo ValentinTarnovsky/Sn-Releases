@@ -288,8 +288,8 @@ edtools:
 #  A pet file may declare its own "hologram:" block (enabled, lines,
 #  height-offset); a pet that declares none uses default-lines below.
 #  Placeholders: every pet placeholder of the menus ({pet} {level} {level-cap}
-#  {exp} {exp-next} {percent} {group} {group-color} {trait} {buff} {buff-value})
-#  plus {owner}. PlaceholderAPI tokens resolve against the OWNER.
+#  {exp} {exp-next} {percent} {group} {group-color} {trait} {buff} {buff-value}
+#  {owner}). PlaceholderAPI tokens resolve against the OWNER.
 #  The text is only rewritten when something on the pet changes - a level up, a
 #  trait or boost roll, an admin edit - never on the animation tick.
 # ------------------------------------------------------------
@@ -705,10 +705,13 @@ boxes:
 
 # ------------------------------------------------------------
 #  Pet items. A stored pet can be taken out of the storage as a physical head
-#  (shift + right click on it in the main menu, or Q) and redeemed back by anyone
-#  with a right click, which is how pets change hands. The item carries the
+#  (shift + right click on it in the main menu, or Q) and redeemed back with a
+#  right click, which is how pets change hands. The item carries the
 #  pet's whole state - level, experience, trait and the three boost grades - so
-#  a pet that comes back is the pet that left. A redeem into a full storage
+#  a pet that comes back is the pet that left. Since 1.17.0 it also remembers
+#  WHO took it out, and a player who is not that owner is refused; heads
+#  extracted before 1.17.0 remember nobody and anyone may redeem them.
+#  A redeem into a full storage
 #  hands the item straight back, and so does every other refusal: the item is
 #  the pet, and it is never destroyed by a refusal.
 #  An EQUIPPED pet cannot be taken out (unequip it first) and neither can one
@@ -730,8 +733,12 @@ pet-items:
   # cannot be set here; the name and lore below are yours.
   # Every pet placeholder the menus use works here:
   #   {pet} {pet-lore} {group} {group-color} {level} {level-cap} {exp}
-  #   {exp-next} {percent} {bar} {trait} {buff} {buff-value} {boosts}
+  #   {exp-next} {percent} {bar} {trait} {buff} {buff-value} {boosts} {owner}
   # {pet-lore} and {boosts} are multi-line and expand to one lore line each.
+  # {owner} is the player the pet was taken out by. A pet item also REMEMBERS
+  # them: since 1.17.0 only that player can redeem it, and anyone else is
+  # refused and handed the item straight back. Items extracted before 1.17.0
+  # remember nobody and stay redeemable by whoever holds them.
   item:
     display-name: "{pet}"
     lore:
@@ -741,11 +748,45 @@ pet-items:
       - "&7Level &f{level}&7/&f{level-cap}"
       - "&7Exp &f{exp}&7/&f{exp-next} &8({percent}%)"
       - "&7Trait: &r{trait}"
+      - "&7Owner&8: &f{owner}"
       - "{boosts}"
       - ""
       - "&a&lRIGHT CLICK"
       - "&2Redeem this pet into your storage"
+```
 
+### A pet item remembers who took it out
+
+**Added in 1.17.0.** An extracted pet now carries two more tags in its item data: the UUID of the
+player who took it out, and their name. A player who right clicks a head that belongs to somebody
+else is refused with `messages.pet-item-not-yours`, which names the owner, and the head goes
+straight back into their inventory untouched.
+
+- **The UUID is the truth; the name is only printed.** A player who changes their nick keeps their
+  pets, and a player who takes the owner's old nick does not inherit them.
+- **Every head extracted before 1.17.0 remembers nobody, and an ownerless head stays redeemable by
+  whoever holds it.** That is deliberate: those items were traded on the promise that anyone could
+  redeem them, and nothing on the server records who extracted them, so there is nothing to
+  recover. The lock can only ever affect a pet taken out from 1.17.0 onwards.
+- There is **no config switch**. An item with no owner tag is free and an item with one is locked,
+  which is the whole rule.
+- Redeeming your OWN head works exactly as before, and the pet it creates belongs to whoever
+  redeemed it - so taking it out again stamps the new holder.
+
+{% hint style="warning" %}
+`config.yml` is **managed**: a merge adds keys you are missing but never rewrites a value you
+already have. The `&7Owner&8: &f{owner}` line above is a new entry in an existing `lore` list, so
+it reaches **fresh installs only**. To show the owner on a server that already runs SnPets, add
+that one line to `pet-items.item.lore` by hand, or delete the whole `lore` list and let the next
+boot write the shipped one back. The lock itself does not depend on the lore line - it works
+whether or not the item advertises an owner.
+{% endhint %}
+
+`{owner}` is also **no longer hologram-only**. It used to resolve only in a pet's name plate; since
+1.17.0 it is an ordinary pet placeholder and works in `pet-items.item.lore` and in the pet cells of
+`guis/main.yml` and `guis/selector.yml` too.
+
+```yaml
 # ------------------------------------------------------------
 #  Worlds. TWO separate lists, on purpose: where pets are DRAWN and where their
 #  buffs APPLY are different questions, and mixing them would turn a cosmetic
@@ -1895,6 +1936,13 @@ back to English when the named file is missing. To add a language, copy `message
 
 New keys are merged into your existing file on boot, with your values and your comments left
 alone, so an update never overwrites a line you restyled.
+
+**1.17.0 adds one**, sent when a player right clicks a pet head that belongs to somebody else,
+described under [pet-items](#a-pet-item-remembers-who-took-it-out):
+
+| Key | Sent to | Placeholders |
+|---|---|---|
+| `messages.pet-item-not-yours` | a player redeeming a pet item stamped with another player's UUID | `{owner}` |
 
 **1.16.0 adds two**, both lore lines of the trait index rather than messages, described under
 [traits.yml](#a-trait-that-boosts-an-edtools-currency):
