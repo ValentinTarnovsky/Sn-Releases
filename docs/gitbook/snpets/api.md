@@ -97,6 +97,16 @@ extraction and the redemption themselves. `PetExtractEvent` and `PetRedeemEvent`
 for a later version, and adding them would be a MINOR `API_VERSION` bump, never a breaking change.
 {% endhint %}
 
+{% hint style="info" %}
+Since 1.19.0 a LEVEL scroll raises a pet's level and a RARITY scroll retypes one. Neither fires an
+event, and `API_VERSION` stays `1.0.0`. In particular **`PetLevelUpEvent` does not fire for a
+scroll**: it belongs to the natural experience path, and a scroll is a write in the shape of
+`/pets admin setlevel`, which does not fire it either. Both changes are ordinary writes, so every
+query on the facade sees the result immediately - a retype produces a new row with a NEW instance
+id and the old id stops existing. `PetScrollUsedEvent` is a candidate for a later version, and
+adding one would be a MINOR `API_VERSION` bump, never a breaking change.
+{% endhint %}
+
 Listen like any Bukkit event:
 
 ```java

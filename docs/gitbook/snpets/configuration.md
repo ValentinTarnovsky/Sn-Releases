@@ -793,20 +793,58 @@ whether or not the item advertises an owner.
 in an inventory, drops, and can be traded or sold like any other item, and nothing about it lives
 in the database.
 
-| Scroll | Applied to | Effect | Works in 1.18.0? |
+| Scroll | Applied to | Effect | Usable since |
 |---|---|---|---|
-| `ownership` | a pet ITEM in your own inventory | re-stamps that head as yours | **yes** |
-| `level` | a pet in the pets menu | raises its level by the number stamped on the stack | not yet |
-| `rarity` | a pet in the pets menu | turns it into the pet its `upgrades-to` names | not yet |
+| `ownership` | a pet ITEM in your own inventory | re-stamps that head as yours | 1.18.0 |
+| `level` | a pet cell of the main menu | raises its level by the number stamped on the stack | **1.19.0** |
+| `rarity` | a pet cell of the main menu | turns it into the pet its `upgrades-to` names | **1.19.0** |
 
-{% hint style="warning" %}
-**Only the ownership scroll can be used in 1.18.0.** The level and rarity scrolls are fully
-defined, given and stamped - their items exist, their lore renders, and a level scroll carries its
-`[levels]` value in its item data - but nothing consumes them yet. Applying them to a pet arrives
-in a later version. Handing them out now is safe: the number a level scroll carries is stamped on
-the stack it was given on, so lowering `default-levels` later never devalues one already in
+{% hint style="info" %}
+All three scrolls do something as of **1.19.0**; before it only the ownership one did. Scrolls
+handed out earlier work exactly as they would have: the number a level scroll is worth is stamped
+on the stack it was given on, so lowering `default-levels` later never devalues one already in
 circulation.
 {% endhint %}
+
+**A scroll is never right clicked.** All three are used by DROPPING one onto its target, which is
+why none of them registers a right-click action: a scroll that consumed itself on a right click
+would be eaten in mid-air the first time a player clicked with one in hand.
+
+#### Using a level or a rarity scroll
+
+Open the pets menu, pick the scroll up onto your cursor **out of your own inventory**, and left or
+right click a pet cell: an equipped slot marker along the top row, or a stored pet in the grid.
+The scroll is applied to that pet and one copy is consumed.
+
+That is what the new `player-inventory: open` key in `guis/main.yml` is for - see
+[Menus](#menus-guis) below. Your own inventory stays usable while the main menu is up, which is the
+only way to get a scroll onto your cursor with the menu open. Every click on the menu's own cells
+is still cancelled, so nothing rendered in the menu can be taken out of it.
+
+**The level scroll** raises the pet by the number stamped on that stack and stops at the pet's own
+level cap - the one its trait and its level boost grade widen, not the plain `max-level` of its
+file. A pet already at that cap is refused and keeps the scroll; a pet below it that the scroll
+would carry past it is raised to the cap and the scroll IS spent, so a pet can always finish its
+climb. The message reports the levels really gained rather than the number on the item.
+
+**The rarity scroll** turns the pet into whatever its `pets/<id>.yml` names under `upgrades-to`,
+keeping its level, experience, trait, boosts and obtained date. The upgraded pet always lands in
+**storage**, even when it was equipped - a new pet brings its own incompatibility and unique-group
+rules, so re-equipping is a decision you make - and the plugin says so when it happens.
+
+Both refuse, and consume nothing, when:
+
+| Situation | Message |
+|---|---|
+| the pet's `pets/<id>.yml` is gone | `messages.pet-unknown` |
+| the scroll is switched off, or the pet is outside its lists | `messages.scroll-not-applicable` |
+| level: the pet is already at its cap | `messages.scroll-level-capped` |
+| rarity: the pet declares no `upgrades-to` | `messages.scroll-no-upgrade` |
+| rarity: the `upgrades-to` target has no file any more | `messages.scroll-target-missing` |
+| an OWNERSHIP scroll is dropped on a menu cell | `messages.scroll-wrong-surface` |
+
+Dropping a scroll on an empty equip slot or an empty grid cell does nothing at all and costs
+nothing, and neither does clicking a cell while holding something that is not a scroll.
 
 **The ownership scroll is the way out of the 1.17.0 owner lock.** Since 1.17.0 a pet head remembers
 who took it out and only that player can redeem it, so handing a freshly extracted head over no
@@ -832,7 +870,11 @@ otherwise re-stamp every copy in it. Split the stack first.
 
 Dropping a scroll onto anything that is **not** a pet item does nothing at all - the click is the
 ordinary inventory swap it looks like, and the scroll is not consumed. A level or rarity scroll
-dropped onto a pet item is likewise inert.
+dropped onto a pet item is likewise inert: those two act on a pet in the MENU, not on an item.
+
+Since 1.19.0 the ownership scroll also works with the pets menu open, because the menu no longer
+freezes your own inventory. It is the same gesture in the same place, and it needed no change of
+its own.
 
 | Key | Default | Meaning |
 |---|---|---|
@@ -1408,9 +1450,12 @@ The target is not checked when the file loads - it may name a pet whose file arr
 {% hint style="warning" %}
 `pets/` is **seed-only**: it is seeded once and never merged again, so `upgrades-to` does **not**
 arrive on the pet files you already have. Add it by hand. Only a fresh install receives the
-commented example that now ships in `pets/ember_fox.yml`. The key parses in 1.18.0 and nothing
-reads it yet - the rarity scroll that will read it arrives in a later version.
+commented example that ships in `pets/ember_fox.yml`. Since **1.19.0** the rarity scroll reads it,
+so a pet with no `upgrades-to` is a pet no rarity scroll can be used on.
 {% endhint %}
+
+A pet whose `upgrades-to` names ITSELF is refused the same way a pet that declares nothing is:
+there is nowhere for it to go.
 
 Here is the seeded `pets/ember_fox.yml` in full, as a working reference:
 
@@ -1899,6 +1944,49 @@ Seven menu layouts, all managed and all re-skinnable without touching code.
 A menu file defines a fixed number of cells. If you raise a player's equip slots above the
 cell count of `main.yml`, the extra pets cannot be shown. The plugin warns about this at
 runtime, and `/pets admin unequip` always recovers a pet that ended up out of reach.
+{% endhint %}
+
+### `main.yml` is a drop target: `player-inventory` and `input`
+
+**Added in 1.19.0**, and the reason the level and rarity scrolls can be used at all. Three keys
+arrive in your `main.yml` on the next boot, and together they are the whole feature:
+
+```yaml
+# Your own inventory stays USABLE while this menu is open, which is what lets
+# you pick a scroll up and drop it onto one of your pets.
+player-inventory: open
+
+items:
+  # Never rendered: the storage grid's own bind owns every "p" cell. It exists
+  # for ONE key - input: true - which is what makes those cells accept a scroll.
+  storage-drop-target:
+    material: GRAY_STAINED_GLASS_PANE
+    key: p
+    input: true
+    display-name: "&8Pet Storage"
+
+templates:
+  slot-filled:
+    input: true          # the equipped row accepts a scroll too
+```
+
+`player-inventory: open` governs the BOTTOM half of the window. Plain clicks, number keys, drops
+and drags inside your own inventory are left alone; every click on the MENU's cells is still
+cancelled, and so is the double-click gather, so no rendered stack can reach your cursor. Set it
+back to `locked` for the pre-1.19.0 behaviour, in which the bottom half is frozen - the level and
+rarity scrolls then stop working, because a cursor that can never hold anything cannot drop one.
+
+`input: true` is per CELL and decides which cells receive an item. `slot-filled` carries it so an
+equipped pet can be a target; `slot-free` deliberately does not, so a scroll aimed at an empty slot
+is left on your cursor. A click with an EMPTY cursor still runs the cell's normal actions, which is
+why right click still unequips.
+
+{% hint style="warning" %}
+Do not delete `storage-drop-target`. It never renders - the paged bind owns those cells and paints
+over it - so removing it changes nothing you can see, and silently stops both scrolls from working
+on a stored pet. The storage grid is paged, and a paged bind cannot declare its own cells as input,
+so declaring an item on the grid's layout letter is the only way to say it. The next boot merges
+the entry back.
 {% endhint %}
 
 ### close-actions

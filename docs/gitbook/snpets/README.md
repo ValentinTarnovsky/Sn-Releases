@@ -29,10 +29,12 @@ duplicates into stronger ones, and manage everything from seven configurable men
   is how players trade pets. Since 1.17.0 the head also remembers who took it out, and only that
   player can redeem it.
 - Scrolls (1.18.0): three consumable items an admin hands out with `/pets admin givescroll`, each
-  with its own look and its own list of pets it accepts. The OWNERSHIP scroll works now - drop it
-  onto a pet item in your own inventory and that head becomes yours, which is the way out of the
-  1.17.0 owner lock. The LEVEL and RARITY scrolls are defined, given and stamped in 1.18.0, but
-  applying them to a pet arrives in a later version.
+  with its own look and its own list of pets it accepts. The OWNERSHIP scroll drops onto a pet item
+  in your own inventory and makes that head yours, which is the way out of the 1.17.0 owner lock.
+  Since 1.19.0 the LEVEL and RARITY scrolls are applied by holding one and clicking a pet in the
+  main menu - an equipped one or a stored one: the level scroll raises the pet by the number
+  stamped on the stack, the rarity scroll turns it into whatever its `upgrades-to` names, and both
+  are consumed one per use.
 - Holograms: configurable text above every pet, per pet type, drawn as packet entities that
   RIDE the pet, so the text and the pet can never move at different times.
 - Seven menus you can re-skin without touching code, with a per-player switch that decides

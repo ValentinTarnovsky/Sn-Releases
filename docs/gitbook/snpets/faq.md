@@ -270,17 +270,54 @@ first), when the pet is outside that scroll's `whitelist` / `blacklist`, when th
 Dropping the scroll on anything that is not a pet item does nothing at all and costs nothing: the
 click is the ordinary inventory swap it looks like.
 
-### I gave someone a level or rarity scroll and nothing happens. Is it broken?
+### How do I use a level or a rarity scroll?
 
-No - **those two are not applicable yet in 1.18.0.** All three scrolls are defined, given and
-stamped in this release, but only the OWNERSHIP scroll has a surface that consumes it. The level
-and rarity scrolls exist as real items, render their lore, and a level scroll carries its
-`[levels]` value in its item data; what does not exist yet is the pets-menu interaction that spends
-them. That arrives in a later version.
+Since **1.19.0**: open the pets menu with `/pets`, pick the scroll up onto your cursor out of your
+own inventory, and left or right click a pet - an equipped slot marker along the top row, or a
+stored pet in the grid. It is applied to that pet and one scroll is consumed. In 1.18.0 those two
+were defined, given and stamped but nothing spent them; scrolls handed out back then work exactly
+as they would have.
 
-Handing them out now is safe, and is the point of shipping them early: the number a level scroll is
-worth is stamped on the stack it was given on, so lowering `scrolls.level.default-levels` later
-never devalues one already in circulation.
+A level scroll raises the pet by the number stamped on that stack. A rarity scroll turns it into
+whatever its `pets/<id>.yml` names under `upgrades-to`, keeping its level, experience, trait and
+boosts. Neither is ever right clicked, and neither works on a pet ITEM in your inventory - that is
+the ownership scroll's surface, and dropping the wrong one there says so instead of eating it.
+
+### Why can I move my own items now while the pets menu is open?
+
+Because that is the only way to pick a scroll up. `guis/main.yml` gained `player-inventory: open`
+in 1.19.0, so the bottom half of the window behaves normally while the menu is up. Every click on
+the menu's own cells is still cancelled, and so is the double-click gather, so nothing rendered in
+the menu can be pulled out of it. Two things got better for free: the ownership scroll now works
+with the menu open, and splitting a stack in your own inventory works again.
+
+Set `player-inventory: locked` in `guis/main.yml` to get the old frozen behaviour back. The level
+and rarity scrolls stop working with it, because a cursor that can never hold anything cannot drop
+one on a pet.
+
+### My pet is at max level and the level scroll refuses. Is that right?
+
+Yes, and it keeps the scroll. The ceiling it checks is the pet's OWN cap - the pet's `max-level`
+widened by its trait and by its level boost grade - so the same pet can accept a scroll after a
+trait roll that it refused before one.
+
+A scroll that would carry the pet PAST the cap is not refused: the pet goes to the cap and the
+scroll is spent, so the last levels of a climb are reachable. The message tells you the levels
+really gained rather than the number printed on the item.
+
+### The rarity scroll worked but my pet left its slot. Where did it go?
+
+To your storage, and the plugin says so. An upgrade rewrites the pet as a new one, and a new pet
+brings its own incompatibility and unique-group rules, so putting it straight back into the slot
+would be the plugin taking a decision the equip path owns. Equip it again from the grid. It kept
+its level, experience, trait, boosts and obtained date.
+
+### The rarity scroll says the pet does not upgrade into anything.
+
+That pet's `pets/<id>.yml` declares no `upgrades-to`, which is how a pet at the top of its ladder
+is written. Add the key to that file by hand - `pets/` is seed-only, so nothing merges into it -
+and reload. A pet whose `upgrades-to` names a file that no longer exists, or that names the pet
+itself, is refused the same way. Nothing is consumed in any of those cases.
 
 ### Can I stop a scroll being used on certain pets?
 
@@ -306,12 +343,16 @@ and switching it back on restores them.
 
 Yes. `config.yml` is **managed**, so the whole `scrolls:` band is merged into your file on the
 first boot after updating, comments and all, with your existing values untouched. The same goes for
-the 13 new `lang/messages_*.yml` keys.
+the 13 new `lang/messages_*.yml` keys of 1.18.0 and the 7 more of 1.19.0.
+
+`guis/main.yml` is managed too, so 1.19.0's three keys arrive on their own: `player-inventory`, the
+`storage-drop-target` item and `input: true` on `slot-filled`. Leave `storage-drop-target` alone -
+it never renders, and it is the only thing that makes the storage grid accept a scroll.
 
 The one thing that does **not** arrive on its own is `upgrades-to` in your pet files: `pets/` is
 seed-only, seeded once and never merged again, so you add that key to your own `pets/<id>.yml`
-files by hand. Only a fresh install receives the commented example. Nothing reads it in 1.18.0
-anyway - it is there for the rarity scroll that will.
+files by hand. Only a fresh install receives the commented example. Until you do, the rarity scroll
+has nothing to turn those pets into and refuses without consuming.
 
 ### I updated but the pet cells do not mention shift + right click or Q. Is it working?
 
