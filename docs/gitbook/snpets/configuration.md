@@ -1428,6 +1428,23 @@ before 1.15.0 keeps granting exactly what it granted. A negative value is logged
 naming the pet and the entry, and then read as no ceiling. The key exists for a per-level ramp
 running on a level cap it was not sized for: `per-level: 0.4` is +300% at level 750.
 
+Since **1.20.0** the `{buff}` and `{buff-value}` placeholders show this block too. Everywhere a
+pet is described - the menus, an extracted pet item, a hologram line - those two placeholders name
+the pet's EFFECT: a pet that declares a vanilla `buff:` shows it exactly as before, and a pet
+whose buff grants nothing resolves them from its `edtools-boosts` block instead. `{buff}` becomes
+the boosted currencies joined in file order and `{buff-value}` the live value at the pet's current
+level, with the grade and trait widening and the per-entry `max:` already applied - the same
+number, from the same formula, that the booster sum uses. A pet boosting several currencies at
+different values shows the highest one; a trait's flat `effects.edtools` points are not included,
+because they are the trait's effect and the trait's own lines already show them.
+
+Currency display names come from the language file: one `messages.edtools-currency-<id>` entry per
+currency you want renamed (e.g. `edtools-currency-money: "&6Money"`), with
+`menus.edtools-buff-separator` as the separator between two names. Only `enchant` ships named -
+every other id is invented on your server - and an id without an entry shows as the raw id. The
+trait index's currency lines resolve through the same entries, so one currency can never carry two
+names.
+
 ### The rarity ladder: `upgrades-to`
 
 **Added in 1.18.0.** A pet file may name the pet a RARITY scroll turns it into:

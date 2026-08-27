@@ -622,6 +622,18 @@ and, on its own, still rounds away to nothing. That ordering is also what makes 
 use: three pets capped at 4 sum to 12 and grant +10%, which capping after the rounding would have
 lost. A `max:` of `0`, a negative one, or no `max:` at all all mean no ceiling.
 
+### My pet's menu line says "Buff Damage: 0.0%" even though the pet boosts currencies
+
+That was the pre-1.20.0 behavior. `{buff}` and `{buff-value}` used to show only the vanilla
+`buff:` block - a pet that declares none defaults to a damage buff worth zero at every level,
+which is the "Damage 0.0%" you saw, no matter the pet's level. Since **1.20.0** a pet whose
+vanilla buff grants nothing resolves both placeholders from its `edtools-boosts` block instead:
+`{buff}` shows the boosted currencies (named per your `messages.edtools-currency-<id>` lang
+entries, the raw id otherwise) and `{buff-value}` the live value at the pet's current level, cap
+and widening included. A pet that declares a real vanilla `buff:` is untouched. If you still see
+the zero line on 1.20.0, the pet's `edtools-boosts` block grants nothing at its level - see the
+one-decimal question above.
+
 ### I already run SnPets. Why do my pets have no `edtools-boosts` block?
 
 Because `pets/` is seeded once and never merged again, which is the same reason your pet files did
