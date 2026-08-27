@@ -172,6 +172,17 @@
 * [Placeholders](snfourinline/placeholders.md)
 * [FAQ](snfourinline/faq.md)
 
+## SnGens
+
+* [Overview](sngens/README.md)
+* [Installation](sngens/installation.md)
+* [Commands](sngens/commands.md)
+* [Permissions](sngens/permissions.md)
+* [Configuration](sngens/configuration.md)
+* [Placeholders](sngens/placeholders.md)
+* [Developer API](sngens/api.md)
+* [FAQ](sngens/faq.md)
+
 ## SnGifts
 
 * [Overview](sngifts/README.md)
