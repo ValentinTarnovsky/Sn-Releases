@@ -2084,6 +2084,43 @@ gets silence instead of a console warning on every click. Delete the lore line a
 removed in the next minor version.
 {% endhint %}
 
+### Where the boost roulette spins: `stat-spinning` and the per-stat roll buttons
+
+Since **1.21.0** the boost roulette plays on the STAT cell(s) the roll is deciding, never on the
+pet: the pet at slot 19 keeps showing your selection the whole time, and each rolling stat's cell
+in the `stats` region binds the new `stat-spinning` template instead - ONE cell for a single-stat
+button, all three for Roll Every Boost. Which cells spin comes from the roll itself, so the menu
+can never animate a stat that was not rolled.
+
+```yaml
+  stat-spinning:
+    material: ENDER_EYE
+    display-name: "&e&lRolling {stat}..."
+    lore:
+      - "&7{candidate}"
+    glow: true
+```
+
+`{candidate}` scrolls real grade names off that stat's own table, with the real odds; `{stat}` is
+the stat's display name from the language file and `{group-color}` is bound too. The template is
+region-bound and must not declare a `key:`.
+
+The same release splits the single shared `roll-stat` template into **one template per button** -
+`roll-stat-experience`, `roll-stat-level` and `roll-stat-buff` - so each of the three buttons at
+slots 39-41 is styled and worded on its own. Their `click-actions` name their stat directly
+(`[pets-roll-boost] experience`, `level`, `buff`), and `{stat}`, `{currency}`, `{balance}` and
+`{group-color}` still resolve on all three. The greyed-out state stays on the one shared
+`roll-stat-locked`, exactly like `roll-all-locked` covers the fourth button.
+
+{% hint style="info" %}
+**Upgrading from 1.20.0 or earlier.** The four new templates merge into your `guis/boosts.yml` on
+the next boot, comments included. Your old `templates.spinning` and `templates.roll-stat` stay in
+the file - a managed merge never deletes - but nothing reads them any more: delete them whenever
+you like, and if you had restyled `roll-stat`, copy your style into the three new templates. The
+traits menu is untouched - it has no stat cells, so its roulette keeps playing on the
+selected-pet cell.
+{% endhint %}
+
 ### Colouring a pet by its group
 
 Every template that draws a pet binds `{group-color}`, the colour its group declares under

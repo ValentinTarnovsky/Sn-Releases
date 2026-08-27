@@ -27,6 +27,15 @@ The switch covers the two roulettes only: a pet box keeps its own `animation:` b
 `boxes.yml`, and a roulette you turned off with `traits.roll.enabled: false` or
 `boosts.roll.enabled: false` stays off for everyone regardless.
 
+### Can I style the three boost roll buttons separately? And where does the roulette spin?
+
+Since **1.21.0**, yes: `guis/boosts.yml` declares one template per button -
+`roll-stat-experience`, `roll-stat-level` and `roll-stat-buff` - instead of the old shared
+`roll-stat`, so each is restyled on its own. The boost roulette also moved: it plays on the stat
+cell(s) the roll is deciding (the new `stat-spinning` template) - one cell for a single-stat
+button, all three for Roll Every Boost - and never on the pet cell. See
+[Where the boost roulette spins](configuration.md#where-the-boost-roulette-spins-stat-spinning-and-the-per-stat-roll-buttons).
+
 ### I updated to 1.12.0. Does anything happen to my database?
 
 Yes, once, and it needs nothing from you. `snpets_players` gains one column, `roll_animation`,
