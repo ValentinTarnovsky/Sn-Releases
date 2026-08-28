@@ -39,14 +39,11 @@ instance id shown by `/companions admin list`, not the companion type id.
 | `/companions admin setlevel <player> <instance> <level>` | `sncompanions.admin.setlevel` | Sets the level of one companion |
 | `/companions admin setexp <player> <instance> <exp>` | `sncompanions.admin.setexp` | Sets the experience of one companion |
 | `/companions admin settype <player> <instance> <companion>` | `sncompanions.admin.settype` | Turns one companion into another companion |
-| `/companions admin setboost <player> <instance> <stat> <grade>` | `sncompanions.admin.setboost` | Sets or clears one boost grade of one companion |
 | `/companions admin setowner <player> <instance> <target>` | `sncompanions.admin.setowner` | Moves one companion to another player |
 | `/companions admin equip <player> <instance>` | `sncompanions.admin.equip` | Equips one companion of a player |
 | `/companions admin unequip <player> <instance>` | `sncompanions.admin.unequip` | Sends one companion of a player back to storage |
 | `/companions admin removecompanion <player> <instance>` | `sncompanions.admin.removecompanion` | Deletes one companion of a player |
 
-Pass `none` as the `<grade>` to clear it instead of setting it. The three boost
-stats are `experience`, `level` and `buff`.
 
 ### Bulk actions
 
@@ -68,11 +65,9 @@ The `<what>` argument of `clear` is `storage` (every companion that is not equip
 | `/companions admin giveallbox <box> [amount] [chance]` | `sncompanions.admin.giveallbox` | Gives companion boxes to every online player, all at one success chance |
 | `/companions admin slots <mode> <player> <amount>` | `sncompanions.admin.slots` | Adds or sets the equip slots a player bought; they add on top of `max(base, permission)`, with the total capped at `slots.max-count` |
 | `/companions admin storage <mode> <player> <amount>` | `sncompanions.admin.storage` | Adds or sets the storage a player bought; it adds on top of `max(base, permission)`, with the total capped at `storage.max-capacity` |
-| `/companions admin currency <currency> <mode> <player> <amount>` | `sncompanions.admin.currency` | Changes one of a player's three balances |
 
-The `<mode>` argument is `give` or `set` for slots and storage, and `give`, `take` or `set`
-for a currency. Capacity cannot be taken: lowering a purchase is a `set`. The three currencies
-are `trait-ticket`, `dice-normal` and `dice-special`.
+The `<mode>` argument is `give` or `set`. Capacity cannot be taken: lowering a purchase is a
+`set`.
 
 ## Silent flags
 
@@ -85,7 +80,7 @@ Every `/companions admin` command accepts two optional flags, in any order and c
 
 ```
 /companions admin give Bob ember_fox 3 5 -s -sf
-/companions admin currency dice-normal give Bob 10 -s
+/companions admin givebox Bob starter_box 10 -s
 /companions admin clear Bob all -sf
 ```
 
@@ -95,9 +90,9 @@ unknown box) or a failed query always reaches the admin who ran the command - an
 fails in silence is the worst possible outcome.
 {% endhint %}
 
-`-s` silences the message the RECEIVER gets. Four commands send one: `give`
-(`messages.companion-received`), `givebox` and `giveallbox` (`messages.box-received`) and `currency`
-(`messages.currency-received`). The other seventeen have never messaged their target, so `-s` is
+`-s` silences the message the RECEIVER gets. Three commands send one: `give`
+(`messages.companion-received`), and `givebox` and `giveallbox` (`messages.box-received`).
+The other fifteen have never messaged their target, so `-s` is
 accepted there and simply has nothing to silence. An offline receiver is never messaged either way.
 
 {% hint style="warning" %}
@@ -129,6 +124,6 @@ silence.
 
 {% hint style="danger" %}
 These commands are destructive and cannot be undone: `/companions admin removecompanion` deletes one companion,
-`/companions admin clear` empties a whole category, and `/companions admin reset` wipes a player's companions,
-capacities and currencies back to a first-join state.
+`/companions admin clear` empties a whole category, and `/companions admin reset` wipes a player's companions
+and capacities back to a first-join state.
 {% endhint %}

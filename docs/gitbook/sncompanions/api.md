@@ -62,7 +62,6 @@ Cancellable events fire before the action. Cancelling aborts it.
 | `CompanionBoxOpenEvent` | A player opens one or more companion boxes, before the roll | Every box is handed back |
 | `CompanionFuseEvent` | A player commits a fusion, before anything is charged | Nothing is charged and no companion is destroyed |
 | `CompanionGroupDeleteEvent` | A player mass-deletes a group from the bulk delete menu | Every companion in the group stays |
-| `CompanionRollEvent` | A player rolls a boost grade, before paying | No currency is spent and no modifier is written |
 
 {% hint style="warning" %}
 These fire only for player-driven actions. The `/companions admin` equivalents bypass them on purpose,
@@ -76,7 +75,6 @@ Notification events fire after the fact. They cannot be cancelled.
 | `CompanionBoxRewardEvent` | A box open resolved to a set of companions | Which companions were won, and how many boxes opened |
 | `CompanionLevelUpEvent` | An equipped companion gained at least one level | The companion after the level up, and how many levels it gained |
 | `CompanionFusedEvent` | A fusion consumed its parents | Whether it succeeded, and the companion it produced |
-| `CompanionRolledEvent` | A boost roll was decided and written | One entry per rewritten slot, with the old and new id |
 
 {% hint style="info" %}
 Since 1.4.0 a companion box carries a success chance and can fail to open, consuming the box and
@@ -126,11 +124,9 @@ thread. None of them touches the database.
 | `getCompanion(UUID, int)` | `Optional<CompanionView>` | One owned companion by its instance id |
 | `getEquippedCompanions(UUID)` | `List<CompanionView>` | The player's equipped companions, in slot order |
 | `getStoredCompanions(UUID)` | `List<CompanionView>` | The player's stored companions |
-| `getCurrencyBalance(UUID, String)` | `int` | Balance of `TRAIT_TICKET`, `DICE_NORMAL` or `DICE_SPECIAL` |
 | `getBuffTotal(UUID, String)` | `double` | Total percentage for `DAMAGE`, `RESISTANCE` or `SPEED` |
 | `getCompanionTypes()` | `List<CompanionTypeView>` | Every companion definition the server declares |
 | `getCompanionType(String)` | `Optional<CompanionTypeView>` | One companion definition by id |
-| `getBoostGrades()` | `List<BoostGradeView>` | Every grade in the global ladder |
 | `getApiVersion()` | `String` | The API contract version |
 
 {% hint style="warning" %}
@@ -146,13 +142,11 @@ They never change afterwards, so re-query when you need current values.
 
 | View | Describes |
 |------|-----------|
-| `CompanionView` | One owned companion: level, experience, the three boost slots, equip slot |
+| `CompanionView` | One owned companion: level, experience, equip slot |
 | `CompanionTypeView` | One companion definition: display name, level cap, group, buff, fusion target |
 | `CompanionStorageView` | One player's counts and capacities |
-| `BoostGradeView` | One boost grade: weight, percentage range, and the slots it fits |
-| `RollChangeView` | One rewritten modifier slot: the old id and the new one |
 
-Companions and boost grades cross the API as their id `String`, and internal enums cross as their
+Companions cross the API as their id `String`, and internal enums cross as their
 name. Renaming or reordering a config entry can never break your plugin at runtime.
 
 {% hint style="info" %}
@@ -168,7 +162,10 @@ Call `getApiVersion()` for the API contract version. It is independent of the pl
 **The contract is still provisional and surface may be REMOVED.** SnCompanions is a new plugin whose
 feature set is still being cut down, and removals are made outright rather than through a deprecation
 cycle. `1.2.0` deleted `getTraits()`, the `TraitView` record, `CompanionView`'s trait component and
-`CompanionRollEvent.TRAIT` / `TRAIT_TICKET` when the traits feature was removed.
+`CompanionRollEvent.TRAIT` / `TRAIT_TICKET` when the traits feature was removed. `1.3.0` deleted
+`getBoostGrades()`, `getCurrencyBalance()`, the `BoostGradeView` and `RollChangeView` records, the
+`CompanionRollEvent` and `CompanionRolledEvent` events, and `CompanionView`'s three boost id
+components when the boosts, the roll infrastructure and the internal currencies were removed.
 
 `API_VERSION` is deliberately held at `1.0.0` across those removals rather than claiming a stability
 this contract does not have yet, so **the version does not tell you whether surface went away**.

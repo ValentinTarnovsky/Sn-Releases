@@ -4,50 +4,11 @@
 
 Download the newer `sncompanions-v*` release and replace the jar. `config.yml`, the language files
 and the menu layouts auto-merge on restart, so new keys appear while your values and comments
-stay. Your `companions/` folder and your `boost-grades.yml` and `boxes.yml` files are
+stay. Your `companions/` folder and your `boxes.yml` file are
 never overwritten.
 
 Updating **to 1.4.0** also moves your `boxes/` folder into a single `boxes.yml` automatically -
 see the question about `boxes-migrated/` below.
-
-### Can players skip the boost roulette animation?
-
-Since **1.12.0** they do better than skip it: they switch it off once, on the button at slot 8
-of the boosts menu, and the choice is saved on their own row so it holds across
-relogs and restarts. `Roll Animation: Off` shows the result at once, with the same reveal sound,
-the same chat line and the same redraw. It can never change what came out, because the roll is
-decided and saved before the first frame would have been drawn.
-
-The click-to-skip 1.3.0 put on the spinning cell is retired - the setting replaced it. Both
-templates (`anim-on`, `anim-off`) merge into your `guis/boosts.yml` on the
-first boot after the update. See [The roll animation switch](configuration.md#the-roll-animation-switch)
-for what happens to the old `click-actions` block on your `spinning` template.
-
-The switch covers the boost roulette only: a companion box keeps its own `animation:` block in
-`boxes.yml`, and a roulette you turned off with `boosts.roll.enabled: false` stays off for
-everyone regardless.
-
-### Can I style the three boost roll buttons separately? And where does the roulette spin?
-
-Since **1.21.0**, yes: `guis/boosts.yml` declares one template per button -
-`roll-stat-experience`, `roll-stat-level` and `roll-stat-buff` - instead of the old shared
-`roll-stat`, so each is restyled on its own. The boost roulette also moved: it plays on the stat
-cell(s) the roll is deciding (the new `stat-spinning` template) - one cell for a single-stat
-button, all three for Roll Every Boost - and never on the companion cell. See
-[Where the boost roulette spins](configuration.md#where-the-boost-roulette-spins-stat-spinning-and-the-per-stat-roll-buttons).
-
-### I updated to 1.12.0. Does anything happen to my database?
-
-Yes, once, and it needs nothing from you. `sncompanions_players` gains one column, `roll_animation`,
-which is where each player's answer to the question above is kept. It is the first schema
-migration this plugin has ever needed, and it runs on the boot after the update: right after the
-tables are created, before any player row is read, on SQLite and MySQL alike.
-
-Every player who already has a row keeps the animation **on**, which is what they had. Nothing
-else on the row is touched, no row is rewritten, and a boot that finds the column already there
-does nothing at all - so a downgrade and a re-upgrade are both uneventful. If the migration
-cannot run, the plugin refuses to enable and says so in the console rather than running against
-a table it cannot read, exactly as it already does when a table cannot be created.
 
 ### A player unequipped the companion in slot 2 and the others moved. Is that a bug?
 
@@ -62,19 +23,6 @@ Give the group a `color:` in `config.yml` and use `{group-color}` in the menu te
 [Configuration](configuration.md) for the full recipe. Existing configs do not receive the new
 key: until you add one, `{group-color}` reuses the colour codes that group's `display` already
 starts with.
-
-### I wrote `{group-color}` in `menus.boost-line` and it printed literally. Why?
-
-Because before 1.8.1 that fragment was formatted without it. The boost lines are built one by
-one and then handed to the companion cell as the single `{boosts}` value, and a placeholder value is
-never scanned again for placeholders, so the cell's own `{group-color}` could not reach inside
-them. 1.8.1 resolves the colour while the line itself is being built. The line you already
-edited starts working on the next boot: only the COMMENT above the key changed in the shipped
-file, your value is kept.
-
-The same release binds `{group-color}` on the boosts menu's three stat cells and four roll
-buttons. It still does not exist on `menus.grade-row` or `menus.group-separator`, which
-describe a ladder rung rather than a companion.
 
 ### My box has `[rgb]` in its display-name and chat shows the tag instead of the gradient.
 
@@ -91,12 +39,6 @@ Because the merge adds missing keys but never overwrites a value your file alrea
 that material is a value. Open `guis/bulk_delete.yml`, set `templates.group-empty.material` to
 `"{icon}"`, and restart. Deleting the file and restarting reseeds the whole thing instead. New
 installs already ship the fixed value.
-
-### A player picked a companion in Boosts, closed the menu and it was still picked. Is that fixed?
-
-Yes, since 1.2.1. Closing every SnCompanions menu forgets the pick, while moving between menus keeps
-it. It is driven by the `close-actions` key each `guis/*.yml` now carries; the key merges in on
-the first boot after the update.
 
 ### Can I run an admin command without telling anyone?
 
@@ -122,8 +64,7 @@ Yes, in 1.5.0. `/companions admin give`, `/companions admin givebox` and `/compa
 receiver a line of their own - `messages.companion-received` and `messages.box-received`, both new keys
 in `lang/messages_<code>.yml`. They are merged into your existing lang file automatically on the
 first boot after the update, so you can restyle or blank them like any other message, and you can
-suppress them per command with `-s`. `/companions admin currency` already worked this way and is
-unchanged. Offline players are never messaged.
+suppress them per command with `-s`. Offline players are never messaged.
 
 ### My companions changed shape after updating to 1.6.0. What happened?
 
@@ -200,8 +141,8 @@ one line for every winning pair.
 Since 1.7.0, by turning the companion into an item. In the main menu, **shift + right click** a companion in
 the storage grid - or, since 1.11.0, press **Q** over it, the drop key, Ctrl+Q included: it
 leaves the storage and becomes a player head in the player's inventory,
-wearing that companion's own texture and carrying its whole state - companion type, level, experience
-and the three boost grades. A **right click** with that head puts the companion into the clicker's
+wearing that companion's own texture and carrying its whole state - companion type, level and
+experience. A **right click** with that head puts the companion into the clicker's
 storage, with everything it had. Hand it over, drop it, put it in a chest, or sell it on a shop
 plugin: the head is an ordinary item.
 

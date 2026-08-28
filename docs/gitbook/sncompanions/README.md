@@ -7,8 +7,8 @@ Companions are drawn with packets instead of entities, so they never collide, ne
 never wander off. The whole server shares one animation tick, so companion count adds no scheduler
 tasks and unequipped companions cost nothing.
 
-A companion is more than a cosmetic. It levels up from a configurable experience source, carries a
-graded stat boosts, and grants its owner damage, resistance and speed
+A companion is more than a cosmetic. It levels up from a configurable experience source and
+grants its owner damage, resistance and speed
 buffs that scale with its level. Players collect companions from weighted companion boxes, fuse
 duplicates into stronger ones, and manage everything from configurable menus.
 
@@ -19,8 +19,7 @@ duplicates into stronger ones, and manage everything from configurable menus.
 - Levels and experience per companion type, with per-type level caps and a choice of six experience
   sources: vanilla XP, blocks, EdTools omnitool breaks, mobs, damage dealt or playtime.
 - Damage, resistance and speed buffs, each with a global cap and a per-world gate.
-- Graded stat boosts, rolled with dice.
-- Fusion: combine duplicates into a stronger companion that inherits levels and boosts, with
+- Fusion: combine duplicates into a stronger companion that inherits levels, with
   a server-wide announcement you can switch on per companion.
 - Companion boxes with weighted tables, a per-box success chance stamped on the item, bulk opening,
   cooldowns and a full refund on a failed save.
@@ -30,8 +29,7 @@ duplicates into stronger ones, and manage everything from configurable menus.
   player can redeem it.
 - Holograms: configurable text above every companion, per companion type, drawn as packet entities that
   RIDE the companion, so the text and the companion can never move at different times.
-- Seven menus you can re-skin without touching code, with a per-player switch that decides
-  whether that player's roll animation plays or the result appears instantly, and a per-group
+- Three menus you can re-skin without touching code, with a per-group
   colour every companion template can draw with.
 - Equipped companions are kept in slots 1..n with no gap, so the free slots are always the last ones.
 
@@ -42,7 +40,7 @@ duplicates into stronger ones, and manage everything from configurable menus.
 - **BetterModel**: lets a companion type render as an animated model with separate idle and moving
   animations. Without it every companion renders as a player head, which is the built-in default.
 - **EdTools**: lets an equipped companion grant EdTools currency boosters and the global enchant
-  multiplier, summed across every equipped companion and widened by that companion's boost grade,
+  multiplier, summed across every equipped companion,
   with an optional per-companion `max:` ceiling on each entry. It also unlocks the `EDTOOLS_BLOCK_BREAK`
   experience source, so a companion can level from the blocks
   an EdTools omnitool consumes - blocks a vanilla `BlockBreakEvent` never sees. Without it nothing

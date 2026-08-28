@@ -5,7 +5,7 @@ are managed by SnLib: new keys are auto-merged on boot, and your values and comm
 preserved. Set `update-configs: false` to freeze them, in which case SnLib only warns about
 missing keys instead of inserting them.
 
-`boost-grades.yml`, `boxes.yml` and the `companions/` folder are seeded once, on a
+`boxes.yml` and the `companions/` folder are seeded once, on a
 fresh install, and never written to again. A companion file you delete stays deleted, and a file you
 add is picked up on the next reload; one file is one companion, and the file name is its id. Boxes
 work the same way but live as keys inside `boxes.yml` rather than as separate files - if you are
@@ -262,9 +262,9 @@ models:
 #
 #  How the numbers work, because it surprises people:
 #   - A companion declares its boost in PERCENT, exactly like its buff: 10.0 is +10%.
-#     Every equipped companion's percentages for the same currency are SUMMED, and the
-#     companion's BUFF boost grade widens them the same way it widens
-#     its buff.
+#     Every equipped companion's percentages for the same currency are SUMMED, and
+#     nothing widens them: the value a companion file writes is the value that is
+#     granted, exactly like its buff.
 #   - EdTools is then handed a fraction (0.5 is "+50%", 1.0 is "double"),
 #     ROUNDED TO ONE DECIMAL. That is a hard rule of this integration and it
 #     means the granted boost moves in steps of 10%: a total of 4% rounds down
@@ -299,8 +299,8 @@ edtools:
 #  Placeholders: every companion placeholder of the menus ({companion} {level} {level-cap}
 #  {exp} {exp-next} {percent} {group} {group-color} {buff} {buff-value}
 #  {owner}). PlaceholderAPI tokens resolve against the OWNER.
-#  The text is only rewritten when something on the companion changes - a level up, a
-#  boost roll, an admin edit - never on the animation tick.
+#  The text is only rewritten when something on the companion changes - a level up,
+#  an admin edit - never on the animation tick.
 # ------------------------------------------------------------
 holograms:
   # Master switch. Off spawns nothing at all.
@@ -410,7 +410,7 @@ experience:
 #  and what each level adds. The engine then computes, per buff:
 #
 #    base       = initial + (level - 1) x per-level
-#    companion buff   = base x (1 + buff boost%)
+#    companion buff   = base, the value the companion's own file declares
 #    player     = the sum of every equipped companion
 #    effect     = that sum capped by the "cap" below
 #
@@ -466,38 +466,6 @@ buffs:
     affect-flying: false
 
 # ------------------------------------------------------------
-#  Boosts. ONE global grade ladder in boost-grades.yml, shared by the three
-#  stats every companion carries. The numbers there are
-#  WEIGHTS, the roll always produces a grade and the dice is always spent.
-#  A grade is worth a value inside its own min/max range, picked once per companion
-#  and stable for that companion's whole life, and either end may be negative.
-#    experience -> exp x (1 + experience grade%)
-#    level      -> floor(companion level cap x (1 + level grade%))
-#    buff       -> companion buff base x (1 + buff grade%)
-#  Rolling all three stats at once costs a normal dice; rolling one chosen stat
-#  costs a special dice.
-# ------------------------------------------------------------
-boosts:
-  # Master switch of the boost system. Off refuses every boost roll and makes
-  # every grade worth 0; nothing is cleared, so switching it back on restores
-  # every companion's three grades exactly as they were.
-  enabled: true
-
-  # The roulette the boosts menu plays before it reveals what was rolled. Same
-  # four knobs, same names and same limits as a box's "animation:" block.
-  roll:
-    # Play the roulette at all. Off reveals the grades immediately.
-    enabled: true
-    # Ticks one spin lasts, clamped to 4-600.
-    duration-ticks: 30
-    # Ticks between two frames of the spin, minimum 2; lower spins faster.
-    step-ticks: 2
-    # Sound played on every frame of the spin. "none" plays nothing.
-    step-sound: "UI_BUTTON_CLICK 0.6 1.6"
-    # Sound played once the rolled grades are revealed. "none" plays nothing.
-    reveal-sound: "ENTITY_PLAYER_LEVELUP 1.0 1.4"
-
-# ------------------------------------------------------------
 #  Fusion. Two companions of the SAME id become the companion that their own
 #  companions/<id>.yml names as its fusion target: it is a companion-to-companion map, never a
 #  rarity ladder, and a companion whose file names no target cannot be fused at all.
@@ -513,28 +481,21 @@ fusion:
 
   # Which parent the result takes each preserved field from.
   #   BEST   - per FIELD, whichever parent holds the better value: the higher
-  #            level, the higher experience and the better
-  #            grade of each boost stat. The result may take its level from one
-  #            parent and a grade from the other.
+  #            level and the higher experience. The result may take its level from
+  #            one parent and its experience from the other.
   #   FIRST  - everything comes from the companion in the left input slot.
   #   SECOND - everything comes from the companion in the right input slot.
   keep-from: BEST
 
   # What survives a fusion at all. A field switched off here is not taken from
   # either parent: the result carries what a brand new companion carries, which is
-  # level 1, no experience and no boost grades.
+  # level 1 and no experience.
   keep:
     # Carry over a level. It is capped by the TARGET companion's own max-level, since
     # every companion declares its own ceiling.
     level: true
     # Carry over the experience banked toward the next level.
     exp: true
-    # Carry over the experience boost grade.
-    boost-experience: true
-    # Carry over the level boost grade.
-    boost-level: true
-    # Carry over the buff boost grade.
-    boost-buff: true
 
   cost:
     # Charge the `fusion.cost` each companion file declares. The price is money, taken
@@ -680,13 +641,10 @@ boxes:
 
 # ------------------------------------------------------------
 #  Companion items. A stored companion can be taken out of the storage as a physical head
-#  (shift + right click on it in the main menu, or Q) and redeemed back with a
-#  right click, which is how companions change hands. The item carries the
-#  companion's whole state - level, experience and the three boost grades - so
-#  a companion that comes back is the companion that left. Since 1.17.0 it also remembers
-#  WHO took it out, and a player who is not that owner is refused; heads
-#  extracted before 1.17.0 remember nobody and anyone may redeem them.
-#  A redeem into a full storage
+#  (shift + right click on it in the main menu) and redeemed back by anyone
+#  with a right click, which is how companions change hands. The item carries the
+#  companion's whole state - level and experience - so
+#  a companion that comes back is the companion that left. A redeem into a full storage
 #  hands the item straight back, and so does every other refusal: the item is
 #  the companion, and it is never destroyed by a refusal.
 #  An EQUIPPED companion cannot be taken out (unequip it first) and neither can one
@@ -708,8 +666,8 @@ companion-items:
   # cannot be set here; the name and lore below are yours.
   # Every companion placeholder the menus use works here:
   #   {companion} {companion-lore} {group} {group-color} {level} {level-cap} {exp}
-  #   {exp-next} {percent} {bar} {buff} {buff-value} {boosts} {owner}
-  # {companion-lore} and {boosts} are multi-line and expand to one lore line each.
+  #   {exp-next} {percent} {bar} {buff} {buff-value} {owner}
+  # {companion-lore} is multi-line and expands to one lore line each.
   # {owner} is the player the companion was taken out by. A companion item also REMEMBERS
   # them: since 1.17.0 only that player can redeem it, and anyone else is
   # refused and handed the item straight back. Items extracted before 1.17.0
@@ -723,7 +681,6 @@ companion-items:
       - "&7Level &f{level}&7/&f{level-cap}"
       - "&7Exp &f{exp}&7/&f{exp-next} &8({percent}%)"
       - "&7Owner&8: &f{owner}"
-      - "{boosts}"
       - ""
       - "&a&lRIGHT CLICK"
       - "&2Redeem this companion into your storage"
@@ -758,7 +715,7 @@ whether or not the item advertises an owner.
 
 `{owner}` is also **no longer hologram-only**. It used to resolve only in a companion's name plate; since
 1.17.0 it is an ordinary companion placeholder and works in `companion-items.item.lore` and in the companion cells of
-`guis/main.yml` and `guis/selector.yml` too.
+`guis/main.yml` too.
 
 ```yaml
 # ------------------------------------------------------------
@@ -787,7 +744,7 @@ worlds:
     damage: []
 
 # ------------------------------------------------------------
-#  Menus. Everything the seven menus look like lives in guis/<id>.yml: the
+#  Menus. Everything the three menus look like lives in guis/<id>.yml: the
 #  titles, the masks, every material, every name, every lore line and every
 #  click action. These two keys are the exceptions, because neither can be
 #  written as an item field.
@@ -831,8 +788,6 @@ menus:
 #    %sncompanions_storage_used%    %sncompanions_storage_total%   %sncompanions_storage_free%
 #    %sncompanions_slots_used%      %sncompanions_slots_total%     %sncompanions_slots_free%
 #    %sncompanions_buff_damage%     %sncompanions_buff_resistance% %sncompanions_buff_speed%
-#    %sncompanions_currency_trait-ticket%  %sncompanions_currency_dice-normal%
-#    %sncompanions_currency_dice-special%
 #    %sncompanions_equipped_<n>%    the companion in equip slot <n>, or the status.none word
 #    %sncompanions_equipped_<n>_level%   _exp%   _exp_next%   _cap%
 #
@@ -937,76 +892,6 @@ on the next boot and their labels straighten up with no file editing. Set it to 
 want the old look back.
 {% endhint %}
 
-## boost-grades.yml
-
-```yaml
-# ============================================================
-#  SnCompanions - boost grades
-#  ONE global ladder for the whole server, shared by all three boost stats
-#  (experience, level, buff). This file exists so a grade table is never copied
-#  into a per-companion file again.
-#  Seeded once and never merged again: this file is yours. Every top-level key
-#  below is a grade id. A grade id still stored on a companion whose entry is gone is
-#  never cleared, it renders marked as unknown and is worth 0 until the entry
-#  comes back.
-#  The "weight" numbers are WEIGHTS, not percentages: the roll normalizes over
-#  the ladder, always produces a grade and always spends the dice. They do not
-#  have to add up to 100.
-#  A grade is worth a value inside its min/max range, picked once per companion and
-#  stable for that companion's whole life. Both ends may be NEGATIVE: a penalty grade
-#  is content, not a mistake.
-#  What each stat does with the percentage:
-#    experience -> exp x (1 + experience grade%)
-#    level      -> floor(companion level cap x (1 + level grade%))
-#    buff       -> companion buff base x (1 + buff grade%)
-# sn:extensible-root
-# ============================================================
-
-# The default ladder is deliberately short: five rungs, one of them a penalty.
-
-flawed:
-  # Name shown wherever the grade is rendered.
-  display-name: "&8Flawed"
-  # Roll weight relative to every other rung. 0 retires the rung: companions that
-  # already carry it keep it, it simply stops being rolled.
-  weight: 25.0
-  # Low end of what this rung is worth, in percentage points. May be negative.
-  min-percent: -5.0
-  # High end. Set it equal to min-percent for a fixed-value rung.
-  max-percent: -1.0
-  # Stats this rung may be rolled for: experience, level, buff. An EMPTY list
-  # means all three, which is what makes the file read as one shared ladder.
-  stats: []
-
-common:
-  display-name: "&7Common"
-  weight: 40.0
-  min-percent: 0.0
-  max-percent: 3.0
-  stats: []
-
-fine:
-  display-name: "&aFine"
-  weight: 20.0
-  min-percent: 4.0
-  max-percent: 8.0
-  stats: []
-
-superior:
-  display-name: "&9Superior"
-  weight: 12.0
-  min-percent: 9.0
-  max-percent: 15.0
-  stats: []
-
-mythic:
-  display-name: "&6&lMythic"
-  weight: 3.0
-  min-percent: 16.0
-  max-percent: 25.0
-  stats: []
-```
-
 ## companions/
 
 One file per companion type, named after its id. Three examples are seeded on a fresh install:
@@ -1044,9 +929,8 @@ edtools-boosts:
 
 Three things about where the ceiling sits, because they are what make it useful:
 
-- It applies to the value **this companion** produced *after* its buff boost grade has
-  widened it, not to the raw `initial + per-level` figure. A companion the grades pushed to 45 with
-  `max: 30` contributes 30.
+- It applies to the value **this companion** produced at its current level. A companion whose ramp
+  reached 45 with `max: 30` contributes 30.
 - It applies **before** the equipped companions are summed, so it caps one companion and never the player's
   total. Two equipped companions that each declare `max: 10` still grant 20 together. There is no cap on
   a player's total, deliberately.
@@ -1063,7 +947,7 @@ companion is described - the menus, an extracted companion item, a hologram line
 the companion's EFFECT: a companion that declares a vanilla `buff:` shows it exactly as before, and a companion
 whose buff grants nothing resolves them from its `edtools-boosts` block instead. `{buff}` becomes
 the boosted currencies joined in file order and `{buff-value}` the live value at the companion's current
-level, with the grade widening and the per-entry `max:` already applied - the same
+level, with the per-entry `max:` already applied - the same
 number, from the same formula, that the booster sum uses. A companion boosting several currencies at
 different values shows the highest one.
 
@@ -1131,7 +1015,7 @@ hologram:
   # holograms.height-offset.
   # height-offset: 0.9
 
-# This companion's own level cap, before boost bonuses.
+# This companion's own level cap.
 max-level: 50
 
 # ------------------------------------------------------------
@@ -1178,8 +1062,8 @@ buff:
 # ------------------------------------------------------------
 #  EdTools boosters. Optional, and left commented out on purpose: uncomment it
 #  only on a server that runs EdTools. Only equipped companions grant these, the
-#  values of every equipped companion are summed per currency, and the companion's buff
-#  boost grade widens them exactly as it widens the buff above.
+#  values of every equipped companion are summed per currency; nothing widens them,
+#  so the number you write here is the number that is granted.
 #
 #  Each child key is an EdTools currency id, or one of "enchants", "enchant",
 #  "global-enchants", "encantamientos" for the GLOBAL enchant multiplier. There
@@ -1204,8 +1088,8 @@ buff:
 #     # Percent added by each level above 1.
 #     per-level: 1.0
 #     # Optional ceiling, in percentage points, applied to the value THIS companion
-#     # produced once its boost grade has already widened it, before
-#     # the totals of your equipped companions are summed. Absent or 0 = no ceiling.
+#     # produced, before the totals of your equipped companions are summed.
+#     # Absent or 0 = no ceiling.
 #     # Use it when a per-level ramp would run away at a high level cap.
 #     max: 30.0
 #   enchants:
@@ -1534,13 +1418,11 @@ rare:
 
 ## guis/
 
-Five menu layouts, all managed and all re-skinnable without touching code.
+Three menu layouts, all managed and all re-skinnable without touching code.
 
 | File | Menu |
 |------|------|
 | `main.yml` | Companion storage, the screen bare `/companions` opens |
-| `selector.yml` | Companion picker used when a screen needs one companion chosen |
-| `boosts.yml` | Boost rolling for one companion |
 | `fusion.yml` | Fusion, including the Fuse All bulk path |
 | `bulk_delete.yml` | Bulk deletion by group |
 
@@ -1548,119 +1430,6 @@ Five menu layouts, all managed and all re-skinnable without touching code.
 A menu file defines a fixed number of cells. If you raise a player's equip slots above the
 cell count of `main.yml`, the extra companions cannot be shown. The plugin warns about this at
 runtime, and `/companions admin unequip` always recovers a companion that ended up out of reach.
-{% endhint %}
-
-### close-actions
-
-All five files carry the same top-level key, and it is what makes the companion a player picked in
-Boosts last exactly one visit to the menus:
-
-```yaml
-# Runs on the natural close of this menu (ESC). Navigating to another SnCompanions
-# menu keeps the selected companion; leaving the menus entirely forgets it.
-close-actions:
-  - "[companions-forget-selection]"
-```
-
-`[companions-forget-selection]` only clears the pick when no SnCompanions menu is open any more, so walking
-Boosts to the selector and back keeps it. Remove the key
-from a file if you want a pick made there to survive closing that screen.
-
-### The roll animation switch
-
-Since **1.12.0** each player decides whether their own boost roulette plays, on a
-button `boosts.yml` draws at **slot 8**. Two templates, one bound per
-render depending on what that player chose:
-
-```yaml
-  anim-on:
-    material: CLOCK
-    slots: [8]
-    glow: true
-    display-name: "&e&lRoll Animation: &aOn"
-    lore:
-      - "&7Your boost rolls play a short"
-      - "&7roulette before showing what they rolled."
-    click-actions:
-      - "[companions-toggle-roll-anim]"
-      - "[sound] UI_BUTTON_CLICK"
-
-  anim-off:
-    material: CLOCK
-    slots: [8]
-    display-name: "&e&lRoll Animation: &cOff"
-    lore:
-      - "&7Your boost rolls show what they"
-      - "&7rolled at once, with no roulette."
-    click-actions:
-      - "[companions-toggle-roll-anim]"
-      - "[sound] UI_BUTTON_CLICK"
-```
-
-`[companions-toggle-roll-anim]` flips the setting, says so in chat and redraws the menu. The choice is
-stored on the player's own database row, so it survives a relog and a restart. With the animation
-off the result appears at once with the same reveal sound, the same message and the same redraw
-the spin would have produced at its end - it can never change what came out, because the roll is
-decided and saved before the first frame would have been drawn.
-
-It covers the boost roulette only. A companion box keeps its own `animation:` block in `boxes.yml`, which
-is your setting rather than the player's, and a roulette you switched off entirely with
-`boosts.roll.enabled: false` stays off and silent for everyone no
-matter what a player picks.
-
-Both templates place themselves with `slots: [8]` instead of a letter of the `layout:` mask, on
-purpose: that is what puts them in the right cell on a server whose layout was edited before this
-button existed. Move the button by editing the two `slots:` lines; give each template a different
-slot if you want the two states in different cells.
-
-{% hint style="info" %}
-**Upgrading from 1.11.0 or earlier.** `anim-on` and `anim-off` are new keys, so SnLib inserts
-both into your `boosts.yml` on the next boot, comments included, and the button
-starts working.
-
-The click-to-skip that 1.3.0 put on the `spinning` template is **retired** in the same release.
-Its `click-actions` block and its `&eClick to skip the animation` lore line are gone from the
-shipped file, but removing a value is not something the updater propagates, so your file keeps
-both and the line stays on screen. Clicking the spinning cell now does nothing:
-`[companions-skip-spin]` is still registered, as a deliberate no-op, so an install that kept the block
-gets silence instead of a console warning on every click. Delete the lore line and the
-`click-actions:` block from your `templates.spinning` whenever you like - the tag itself is
-removed in the next minor version.
-{% endhint %}
-
-### Where the boost roulette spins: `stat-spinning` and the per-stat roll buttons
-
-Since **1.21.0** the boost roulette plays on the STAT cell(s) the roll is deciding, never on the
-companion: the companion at slot 19 keeps showing your selection the whole time, and each rolling stat's cell
-in the `stats` region binds the new `stat-spinning` template instead - ONE cell for a single-stat
-button, all three for Roll Every Boost. Which cells spin comes from the roll itself, so the menu
-can never animate a stat that was not rolled.
-
-```yaml
-  stat-spinning:
-    material: ENDER_EYE
-    display-name: "&e&lRolling {stat}..."
-    lore:
-      - "&7{candidate}"
-    glow: true
-```
-
-`{candidate}` scrolls real grade names off that stat's own table, with the real odds; `{stat}` is
-the stat's display name from the language file and `{group-color}` is bound too. The template is
-region-bound and must not declare a `key:`.
-
-The same release splits the single shared `roll-stat` template into **one template per button** -
-`roll-stat-experience`, `roll-stat-level` and `roll-stat-buff` - so each of the three buttons at
-slots 39-41 is styled and worded on its own. Their `click-actions` name their stat directly
-(`[companions-roll-boost] experience`, `level`, `buff`), and `{stat}`, `{currency}`, `{balance}` and
-`{group-color}` still resolve on all three. The greyed-out state stays on the one shared
-`roll-stat-locked`, exactly like `roll-all-locked` covers the fourth button.
-
-{% hint style="info" %}
-**Upgrading from 1.20.0 or earlier.** The four new templates merge into your `guis/boosts.yml` on
-the next boot, comments included. Your old `templates.spinning` and `templates.roll-stat` stay in
-the file - a managed merge never deletes - but nothing reads them any more: delete them whenever
-you like, and if you had restyled `roll-stat`, copy your style into the three new templates.
 {% endhint %}
 
 ### Colouring a companion by its group
@@ -1676,24 +1445,16 @@ Every template that draws a companion binds `{group-color}`, the colour its grou
       - "&8Group: &r{group-color}{group}"
 ```
 
-It is available in `main.yml`, `selector.yml`, `fusion.yml`, `boosts.yml` and
-`bulk_delete.yml`. The value is inserted before SnLib's text pipeline runs, so a legacy code, a
+It is available in `main.yml`, `fusion.yml` and `bulk_delete.yml`. The value is inserted before SnLib's text pipeline runs, so a legacy code, a
 hex code and the `[rgb]` gradient tag all work. `[rgb]` is a PREFIX tag: it only applies when
 `{group-color}` is the first thing on the line.
 
 None of the shipped templates use it, so nothing changes appearance until you add it yourself.
 
-Since **1.8.1** it also reaches two more places: `menus.boost-line` in the language file, so each
-of a companion's three boost lines can start with its group colour, and the three stat cells and four
-roll buttons of `boosts.yml`, which the file's own header had been promising since 1.3.0. On the
-roll buttons it is empty while no companion is selected, so a template that uses it never shows a
-literal token.
-
 Where it does **not** work, and why:
 
 | Place | Why |
 |---|---|
-| `menus.grade-row` | describes a ladder rung, not a companion: there is no group in scope |
 | `menus.group-separator` | joins group names on the information clock; no single companion |
 | the `lore:` of a `companions/<id>.yml` file | that lore is itself the value of `{companion-lore}`, and a placeholder value is never re-scanned for further placeholders. No plugin placeholder resolves there, only PlaceholderAPI tokens. Put the colour on the menu line that carries `{companion-lore}` |
 
@@ -1791,14 +1552,6 @@ described under [companion-items](#a-companion-item-remembers-who-took-it-out):
 | Key | Sent to | Placeholders |
 |---|---|---|
 | `messages.companion-item-not-yours` | a player redeeming a companion item stamped with another player's UUID | `{owner}` |
-
-**1.12.0 adds two**, both sent to the player who clicks the roll animation switch described
-under [guis/](#the-roll-animation-switch). Neither takes a placeholder:
-
-| Key | Sent when |
-|---|---|
-| `messages.roll-animation-on` | the player switches their roulette animation back on |
-| `messages.roll-animation-off` | the player switches it off, so results appear instantly |
 
 **1.5.0 added two**, both sent to the player who RECEIVES something from an admin command:
 

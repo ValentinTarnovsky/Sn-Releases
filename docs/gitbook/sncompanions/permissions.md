@@ -29,7 +29,6 @@ granted per rank.
 | `sncompanions.admin.setlevel` | op | Allows `/companions admin setlevel` |
 | `sncompanions.admin.setexp` | op | Allows `/companions admin setexp` |
 | `sncompanions.admin.settype` | op | Allows `/companions admin settype` |
-| `sncompanions.admin.setboost` | op | Allows `/companions admin setboost` |
 | `sncompanions.admin.setowner` | op | Allows `/companions admin setowner` |
 | `sncompanions.admin.equip` | op | Allows `/companions admin equip` |
 | `sncompanions.admin.unequip` | op | Allows `/companions admin unequip` |
@@ -41,7 +40,6 @@ granted per rank.
 | `sncompanions.admin.giveallbox` | op | Allows `/companions admin giveallbox` |
 | `sncompanions.admin.slots` | op | Allows `/companions admin slots` |
 | `sncompanions.admin.storage` | op | Allows `/companions admin storage` |
-| `sncompanions.admin.currency` | op | Allows `/companions admin currency` |
 
 ## Rank capacities
 

@@ -23,16 +23,13 @@ not register the expansion.
 | `%sncompanions_slots_total%` | Total equip slots, permissions and purchases included |
 | `%sncompanions_slots_free%` | Equip slots still free |
 
-## Buffs and currencies
+## Buffs
 
 | Placeholder | Description |
 |-------------|-------------|
 | `%sncompanions_buff_damage%` | Effective damage buff percentage, cap and world gate included |
 | `%sncompanions_buff_resistance%` | Effective resistance buff percentage |
 | `%sncompanions_buff_speed%` | Effective speed buff percentage |
-| `%sncompanions_currency_trait-ticket%` | Trait tickets held |
-| `%sncompanions_currency_dice-normal%` | Normal dice held |
-| `%sncompanions_currency_dice-special%` | Special dice held |
 
 A buff placeholder reports what the player actually receives right now. In a world where the
 buff is gated off it reports zero, not the raw total.
