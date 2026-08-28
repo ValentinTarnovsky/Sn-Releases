@@ -9,7 +9,7 @@ never overwritten.
 
 ### A player unequipped the companion in slot 2 and the others moved. Is that a bug?
 
-No, that is 1.3.0's behaviour. Equipped companions are kept in slots `1..n` with no gap, so the free
+No, that is by design. Equipped companions are kept in slots `1..n` with no gap, so the free
 slots are always the last ones. The order of the companions is unchanged and the formation around the
 player looks exactly the same; only the slot numbers shift. An unequip performed while the
 player is OFFLINE leaves the gap until they next log in, where it is closed automatically.
@@ -23,19 +23,19 @@ starts with.
 
 ### My egg has `[rgb]` in its display-name and chat shows the tag instead of the gradient.
 
-Fixed in 1.8.1. `[rgb]` is a prefix tag: SnLib reads it at the START of a finished line, and an
-egg or companion name spliced into a message as `{egg}` or `{companion}` sits in the middle of one, so the
-tag was left as text (`The [rgb]Basic Egg gave you...`) while a line whose name IS
-the whole line rendered fine. Both `eggs.yml` and `companions/<id>.yml` now have their display-name
-tags applied when the file is read. Nothing to change on your side - those files are seed-only
-and are not touched.
+It does not any more. `[rgb]` is a prefix tag: SnLib reads it at the START of a finished line, and an
+egg or companion name spliced into a message as `{egg}` or `{companion}` sits in the middle of one, so a
+raw tag would be left as text (`The [rgb]Basic Egg gave you...`) while a line whose name IS
+the whole line rendered fine. Both `eggs.yml` and `companions/<id>.yml` have their display-name
+tags applied when the file is read, so the name renders the same in the menu and in chat. Nothing
+to change on your side - those files are seed-only and are not touched.
 
-### After updating to 1.2.1 my empty bulk delete buttons are still grey glass. Why?
+### My empty bulk delete buttons are grey glass instead of the group icon. Why?
 
 Because the merge adds missing keys but never overwrites a value your file already carries, and
 that material is a value. Open `guis/bulk_delete.yml`, set `templates.group-empty.material` to
-`"{icon}"`, and restart. Deleting the file and restarting reseeds the whole thing instead. New
-installs already ship the fixed value.
+`"{icon}"`, and restart. Deleting the file and restarting reseeds the whole thing instead. A fresh
+install ships `"{icon}"` already.
 
 ### Can I run an admin command without telling anyone?
 
@@ -55,11 +55,10 @@ under `-sf` therefore means "it worked", never "something went wrong and you mis
 Put the flags at the END of the line. Anything typed after the first flag is ignored, so
 `/companions admin give Bob ember_fox -s 5` gives one companion rather than five.
 
-### My players never used to be told when I gave them a companion. Did that change?
+### Is the receiver told when I give them a companion?
 
-Yes, in 1.5.0. `/companions admin give` sends the receiver a line of their own,
-`messages.companion-received`, a key merged into your existing lang file automatically on the first
-boot after the update, so you can restyle or blank it like any other message and suppress it with
+Yes. `/companions admin give` sends the receiver a line of their own,
+`messages.companion-received`, so you can restyle or blank it like any other message and suppress it with
 `-s`. Offline players are never messaged. `/companions admin openegg` is different on purpose: what
 the player reads is the egg's own reward line, announced by the egg engine exactly as it would be
 for a bought egg, so `-s` does not touch it.
@@ -91,13 +90,13 @@ An **absent** value falls back to `CIRCLE` silently - that is deliberate, and it
 config you commented the key out of on the arc rather than dragging it onto whatever the current
 default happens to be. So deleting the key gives you `CIRCLE`, not the shipped `LINE`.
 
-### I updated and my companions still float in an arc. Why?
+### My companions float in an arc although `LINE` is what the plugin ships. Why?
 
 Because that is deliberate. `config.yml` is managed, which means SnLib inserts missing KEYS into
-your existing file but never overwrites a VALUE you already had. The two new keys
-(`formation.line.spacing` and `formation.line.distance`) arrive on the next boot, but the three
-values the update CHANGED do not reach an existing file. Set them by hand and run
-`/companions reload`:
+your existing file but never overwrites a VALUE you already had. `formation.line.spacing` and
+`formation.line.distance` arrive on the next boot because they are keys your file lacks, but a
+`shape`, a `height-offset` and a `bounce.height` your file already carries are values, and values
+are yours. Set the three by hand and run `/companions reload`:
 
 ```yaml
 formation:
@@ -121,7 +120,7 @@ leaves it standing `0.08` above the floor, and `-0.08` - the negative of whateve
 
 ### Can I announce only SOME fusions?
 
-Yes, since 1.6.0. `config.yml`'s `fusion.broadcast` is now only the DEFAULT. Any companion can override
+Yes. `config.yml`'s `fusion.broadcast` is only the DEFAULT. Any companion can override
 it in its own `companions/<id>.yml`:
 
 ```yaml
@@ -134,8 +133,8 @@ fusion:
 
 The flag belongs to the PARENT - the companion being consumed, the one whose file declares `into` - so
 you announce a fusion by writing the key on the companion players fuse AWAY, not on the one they get.
-Leave the key out and that companion follows the global setting. `companions/` is seed-only, so no companion file
-you already have receives the key on update: everything keeps following `fusion.broadcast` until
+Leave the key out and that companion follows the global setting. `companions/` is seed-only, so a companion file
+you already have never receives the key on its own: it keeps following `fusion.broadcast` until
 you write it yourself.
 
 On a **fresh** install the two shipped companion files already set it - `stone_golem.yml` has
@@ -149,16 +148,17 @@ one line for every winning pair.
 
 ### How do players trade companions with each other?
 
-Since 1.7.0, by turning the companion into an item. In the main menu, **shift + right click** a companion in
-the storage grid - or, since 1.11.0, press **Q** over it, the drop key, Ctrl+Q included: it
+By turning the companion into an item. In the main menu, **shift + right click** a companion in
+the storage grid - or press **Q** over it, the drop key, Ctrl+Q included: it
 leaves the storage and becomes a player head in the player's inventory,
 wearing that companion's own texture and carrying its whole state - companion type, level and
 experience. A **right click** with that head puts the companion into the clicker's
-storage, with everything it had. Hand it over, drop it, put it in a chest, or sell it on a shop
+storage, with everything it had. Drop it, put it in a chest, or sell it on a shop
 plugin: the head is an ordinary item.
 
-Since **1.17.0** the head also remembers WHO took it out, and only that player can redeem it -
-see [Can somebody else redeem my companion item?](#can-somebody-else-redeem-my-companion-item) below.
+One limit to know before you build an economy on it: the head remembers WHO took it out, and only
+that player can redeem it - see
+[Can somebody else redeem my companion item?](#can-somebody-else-redeem-my-companion-item) below.
 
 Nothing is destroyed by a refusal. A redeem into a full storage, into a profile that is still
 loading, in creative mode while `allow-creative` is off, or with the feature switched off hands
@@ -174,17 +174,16 @@ Both triggers run the same action with the same refusals. `companion-items.enabl
 whole feature off, both triggers at once, and leaves the heads already in circulation redeemable.
 
 {% hint style="warning" %}
-**Correction to what this page used to say.** Up to 1.10.0 this answer told you that deleting
-`templates.companion-entry.shift-right-click-actions` from `guis/main.yml` stops new companions leaving
-storage. It does not, and never did: `guis/main.yml` is managed and carries no extensible marker,
-so the next boot merges the deleted key straight back. The same applies to `drop-click-actions`.
+**Deleting the click actions from `guis/main.yml` is not an opt-out.** That file is managed and
+carries no extensible marker, so the next boot merges
+`templates.companion-entry.shift-right-click-actions` and `drop-click-actions` straight back.
 See [Taking a companion out: the two triggers](configuration.md#taking-a-companion-out-the-two-triggers) for
 the ways that do hold.
 {% endhint %}
 
 ### Can somebody else redeem my companion item?
 
-Not since **1.17.0**, if the head was taken out on 1.17.0 or later. Extracting a companion now stamps
+No. Extracting a companion stamps
 the head with your UUID and your name; a player who right clicks a head that is not theirs is
 refused with `messages.companion-item-not-yours`, which names the owner, and the head goes back into
 their inventory untouched. Nothing is destroyed and nothing is consumed.
@@ -193,24 +192,21 @@ The UUID is what the lock matches on, never the name. Changing your nick does no
 companions, and a player who takes your old nick does not gain them.
 
 {% hint style="info" %}
-**Every companion head extracted before 1.17.0 stays redeemable by anyone.** Those items carry no owner
-tag at all, and nothing on the server records who took them out, so there is no owner to restore -
-they keep the exact behaviour they were traded under. Only companions taken out from 1.17.0 onwards are
-locked.
+**A head that carries no owner tag at all stays redeemable by anyone.** Nothing on the server
+records who took such an item out, so there is no owner to restore - it keeps the behaviour it was
+traded under.
 {% endhint %}
 
 There is no config switch for this: an item with no owner tag is free and an item with one is
-locked, which is the whole rule. Redeeming your own head works exactly as before, and the companion it
+locked, which is the whole rule. Redeeming your own head always works, and the companion it
 creates belongs to whoever redeemed it - so a player who redeems a head and later takes the same
 companion out again is stamped as its owner in their turn.
 
 {% hint style="warning" %}
-**This deliberately narrowed item trading.** Up to 1.16.0 handing
-over the head handed over the companion, and that stopped being true for a head taken out on 1.17.0 or
-later: the receiver holds an item they cannot redeem. The only way to move a locked companion to
-another owner is `/companions admin setowner <player> <instance> <target>`, which is an admin action
-by design - a lock a player could lift themselves would not be a lock. Heads extracted before
-1.17.0 were never locked at all.
+**This deliberately narrows item trading.** The receiver of a locked head holds an item they cannot
+redeem. The only way to move a locked companion to another owner is
+`/companions admin setowner <player> <instance> <target>`, which is an admin action
+by design - a lock a player could lift themselves would not be a lock.
 {% endhint %}
 
 ### How does somebody claim a companion item that is not theirs?
@@ -220,14 +216,13 @@ They do not - a player cannot lift the lock themselves. An admin moves the compa
 player outright. There is no player-facing path, on purpose: a lock the holder of the item could
 open would not be a lock.
 
-A head that carries no owner tag at all - anything extracted before 1.17.0 - was never locked, and
-stays redeemable by whoever holds it.
+A head that carries no owner tag at all is not locked, and stays redeemable by whoever holds it.
 
-### I updated but the companion cells do not mention shift + right click or Q. Is it working?
+### My companion cells do not mention shift + right click or Q. Is it working?
 
-It is. `guis/main.yml` is managed, so your install received the
-`templates.companion-entry.shift-right-click-actions` key (1.7.0) and `drop-click-actions` (1.11.0) and
-both triggers work immediately. What it did NOT receive are the lore lines that advertise them,
+It is. `guis/main.yml` is managed, so your install receives the
+`templates.companion-entry.shift-right-click-actions` and `drop-click-actions` keys and
+both triggers work immediately. What it does NOT receive are the lore lines that advertise them,
 because those are part of a lore LIST you already have and the merge never rewrites your own list
 values. Add them by hand:
 
@@ -239,12 +234,11 @@ values. Add them by hand:
 ```
 
 or delete the whole `lore:` list under `templates.companion-entry` and let the next boot write the
-shipped one back. Upgrading from 1.10.0 or earlier, `&e&lQ (DROP)` is the single line you are
-missing.
+shipped one back.
 
 ### How do I put a name above every companion?
 
-Since 1.8.0 that is built in. `config.yml` has a `holograms` band controlling how the text LOOKS -
+It is built in. `config.yml` has a `holograms` band controlling how the text LOOKS -
 `height-offset`, `line-spacing`, `scale`, `background` (ARGB hex, empty for none), `shadow`,
 `see-through` and `line-width` - plus `default-lines`, the lines used by any companion that does not name
 its own. What each companion SAYS is in its `companions/<id>.yml`:
@@ -268,10 +262,10 @@ Note that `companions/` is seeded once and never merged again, so your existing 
 receive a `hologram:` block. They use `holograms.default-lines` instead until you write one. Only
 an explicit `enabled: false` silences a companion.
 
-### I updated to 1.8.0 and every companion suddenly has text over it. How do I turn that off?
+### Every companion has text over it. How do I turn that off?
 
-`config.yml` is managed, so your server received the whole `holograms` band on the first boot after
-the update, with `enabled: true` and a two-line default. Set `holograms.enabled: false` and run
+`config.yml` is managed, so a server that lacks the `holograms` band receives the whole of it on
+the next boot, with `enabled: true` and a two-line default. Set `holograms.enabled: false` and run
 `/companions reload` to go back to bare companions, or replace `holograms.default-lines` with `[]` to keep the
 feature available for the companions that declare their own lines while every other companion stays silent.
 
@@ -305,13 +299,13 @@ not a limit though - see the next question.
 
 ### The text above my companions leans towards me and it looks bad. Can it stay straight?
 
-Yes, and from 1.10.0 it does by default. Labels are drawn with the `vertical` billboard: they turn
+Yes, and it does by default. Labels are drawn with the `vertical` billboard: they turn
 only around the vertical axis, so the lines stay upright however far above or below them you stand,
-which is the DecentHolograms look. Before 1.10.0 they used `center`, which turns on both axes and
-tilts the whole stack towards the camera.
+which is the DecentHolograms look.
 
-`config.yml` is managed, so upgrading is enough - `holograms.billboard: vertical` arrives on the
-next boot. If you preferred the tilt, set that key to `center` and everything else stays as it is.
+`config.yml` is managed, so `holograms.billboard: vertical` arrives on the
+next boot of a server whose file lacks the key. If you want the stack tilted towards the camera on
+both axes, set that key to `center` and everything else stays as it is.
 `horizontal` and `fixed` are also accepted; neither reads well on a name plate. The setting is
 global, with no per-companion override, so a server has one label aesthetic rather than a mix.
 
@@ -351,56 +345,33 @@ preference is respected, so one player hiding companions never affects anyone el
 
 ### A player has more companions stored than their capacity allows. How?
 
-They opened faster than the companions could be written. Before 1.8.2 the capacity check ran the
-instant you clicked, while the companions themselves were saved a few ticks later, so a second click
-that arrived in between still saw the old count and was let in again. Six or seven opens in a row
-could leave a storage of 54 holding 107 companions.
+Not from opening eggs: each open holds the places it was granted for as long as its companions are
+in flight, so a simultaneous open sees them as already taken and the one that does not fit is
+refused outright and costs nothing. A storage genuinely over its limit got there another way - an
+admin grant, or a capacity you lowered afterwards.
 
-Update to 1.8.2. Each open now holds the places it was granted for as long as its companions are in
-flight, so a simultaneous open sees them as already taken: the one that does not fit is refused
-outright and costs nothing. Nothing to configure.
+Nothing is ever deleted to make the numbers agree. Nothing new enters until the player is back under
+their limit, which is the same rule that applies after unequipping a companion into a full storage.
 
-Storages that are already over capacity stay as they are - the update stops the overfill, it does
-not delete anyone's companions. Nothing new enters until the player is back under their limit, which is
-the same rule that has always applied after unequipping a companion into a full storage.
-
-### The refusal said `(57/54)` on a storage of 54. Is the limit being bypassed?
-
-No, and on 1.12.1 the message no longer says that. The limit was always enforced - what you were
-reading was a counting artefact in the message itself. While an open's companions are being written, the
-places they will take are held for them, and for a fraction of a second a companion can be visible as
-both "held" and "already stored". The decision was correct throughout (there really was no room),
-but the number quoted added those places twice, so a stack spammed fast enough produced `(57/54)`,
-`(62/54)`, `(67/54)`.
-
-Update to 1.12.1. Held places may now raise the quoted number up to the capacity and no further,
-so the refusals read `(54/54)`. Nothing to configure, and nothing about what is accepted or refused
-changed - only the number shown.
-
-A number above the capacity is still shown when it is real: a storage left over its limit by a
-historic overfill, an admin grant or a capacity you lowered will correctly say `(107/54)`, because
-that is the player's actual state and not a companion counted twice.
+{% hint style="info" %}
+A refusal quotes a number above the capacity only when it is real - `(107/54)` on a storage left
+over its limit. Places held for companions still being written can raise the quoted number up to
+the capacity and no further, so a spammed open reads `(54/54)` rather than counting a companion
+twice.
+{% endhint %}
 
 ### How do I give a rank more companion slots or storage?
 
 Grant `sncompanions.slots.<n>` or `sncompanions.storage.<n>` in your permissions plugin. The highest value
 a player holds wins, so stacking nodes across ranks is safe. The value is read on join, so a
-rank change applies the next time the player logs in. Since 1.22.0 the permission is the FLOOR:
+rank change applies the next time the player logs in. The permission is the FLOOR:
 it replaces the config base when higher, and everything sold with `/companions admin slots|storage
-give` adds on top of it.
-
-### I gave a player 1 slot and their total did not go up. Why?
-
-You are on 1.21.0 or earlier. Until then the effective count was the *highest* of the config
-base, the rank permission and the purchased value, so with `slots.base-count: 1` a first
-purchased slot vanished into the base the player already had. Since 1.22.0 purchases ADD on top
-of `max(base, permission)`: give 1 slot on a stock install and the total goes from 1 to 2.
-Nothing has to be migrated - existing purchases simply start counting the moment 1.22.0 boots.
+give` adds on top of it, so giving 1 slot on a stock install takes the total from 1 to 2.
 
 ### I gave someone 100 slots and they only got 7. Why?
 
-`slots.max-count` in `config.yml`, which ships at `7` from 1.9.0 on. It is the ceiling on the
-TOTAL slots an admin command may leave (on the purchased slots before 1.22.0), and a command past
+`slots.max-count` in `config.yml`, which ships at `7`. It is the ceiling on the
+TOTAL slots an admin command may leave, and a command past
 it is clamped rather than cancelled - so the grant went through, it just stopped at a total of 7,
 and the admin was told so before the usual confirmation. `7` is the number of companion cells the
 shipped `guis/main.yml` layout can draw; anything past it would be bought and never usable.
@@ -412,16 +383,6 @@ unlimited by default.
 Two things it does not do: it does not cap `sncompanions.slots.<n>` permission grants, so a rank can
 still grant more than a command can; and it never lowers a row by itself. Lowering the key on a
 live server leaves players above it alone until the next `slots give`/`set` on them.
-
-### Can I still type `-s` and `-sf` the way I always did?
-
-Yes, nothing about them changed in 1.9.0 - they just tab-complete now, as the last two optional
-parameters of every `/companions admin` command. Trailing junk is still accepted in silence, and the
-flags are still trailing and order-independent.
-
-Your `lang/messages_en.yml` will grow an `args` entry for each of them under every admin command
-on the first boot after the update. That block is only the visible labels of each argument in the
-usage line; editing or deleting an entry never changes how a command is typed.
 
 ### Can I add my own companions?
 
@@ -454,7 +415,7 @@ is worth 2%, which rounds away.
 Write your companions in tens if you want what you wrote. Two other things to check: the console line at
 boot must say `EdTools detected`, and an unknown currency id logs one warning naming it.
 
-Since **1.15.0**, check the entry's `max:` too if it has one. The ceiling is applied to that companion
+Check the entry's `max:` too if it has one. The ceiling is applied to that companion
 BEFORE the totals are summed and before this rounding, so a companion capped at `max: 4` contributes 4
 and, on its own, still rounds away to nothing. That ordering is also what makes the ceiling safe to
 use: three companions capped at 4 sum to 12 and grant +10%, which capping after the rounding would have
@@ -462,22 +423,23 @@ lost. A `max:` of `0`, a negative one, or no `max:` at all all mean no ceiling.
 
 ### My companion's menu line says "Buff Damage: 0.0%" even though the companion boosts currencies
 
-That was the pre-1.20.0 behavior. `{buff}` and `{buff-value}` used to show only the vanilla
-`buff:` block - a companion that declares none defaults to a damage buff worth zero at every level,
-which is the "Damage 0.0%" you saw, no matter the companion's level. Since **1.20.0** a companion whose
-vanilla buff grants nothing resolves both placeholders from its `edtools-boosts` block instead:
-`{buff}` shows the boosted currencies (named per your `messages.edtools-currency-<id>` lang
-entries, the raw id otherwise) and `{buff-value}` the live value at the companion's current level, cap
-and widening included. A companion that declares a real vanilla `buff:` is untouched. If you still see
-the zero line on 1.20.0, the companion's `edtools-boosts` block grants nothing at its level - see the
-one-decimal question above.
+Then that companion's `edtools-boosts` block grants nothing at its current level - see the
+one-decimal question above. `{buff}` and `{buff-value}` name the companion's EFFECT: a companion
+that declares a real vanilla `buff:` shows that buff, and a companion whose vanilla buff grants
+nothing resolves both placeholders from its `edtools-boosts` block instead. `{buff}` then shows the
+boosted currencies (named per your `messages.edtools-currency-<id>` lang entries, the raw id
+otherwise) and `{buff-value}` the live value at the companion's current level, with the per-entry
+`max:` already applied.
 
-### I already run SnCompanions. Why do my companions have no `edtools-boosts` block?
+A companion that declares neither defaults to a damage buff worth zero at every level, which is the
+"Damage 0.0%" line with nothing behind it.
 
-Because `companions/` is seeded once and never merged again, which is the same reason your companion files did
-not grow a `hologram:` block in 1.8.0. The commented example ships in `companions/ember_fox.yml` for a
-fresh install only; on a server you already run you paste the block into the companion files yourself.
-The `edtools` band of `config.yml` does arrive on its own, because that file is managed.
+### Why do the companion files I already have carry no `edtools-boosts` block?
+
+Because `companions/` is seeded once and never merged again. The commented example ships in
+`companions/ember_fox.yml` for a fresh install only; on a server you already run you paste the block
+into the companion files yourself. The `edtools` band of `config.yml` does arrive on its own,
+because that file is managed.
 
 ### How do I turn the companion boosters off without uninstalling EdTools?
 
@@ -550,10 +512,10 @@ animation and nothing else - and a player who buys a second egg while the first 
 is refused with `messages.egg-animating` before a coin moves, rather than being given two eggs on
 top of each other.
 
-### Does anything happen to my database when I update to 1.8.0?
+### Does anything happen to my database when I update?
 
-One column is added to `sncompanions_players`, automatically, on the first boot: `egg_animation`,
-which is where each player's animation switch is stored. Every existing player keeps the animation
+An owner table that has no `egg_animation` column - the one that stores each player's animation
+switch - gets it added automatically on the next boot. Every existing player keeps the animation
 ON, which is the default the column ships with, so nobody's setup changes.
 
 There is nothing to run by hand. The plugin asks the driver whether the column is already there

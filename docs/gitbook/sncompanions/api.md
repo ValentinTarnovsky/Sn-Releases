@@ -51,30 +51,36 @@ available either way.
 
 ## Events
 
-All events are in `com.sn.companions.api.event` and fire on the main thread.
+All events are in `com.sn.companions.api.event` and fire on the main thread. There are eight: five
+cancellable and three notifications.
 
 Cancellable events fire before the action. Cancelling aborts it.
 
-| Event | Fired when | Cancel effect |
-|-------|-----------|---------------|
-| `CompanionEquipEvent` | A player equips a stored companion from the companion menu | The companion stays in storage |
-| `CompanionUnequipEvent` | A player sends an equipped companion back to storage | The companion keeps its slot and its buffs |
-| `CompanionEggOpenEvent` | A player opens one or more companion eggs, after the gates and before anything is charged or granted | Nothing is charged and nothing is granted |
-| `CompanionFuseEvent` | A player commits a fusion, before anything is charged | Nothing is charged and no companion is destroyed |
-| `CompanionGroupDeleteEvent` | A player mass-deletes a group from the bulk delete menu | Every companion in the group stays |
+| Event | Fired when | Cancel effect | Payload |
+|-------|-----------|---------------|---------|
+| `CompanionEquipEvent` | A player equips a stored companion from the companion menu | The companion stays in storage | `getPlayer()`, `getCompanion()` |
+| `CompanionUnequipEvent` | A player sends an equipped companion back to storage | The companion keeps its slot and its buffs | `getPlayer()`, `getCompanion()` |
+| `CompanionEggOpenEvent` | A player opens one or more companion eggs, after the gates and before anything is charged or granted | Nothing is charged and nothing is granted | `getPlayer()`, `getEggId()`, `getAmount()`, `isCharged()` |
+| `CompanionFuseEvent` | A player commits a fusion, before anything is charged | Nothing is charged and no companion is destroyed | `getPlayer()`, `getFirst()`, `getSecond()`, `isBulk()` |
+| `CompanionGroupDeleteEvent` | A player mass-deletes a group from the bulk delete menu | Every companion in the group stays | `getPlayer()`, `getGroupId()`, `getCompanionCount()` |
 
 {% hint style="warning" %}
 These fire only for player-driven actions. The `/companions admin` equivalents bypass them on purpose,
 so an operator override is never vetoable.
 {% endhint %}
 
+{% hint style="info" %}
+`CompanionFuseEvent` reports a Fuse All with `isBulk()` true, and a bulk fusion carries no pair, so
+`getFirst()` and `getSecond()` are then `null`. Cancelling it aborts the whole run.
+{% endhint %}
+
 Notification events fire after the fact. They cannot be cancelled.
 
 | Event | Fired when | Payload |
 |-------|-----------|---------|
-| `CompanionEggRewardEvent` | An egg open finished and its companions are persisted | `eggId`, the `companionsWon` map, `eggsOpened` and `charged` |
-| `CompanionLevelUpEvent` | An equipped companion gained at least one level | The companion after the level up, and how many levels it gained |
-| `CompanionFusedEvent` | A fusion consumed its parents | Whether it succeeded, and the companion it produced |
+| `CompanionEggRewardEvent` | An egg open finished and its companions are persisted | `getPlayer()`, `getEggId()`, `getCompanionsWon()`, `getTotalCompanions()`, `getEggsOpened()`, `isCharged()` |
+| `CompanionLevelUpEvent` | An equipped companion gained at least one level | `getPlayer()`, `getCompanion()` after the level up, `getLevelsGained()` |
+| `CompanionFusedEvent` | A fusion consumed its parents | `getPlayer()`, `getResult()`, `getProduced()`, `isBulk()`, `getPairs()`, `getSucceeded()`, `getFailed()` |
 
 {% hint style="info" %}
 `CompanionEggRewardEvent` fires only when the open actually produced something, and it fires
@@ -83,25 +89,25 @@ the facade when your listener runs. Its `companionsWon` map reports what was CRE
 table decided, so an open that only partly landed reports the smaller number. A refused open (storage
 full, the master switch off, a cancelled `CompanionEggOpenEvent`) fires nothing at all.
 
-`charged` tells a purchase from a gift, and since 1.5.0 it is really used: it is `true` when the
-open came from a paid button and `false` for `/companions admin openegg`, which skips the creative
-gate, the egg's cooldown and the price entirely. On `CompanionEggOpenEvent` it says what the open
-IS ABOUT to be, because the event fires **before** the charge - cancelling it costs the player
-nothing. On `CompanionEggRewardEvent` it says what the open WAS.
+`isCharged()` tells a purchase from a gift: it is `true` when the open came from a paid button and
+`false` for `/companions admin openegg`, which skips the creative gate, the egg's cooldown and the
+price entirely. On `CompanionEggOpenEvent` it says what the open IS ABOUT to be, because the event
+fires **before** the charge - cancelling it costs the player nothing. On `CompanionEggRewardEvent` it
+says what the open WAS.
 
 A paid open that could not write its companions is refunded in full and fires no reward event, so
-a listener never sees a purchase that produced nothing.
+a listener never sees a purchase that produced nothing. The hatch animation only delays the FEEDBACK
+of an open that already happened, so both events fire at exactly the same points whether or not the
+player watches it.
 {% endhint %}
 
 {% hint style="info" %}
-Since 1.7.0 a stored companion can leave the storage as a physical item and be redeemed back into
-somebody's storage - since 1.17.0 only by the player who took it out, unless the item predates
-that version. Neither half fires an event in this version, and `API_VERSION` stays `1.0.0`
-because nothing on the surface changed, the 1.17.0 owner lock included: it is a refusal inside
-the redemption, not a new type or method. A companion that arrives by redemption is an ordinary new row,
-so every query on the facade sees it immediately; what you cannot do yet is veto or observe the
-extraction and the redemption themselves. `CompanionExtractEvent` and `CompanionRedeemEvent` are candidates
-for a later version, and adding them would be a MINOR `API_VERSION` bump, never a breaking change.
+A stored companion can leave the storage as a physical item and be redeemed back into the storage of
+the player who took it out. Neither half fires an event: a companion that arrives by redemption is an
+ordinary new row, so every query on the facade sees it immediately, but you cannot veto or observe
+the extraction and the redemption themselves. `CompanionExtractEvent` and `CompanionRedeemEvent` are
+candidates for a later version; adding them would be a MINOR `API_VERSION` bump, never a breaking
+change.
 {% endhint %}
 
 Listen like any Bukkit event:
@@ -125,7 +131,7 @@ price, so `CompanionFusedEvent` reports `FAILED` with no produced companion.
 ## Query service
 
 Every method is synchronous and reads in-memory state, so all of them are safe to call on the main
-thread. None of them touches the database.
+thread. None of them touches the database. There are eight.
 
 | Method | Returns | Notes |
 |--------|---------|-------|
@@ -147,13 +153,13 @@ Use `getStorage` to tell "not loaded" apart from "owns nothing".
 ## Views
 
 Views live in `com.sn.companions.api.model` and are immutable snapshots taken when you call the method.
-They never change afterwards, so re-query when you need current values.
+They never change afterwards, so re-query when you need current values. There are three.
 
-| View | Describes |
+| View | Components |
 |------|-----------|
-| `CompanionView` | One owned companion: level, experience, equip slot |
-| `CompanionTypeView` | One companion definition: display name, level cap, group, buff, fusion target |
-| `CompanionStorageView` | One player's counts and capacities |
+| `CompanionView` | `instance`, `owner`, `companionId`, `level`, `exp`, `equippedSlot`, `obtainedAt`, plus the derived `equipped()` |
+| `CompanionTypeView` | `id`, `displayName`, `lore`, `maxLevel`, `groupId`, `buffType`, `buffInitial`, `buffPerLevel`, `fusionTargetId`, `fusionChance`, `fusionCost`, `incompatible`, `placeholder` |
+| `CompanionStorageView` | `owner`, `storedCount`, `storageCapacity`, `equippedCount`, `equipSlots` |
 
 Companions cross the API as their id `String`, and internal enums cross as their
 name. Renaming or reordering a config entry can never break your plugin at runtime.
@@ -165,33 +171,23 @@ clearest way to ask.
 
 ## Versioning
 
-Call `getApiVersion()` for the API contract version. It is independent of the plugin version.
+Call `getApiVersion()` for the API contract version. It is independent of the plugin version, and it
+reports `1.0.0`.
 
-{% hint style="warning" %}
-**The contract is still provisional and surface may be REMOVED.** SnCompanions is a new plugin whose
-feature set is still being cut down, and removals are made outright rather than through a deprecation
-cycle. `1.2.0` deleted `getTraits()`, the `TraitView` record, `CompanionView`'s trait component and
-`CompanionRollEvent.TRAIT` / `TRAIT_TICKET` when the traits feature was removed. `1.3.0` deleted
-`getBoostGrades()`, `getCurrencyBalance()`, the `BoostGradeView` and `RollChangeView` records, the
-`CompanionRollEvent` and `CompanionRolledEvent` events, and `CompanionView`'s three boost id
-components when the boosts, the roll infrastructure and the internal currencies were removed.
-`1.4.0` deleted the `CompanionBoxOpenEvent` and `CompanionBoxRewardEvent` events when companion
-boxes were replaced by companion eggs, and added `CompanionEggOpenEvent` and
-`CompanionEggRewardEvent` in their place. `1.5.0` removed nothing and added nothing: eggs became
-payable, so `isCharged()` can now be `true` on both of those events, but no type, method or
-signature changed. `1.6.0` removed nothing and added nothing either: the eggs shop menu buys through
-the same engine, so `CompanionEggOpenEvent` and `CompanionEggRewardEvent` now also fire for a
-purchase made from a menu, with the same fields they always had. `1.7.0` removed nothing and added
-nothing either: the new `formation.shape: LINE` moves where the companions are DRAWN, which no part
-of this contract exposes. `1.8.0` removed nothing and added nothing either: the Dragon Egg hatch
-show only delays the FEEDBACK of an open that already happened, so `CompanionEggOpenEvent` and
-`CompanionEggRewardEvent` fire at exactly the same points, with the same fields, whether or not the
-player watches the animation.
-
-`API_VERSION` is deliberately held at `1.0.0` across those removals rather than claiming a stability
-this contract does not have yet, so **the version does not tell you whether surface went away**.
-Compile against the version of the jar you ship with, and re-check this page when you upgrade.
+{% hint style="success" %}
+**The surface documented on this page is the baseline, and it is additions-only from here.** Nothing
+public is removed, renamed, or changed in signature or observable behaviour. A change that needs
+different behaviour arrives as a new method, event, or view; the old one keeps working. Every
+addition bumps the MINOR component of `API_VERSION`, so a consumer can gate on it.
 {% endhint %}
 
-Once the feature set settles, the ordinary rule takes over: additions bump the minor component, and
-nothing public is removed or changed after that; deprecated members keep working.
+{% hint style="warning" %}
+**Plugin versions 1.0.0 through 1.8.0 did not follow that rule, and `API_VERSION` did not move.**
+Four features were cut out of the plugin in that window and their surface went with them, removed
+outright rather than deprecated, while there was still no adopter to break. The version was held at
+`1.0.0` on purpose across those releases: bumping it would have claimed a stability the contract did
+not have yet, so for that window **the version does not tell you whether surface went away**.
+
+If you compiled against a jar older than 1.8.1, check the surface you use against this page before
+upgrading. From 1.8.1 on, that check is never needed again.
+{% endhint %}

@@ -51,7 +51,7 @@ granted per rank.
 These two nodes are numeric, so they cannot be declared in `plugin.yml`. Grant them per rank
 in your permissions plugin, for example `sncompanions.storage.250` and `sncompanions.slots.4` on a
 LuckPerms group. The plugin reads the highest `<n>` a player holds, so stacking several nodes
-is safe: the largest one wins rather than summing. Since 1.22.0 that value is the player's
+is safe: the largest one wins rather than summing. That value is the player's
 FLOOR - it replaces the config base when higher, and slots or storage sold with
 `/companions admin slots|storage give` add on top of it.
 

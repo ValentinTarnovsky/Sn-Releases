@@ -60,7 +60,10 @@ On a clean install the plugin writes its own files into `plugins/SnCompanions/`:
 | `config.yml` | Every tunable: formation, animation, buffs, fusion, eggs and more |
 | `lang/messages_en.yml` | Every user facing message, in English |
 | `lang/messages_es.yml` | The same messages, in Spanish |
-| `guis/*.yml` | The menu layouts |
+| `guis/main.yml` | The storage menu: the grid, the equip slot markers and the buttons of the bottom row |
+| `guis/eggs.yml` | The egg shop, one file for every egg you declare |
+| `guis/fusion.yml` | The fusion menu: the two input slots, the confirm beacon and Fuse All |
+| `guis/bulk_delete.yml` | The bulk delete menu, one button per group |
 | `companions/*.yml` | One file per companion type, three examples seeded |
 | `eggs.yml` | Every companion egg, one top-level key each, one example seeded |
 

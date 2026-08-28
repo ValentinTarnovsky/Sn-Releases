@@ -189,7 +189,7 @@ formation:
   # Blocks above the owner's feet the companion ORIGIN sits at. A player head drawn
   # as a ground item hangs 1/16 of its scale below its origin, so
   # 0.0625 x animation.head-size (0.08 at the 1.3 below) rests it on the floor.
-  # Raise it to make the companions float instead (SnPets used 1.9).
+  # Raise it to make the companions float instead: 1.9 puts them at head height.
   height-offset: 0.08
   # CIRCLE and OVAL only. Total width of the arc in degrees, capped at 360. Read together with
   # arc-center-offset below: at the default centre of 180, an arc of 180 puts the
@@ -686,9 +686,9 @@ companion-items:
   #   {exp-next} {percent} {bar} {buff} {buff-value} {owner}
   # {companion-lore} is multi-line and expands to one lore line each.
   # {owner} is the player the companion was taken out by. A companion item also REMEMBERS
-  # them: since 1.17.0 only that player can redeem it, and anyone else is
-  # refused and handed the item straight back. Items extracted before 1.17.0
-  # remember nobody and stay redeemable by whoever holds them.
+  # them: only that player can redeem it, and anyone else is refused and handed
+  # the item straight back. An item that records nobody is not locked and stays
+  # redeemable by whoever holds it.
   item:
     display-name: "{companion}"
     lore:
@@ -705,34 +705,32 @@ companion-items:
 
 ### A companion item remembers who took it out
 
-**Added in 1.17.0.** An extracted companion now carries two more tags in its item data: the UUID of the
+An extracted companion carries two more tags in its item data: the UUID of the
 player who took it out, and their name. A player who right clicks a head that belongs to somebody
 else is refused with `messages.companion-item-not-yours`, which names the owner, and the head goes
 straight back into their inventory untouched.
 
 - **The UUID is the truth; the name is only printed.** A player who changes their nick keeps their
   companions, and a player who takes the owner's old nick does not inherit them.
-- **Every head extracted before 1.17.0 remembers nobody, and an ownerless head stays redeemable by
-  whoever holds it.** That is deliberate: those items were traded on the promise that anyone could
-  redeem them, and nothing on the server records who extracted them, so there is nothing to
-  recover. The lock can only ever affect a companion taken out from 1.17.0 onwards.
+- **A head that remembers nobody is not locked and stays redeemable by
+  whoever holds it.** That is deliberate: nothing on the server records who extracted such an item,
+  so there is no owner to restore.
 - There is **no config switch**. An item with no owner tag is free and an item with one is locked,
   which is the whole rule.
-- Redeeming your OWN head works exactly as before, and the companion it creates belongs to whoever
+- Redeeming your OWN head always works, and the companion it creates belongs to whoever
   redeemed it - so taking it out again stamps the new holder.
 
 {% hint style="warning" %}
 `config.yml` is **managed**: a merge adds keys you are missing but never rewrites a value you
-already have. The `&7Owner&8: &f{owner}` line above is a new entry in an existing `lore` list, so
-it reaches **fresh installs only**. To show the owner on a server that already runs SnCompanions, add
+already have. The `&7Owner&8: &f{owner}` line above is one entry of a `lore` list, so on a server
+whose list already exists it reaches **fresh installs only**. To show the owner there, add
 that one line to `companion-items.item.lore` by hand, or delete the whole `lore` list and let the next
 boot write the shipped one back. The lock itself does not depend on the lore line - it works
 whether or not the item advertises an owner.
 {% endhint %}
 
-`{owner}` is also **no longer hologram-only**. It used to resolve only in a companion's name plate; since
-1.17.0 it is an ordinary companion placeholder and works in `companion-items.item.lore` and in the companion cells of
-`guis/main.yml` too.
+`{owner}` is **not hologram-only**. It is an ordinary companion placeholder and works in
+`companion-items.item.lore` and in the companion cells of `guis/main.yml` too.
 
 ```yaml
 # ------------------------------------------------------------
@@ -834,21 +832,19 @@ placeholders:
 
 ### How capacity is resolved
 
-Changed in 1.22.0. The effective slot count and storage capacity are
+The effective slot count and storage capacity are
 **`max(config base, permission) + purchased`**: the config base (`slots.base-count` /
 `storage.base-capacity`) and the rank permission (`sncompanions.slots.<n>` / `sncompanions.storage.<n>`)
 compete - the permission names the absolute count a rank grants, so the higher of the two is the
 player's floor - and everything sold through `/companions admin slots|storage give` adds on top of that
 floor. With `base-count: 1`, a player who buys one slot equips two companions.
 
-Until 1.21.0 the purchased half competed too (the effective value was the highest of the three),
-so the first `base-count` slots sold in a shop changed nothing - that is the bug 1.22.0 replaces.
-The upgrade rewrites nothing: the same database rows simply resolve higher for players who have
-purchases, the moment 1.22.0 boots.
+Nothing about that is stored: the database holds only the purchased half, and the floor is
+resolved from the config and the permissions on every join.
 
 ### Capacity ceilings
 
-Added in 1.9.0; since 1.22.0 they bound the TOTAL. `slots.max-count` and `storage.max-capacity`
+`slots.max-count` and `storage.max-capacity`
 cap the total the two admin capacity commands may leave a player with.
 
 | Key | Default | Caps |
@@ -877,13 +873,12 @@ purchases stack on top of whatever floor the rank sets.
 
 It also never lowers a row on its own. If you reduce `slots.max-count` on a live server, players
 already above it keep what they have until the next `slots give`/`set` on them, which then clamps
-them down to the new ceiling. The same applies to rows whose purchases predate the 1.22.0
-total-bound semantics.
+them down to the new ceiling.
 {% endhint %}
 
 ### How the label turns
 
-Added in 1.10.0. `holograms.billboard` decides whether the text above a companion leans towards the
+`holograms.billboard` decides whether the text above a companion leans towards the
 player or stays upright.
 
 | Value | What the text does |
@@ -893,9 +888,9 @@ player or stays upright.
 | `horizontal` | turns around the horizontal axis only |
 | `fixed` | never turns, keeping the facing it was spawned at |
 
-`vertical` is the DecentHolograms look and the shipped default from 1.10.0 on: a label read from a
-rooftop or from the bottom of a ravine is as straight as one read at eye level. `center` is what
-the labels did before the key existed - write it if you preferred the tilt, and nothing else
+`vertical` is the DecentHolograms look and the shipped default: a label read from a
+rooftop or from the bottom of a ravine is as straight as one read at eye level. `center` tilts the
+whole stack towards the camera - write it if that is what you want, and nothing else
 changes. `horizontal` and `fixed` complete the set of what a text display can do; neither reads
 well on a name plate.
 
@@ -904,9 +899,8 @@ setting is global: there is no per-companion override, so a server has one label
 mix. It applies on the next formation rebuild, which `/companions reload` performs.
 
 {% hint style="info" %}
-`config.yml` is managed, so servers upgrading from 1.9.0 or earlier receive `billboard: vertical`
-on the next boot and their labels straighten up with no file editing. Set it to `center` if you
-want the old look back.
+`config.yml` is managed, so a server whose file lacks the key receives `billboard: vertical`
+on the next boot and its labels straighten up with no file editing.
 {% endhint %}
 
 ## companions/
@@ -914,8 +908,8 @@ want the old look back.
 One file per companion type, named after its id. Three examples are seeded on a fresh install:
 `ember_fox.yml`, `gale_sprite.yml` and `stone_golem.yml`. A companion file declares the display
 name, the group it belongs to, the head or BetterModel it renders as, its level cap and
-experience curve, the buffs it grants per level, since 1.8.0 the hologram drawn above it,
-and since 1.13.0 the optional `edtools-boosts` block. Copy one of the examples to add your own.
+experience curve, the buffs it grants per level, the hologram drawn above it,
+and the optional `edtools-boosts` block. Copy one of the examples to add your own.
 
 The `hologram:` block is optional and, because this folder is seeded once and never merged
 again, it is never added to the companion files you already have. That is what
@@ -925,7 +919,7 @@ lines, so you only write a block for the companions that should differ. Only an 
 `stone_golem.yml` ships its own `height-offset` because a model companion's label is measured from
 the carrier its bones ride, which also carries `models.height-offset`.
 
-The `edtools-boosts:` block, added in 1.13.0, is optional and ships **commented out**: it does
+The `edtools-boosts:` block is optional and ships **commented out**: it does
 something only on a server running EdTools. Each child key is an EdTools currency id, or one of
 `enchants`, `enchant`, `global-enchants`, `encantamientos` for the global enchant multiplier, and
 both numbers are percentages exactly like the `buff:` block above. It has the same seeded-once
@@ -933,7 +927,7 @@ caveat as `hologram:` - the companion files you already have are never merged ag
 to them by hand. See the `edtools` band of `config.yml` above for the one-decimal rule that decides
 what those percentages actually grant.
 
-Since **1.15.0** each entry of that block also accepts an optional `max:`, a ceiling in percentage
+Each entry of that block also accepts an optional `max:`, a ceiling in percentage
 points:
 
 ```yaml
@@ -954,14 +948,14 @@ Three things about where the ceiling sits, because they are what make it useful:
 - The one-decimal rounding still happens **afterwards**, on the sum. Capping first and rounding
   after is what lets three companions capped at 4 grant +10% instead of nothing.
 
-Absent, `0` and any negative number all mean **no ceiling**, which is why every companion file written
-before 1.15.0 keeps granting exactly what it granted. A negative value is logged once on load,
+Absent, `0` and any negative number all mean **no ceiling**, so a companion file that declares none
+grants its full ramp. A negative value is logged once on load,
 naming the companion and the entry, and then read as no ceiling. The key exists for a per-level ramp
 running on a level cap it was not sized for: `per-level: 0.4` is +300% at level 750.
 
-Since **1.20.0** the `{buff}` and `{buff-value}` placeholders show this block too. Everywhere a
+The `{buff}` and `{buff-value}` placeholders show this block too. Everywhere a
 companion is described - the menus, an extracted companion item, a hologram line - those two placeholders name
-the companion's EFFECT: a companion that declares a vanilla `buff:` shows it exactly as before, and a companion
+the companion's EFFECT: a companion that declares a vanilla `buff:` shows that buff, and a companion
 whose buff grants nothing resolves them from its `edtools-boosts` block instead. `{buff}` becomes
 the boosted currencies joined in file order and `{buff-value}` the live value at the companion's current
 level, with the per-entry `max:` already applied - the same
@@ -1310,7 +1304,7 @@ basic_egg:
   #  Each player can switch the show off for themselves from the button in slot
   #  36 of the eggs menu. That choice is saved in the database (the
   #  egg_animation column of sncompanions_players, added automatically on the
-  #  first boot of 1.8.0) and survives a relog and a restart. With it off, the
+  #  first boot that finds it missing) and survives a relog and a restart. With it off, the
   #  eggs give exactly the same companions and the summary goes straight to
   #  chat.
   # ----------------------------------------------------------
@@ -1547,14 +1541,14 @@ middle of the line:
 SnCompanions | You opened [rgb]Basic Egg and got Ember Fox x1.
 ```
 
-**1.8.1 fixes this.** Both files have their display-name prefix tags applied when the file is
-read, so the name looks the same wherever it is printed. Nothing in your
+**That is why both files have their display-name prefix tags applied when the file is
+read**, so the name looks the same wherever it is printed. Nothing in your
 files changes: `eggs.yml` and `companions/` are seed-only and untouched, and the value is stored
 already expanded, so a name is never expanded twice. `[center]` is the one tag dropped from the
 chat copy - centering a fragment that lives inside somebody else's line means nothing.
 
 {% hint style="info" %}
-`groups:` is marked `# sn:extensible`, so the `color:` key added in 1.3.0 never reaches a
+`groups:` is marked `# sn:extensible`, so a `color:` key is never inserted into a group of a
 config that already exists. Until you write one, `{group-color}` falls back to the colour codes
 that group's `display` already starts with (`"&9Rare"` yields `&9`, `"&#ff00aa&lEpic"` yields
 `&#ff00aa&l`), so the placeholder is correct either way.
@@ -1568,9 +1562,9 @@ take their material from the same `{icon}` the group names under `menus.bulk-del
 its name and lore, so the row never changes shape under the cursor.
 
 {% hint style="info" %}
-Upgrading from 1.2.0 or earlier: `group-empty` used to be a `GRAY_STAINED_GLASS_PANE`, and SnLib
+A `guis/bulk_delete.yml` whose `group-empty` is still a `GRAY_STAINED_GLASS_PANE` keeps it: SnLib
 never overwrites a value your file already has. Set `templates.group-empty.material` to
-`"{icon}"` by hand, or delete `guis/bulk_delete.yml` and restart to have it reseeded.
+`"{icon}"` by hand, or delete the file and restart to have it reseeded.
 {% endhint %}
 
 ### Taking a companion out: the two triggers
@@ -1581,15 +1575,15 @@ companion leaves the storage either way:
 ```yaml
     shift-right-click-actions:
       - "[companions-extract] {instance}"
-    drop-click-actions:      # 1.11.0. Q, and Ctrl+Q with it.
+    drop-click-actions:
       - "[companions-extract] {instance}"
 ```
 
-`drop-click-actions` is new in 1.11.0 and needs SnLib 1.31.0. Declaring it is also what lets Q
+`drop-click-actions` is the Q key, Ctrl+Q with it, and it needs SnLib 1.31.0. Declaring it is also what lets Q
 reach the cell at all: `main.yml` runs with `strict-clicks: true`, which discards every key
 outside the four basic mouse clicks *unless the item under the cursor declares that key itself*.
 So Q takes a companion out over a storage cell and does nothing anywhere else in the menu, and the
-hotbar numbers, F and the offhand swap stay inert everywhere, as before.
+hotbar numbers, F and the offhand swap stay inert everywhere.
 
 The equipped slot markers on the top row deliberately declare neither list. Taking an equipped companion
 out is refused anyway - it would strand its slot and its buff - so the key is simply absent there
@@ -1597,9 +1591,8 @@ rather than present and rejected.
 
 {% hint style="warning" %}
 **Deleting either list does not stick.** `guis/main.yml` is managed and carries no extensible
-marker, so the next boot merges any key you delete straight back. (This is not new in 1.11.0 -
-it was equally true of `shift-right-click-actions` in 1.7.0, which older documentation wrongly
-offered as an opt-out.) What holds instead:
+marker, so the next boot merges any key you delete straight back. A deletion there is never an
+opt-out. What holds instead:
 
 - `companion-items.enabled: false` in `config.yml` - the intended switch, and it stops both triggers.
 - `update-configs: false` in `config.yml` - freezes merging for **every** file, so you take on
@@ -1623,7 +1616,7 @@ back to English when the named file is missing. To add a language, copy `message
 New keys are merged into your existing file on boot, with your values and your comments left
 alone, so an update never overwrites a line you restyled.
 
-**1.8.0 adds five**, all of them about the [hatch show](#the-egg-animation-switch):
+**Five keys belong to the [hatch show](#the-egg-animation-switch):**
 
 | Key | Sent when | Placeholders |
 |---|---|---|
@@ -1637,7 +1630,7 @@ The last two are labels rather than messages: they are drawn above the revealed 
 length of `reveal-ticks`, carry no prefix and are best kept short. `{more}` is how many OTHER
 companions the same open produced; the full list still reaches chat when the show ends.
 
-**1.6.0 adds one**, sent by the [eggs menu](#the-eggs-menu):
+**One key belongs to the [eggs menu](#the-eggs-menu):**
 
 | Key | Sent when | Placeholders |
 |---|---|---|
@@ -1648,14 +1641,14 @@ right now. When it fires on the way IN, both doors - the command and the egg but
 refuse to open rather than showing a blank window; the player's cursor still points at the id they
 asked for, so fixing `eggs.yml` and reloading is enough.
 
-**1.17.0 adds one**, sent when a player right clicks a companion head that belongs to somebody else,
+**One key is sent when a player right clicks a companion head that belongs to somebody else,**
 described under [companion-items](#a-companion-item-remembers-who-took-it-out):
 
 | Key | Sent to | Placeholders |
 |---|---|---|
 | `messages.companion-item-not-yours` | a player redeeming a companion item stamped with another player's UUID | `{owner}` |
 
-**1.5.0 added one**, sent to the player who RECEIVES something from an admin command:
+**One key is sent to the player who RECEIVES something from an admin command:**
 
 | Key | Sent by | Placeholders |
 |---|---|---|
@@ -1666,7 +1659,7 @@ the `-s` flag (see [Commands](commands.md#silent-flags)). Offline players are ne
 `/companions admin openegg` does not use it: what its target reads is the egg's own reward line,
 announced by the egg engine exactly as it would be for a bought egg.
 
-**1.5.0 adds eight**, all of them about BUYING an egg. None of them is ever seen by
+**Eight keys belong to BUYING an egg.** None of them is ever seen by
 `/companions admin openegg`, which is a gift:
 
 | Key | Sent when | Placeholders |
@@ -1681,7 +1674,7 @@ announced by the egg engine exactly as it would be for a bought egg.
 | `messages.egg-refunded` | right after `messages.egg-failed`, when a failed open was a purchase | `{price}` `{currency}` |
 
 `{price}` is the cost written with thousands separators. `{currency}` is the money word, and it
-comes from a **new `menus.eggs` block** at the end of the same file:
+comes from the **`menus.eggs` block** at the end of the same file:
 
 ```yaml
 menus:

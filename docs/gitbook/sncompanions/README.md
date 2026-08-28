@@ -34,14 +34,16 @@ duplicates into stronger ones, and manage everything from configurable menus.
   themselves, so nothing is spawned and nothing can be walked into - and any player who would
   rather not watch it switches it off for themselves from the eggs menu.
 - Companion items: shift + right click a stored companion, or press Q over it, to take it out as a physical
-  head carrying its whole state, and let anyone right click it back into their own storage. That
-  is how players trade companions. Since 1.17.0 the head also remembers who took it out, and only that
-  player can redeem it.
+  head carrying its whole state, and right click it back into a storage. The head remembers who
+  took it out, and only that player can redeem it, so moving a companion to another owner is an
+  admin action.
 - Holograms: configurable text above every companion, per companion type, drawn as packet entities that
   RIDE the companion, so the text and the companion can never move at different times.
 - Four menus you can re-skin without touching code, with a per-group
   colour every companion template can draw with.
 - Equipped companions are kept in slots 1..n with no gap, so the free slots are always the last ones.
+- A developer API in the same jar: a read-only query service plus eight Bukkit events, five of them
+  cancellable.
 
 ## Optional integrations
 

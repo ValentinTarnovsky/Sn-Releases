@@ -107,19 +107,17 @@ sensitive to the order; the rest have nothing to confuse.
 
 ### Tab completion
 
-Since 1.9.0 both flags are declared as the last two optional parameters of every `/companions admin`
+Both flags are declared as the last two optional parameters of every `/companions admin`
 command, so they complete on tab and show up in the usage line as `[-s] [-sf]`. Type a command's
 own arguments, press tab, and you get `-s` and `-sf`; press tab again after typing one and you
-still get the other.
-
-Before 1.9.0 they were accepted but not declared, and completion stops at a command's last declared
-argument - so on the sixteen commands whose arguments are all required they were suggested nowhere
-and had to be typed from memory.
+still get the other. Declaring the two slots is what reaches past a command's last real argument:
+completion stops there, so on the thirteen commands whose arguments are all required an undeclared
+flag would be suggested nowhere and have to be typed from memory.
 
 Inside the position of a real optional argument (the `[page]` of `list`, the `[amount]` of `give`)
-the flags still appear only once you type a leading `-`, so they never crowd the list of values you
-were actually reaching for. A trailing token that is neither an argument nor a flag is still
-accepted in silence, exactly as before.
+the flags appear only once you type a leading `-`, so they never crowd the list of values you
+were actually reaching for. A trailing token that is neither an argument nor a flag is
+accepted in silence.
 
 The flags do not apply to `/companions reload`, `/companions help` or `/companions debug`, which SnLib owns at root
 level, nor to `/companions toggle` and `/companions hide`, which act on you alone and have no second party to
