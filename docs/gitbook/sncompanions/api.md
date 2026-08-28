@@ -83,8 +83,14 @@ the facade when your listener runs. Its `companionsWon` map reports what was CRE
 table decided, so an open that only partly landed reports the smaller number. A refused open (storage
 full, the master switch off, a cancelled `CompanionEggOpenEvent`) fires nothing at all.
 
-`charged` is `false` on both events for an open that costs the player nothing, which is what
-`/companions admin openegg` does today.
+`charged` tells a purchase from a gift, and since 1.5.0 it is really used: it is `true` when the
+open came from a paid button and `false` for `/companions admin openegg`, which skips the creative
+gate, the egg's cooldown and the price entirely. On `CompanionEggOpenEvent` it says what the open
+IS ABOUT to be, because the event fires **before** the charge - cancelling it costs the player
+nothing. On `CompanionEggRewardEvent` it says what the open WAS.
+
+A paid open that could not write its companions is refunded in full and fires no reward event, so
+a listener never sees a purchase that produced nothing.
 {% endhint %}
 
 {% hint style="info" %}
@@ -171,7 +177,9 @@ cycle. `1.2.0` deleted `getTraits()`, the `TraitView` record, `CompanionView`'s 
 components when the boosts, the roll infrastructure and the internal currencies were removed.
 `1.4.0` deleted the `CompanionBoxOpenEvent` and `CompanionBoxRewardEvent` events when companion
 boxes were replaced by companion eggs, and added `CompanionEggOpenEvent` and
-`CompanionEggRewardEvent` in their place.
+`CompanionEggRewardEvent` in their place. `1.5.0` removed nothing and added nothing: eggs became
+payable, so `isCharged()` can now be `true` on both of those events, but no type, method or
+signature changed.
 
 `API_VERSION` is deliberately held at `1.0.0` across those removals rather than claiming a stability
 this contract does not have yet, so **the version does not tell you whether surface went away**.

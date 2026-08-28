@@ -515,3 +515,44 @@ per player. On a server without EdTools the listener is never registered and the
 No. Disabling or enabling EdTools unregisters or registers the break listener on its own, and stops
 or starts the drain with it. The same is true if you install EdTools after SnCompanions has already
 started.
+
+### Can eggs cost an EdTools currency?
+
+Yes, and it does not depend on `edtools.enabled`. Give the egg a `price.currency` of
+`edtools:<id>` in `eggs.yml`, where `<id>` is the currency id EdTools itself knows:
+
+```yaml
+rare_egg:
+  display-name: "&b&lRare Egg"
+  price:
+    currency: edtools:orbs
+  opens:
+    - amount: 1
+      price: 25
+```
+
+The balance check, the charge and any refund all go through the EdTools currency API, so the
+balance a player sees in EdTools is the balance the egg spends. `edtools.enabled` governs the
+companion BOOSTERS and nothing else, so an egg priced this way is charged even on a server that has
+turned boosters off - only EdTools itself has to be installed and running.
+
+An id EdTools does not serve is named in the console the moment `eggs.yml` loads, and until you fix
+it the egg refuses every click with `messages.egg-no-currency` rather than opening for free. To
+show a friendlier word than the raw id, add `menus.eggs.currency-<id>` to your language file:
+
+```yaml
+menus:
+  eggs:
+    currency-orbs: "Orbs"
+```
+
+### A player clicked an egg and was told there is no economy. Why?
+
+The egg is priced in `vault` and the server has no economy backend for SnLib to charge - no Vault
+plugin, or Vault with no economy provider behind it. The purchase is REFUSED, on purpose: opening
+an egg produces companions, so handing one out because the economy is missing would mint companions
+nobody paid for. Install an economy plugin, or price the egg in an EdTools currency instead.
+
+This is deliberately different from a costed fusion, which IS free when there is no economy: a
+fusion consumes companions the player already owns, so a missing economy only removes a brake.
+`/companions admin openegg` is unaffected either way - it never charges anybody.

@@ -541,6 +541,21 @@ fusion:
 #  are weights, not percentages, and there is no failure roll.
 #  Storage is checked ONCE, up front, for every companion the roll produced: if
 #  the whole bundle does not fit, nothing is charged and nothing is granted.
+#  WHAT AN EGG COSTS is eggs.yml's price block, not this section:
+#    price.currency: vault          the server economy, through Vault. With no
+#                                   economy plugin installed the egg is REFUSED,
+#                                   never given away: opening one produces
+#                                   companions, so a free egg would mint them.
+#    price.currency: edtools:<id>   one of your EdTools currencies, by its own
+#                                   id. This is INDEPENDENT of the edtools
+#                                   section below, whose enabled switch governs
+#                                   the companion BOOSTERS and nothing else. An
+#                                   id EdTools does not serve is named in the
+#                                   console when eggs.yml loads, and the egg
+#                                   refuses every click until the id is real.
+#  The opens: buttons price a BUNDLE each; an amount with no button of its own
+#  costs the first button's price in proportion. If the companions cannot be
+#  saved after the money was taken, the whole price is refunded automatically.
 # ------------------------------------------------------------
 eggs:
   # Master switch of egg opening: the menu, the command and the admin open. Off
@@ -553,7 +568,8 @@ eggs:
 
   # Let a creative-mode player BUY eggs. Off by default: a creative player has
   # unlimited resources on most servers, so paying for an egg means nothing.
-  # An admin open ignores this: nobody is charged there.
+  # This gate applies to PURCHASES only, like the egg's own cooldown-seconds:
+  # /companions admin openegg ignores both, because nobody is charged there.
   allow-creative: false
 
 # ------------------------------------------------------------
@@ -670,7 +686,6 @@ companion-items:
       - ""
       - "&a&lRIGHT CLICK"
       - "&2Redeem this companion into your storage"
-
 ```
 
 ### A companion item remembers who took it out
@@ -1129,17 +1144,53 @@ other button of that screen.
 | Key | Meaning |
 |-----|---------|
 | `display-name` | The name the menu and every `{egg}` placeholder show. `[rgb]`, `[small]` and `[noprefix]` are applied when the file is read, so the name renders the same in the menu and spliced into the middle of a chat line |
-| `price.currency` | `vault` for the server economy, or `edtools:<id>` for one of your EdTools currencies. Anything else is refused with a console warning and charged as `vault` |
-| `opens` | The buttons of the egg menu: a LIST, one entry per bundle, each with its own `amount` and its own explicit `price`. There is no unit price multiplied by an amount - an owner who wants "10 for the price of 9" writes that number. An egg with no `opens` cannot be bought and stays admin-only |
+| `price.currency` | `vault` for the server economy, or `edtools:<id>` for one of your EdTools currencies. Anything else is refused with a console warning and charged as `vault`. See [What an egg costs](#what-an-egg-costs) |
+| `opens` | The buttons of the egg menu: a LIST, one entry per bundle, each with its own `amount` and its own explicit `price`. There is no unit price multiplied by an amount - an owner who wants "10 for the price of 9" writes that number. An amount with no button of its own costs the FIRST button's price in proportion. An egg with no `opens` cannot be bought and stays admin-only |
 | `drops` | The weighted table, one entry per companion id, each with an `amount` and a `weight`. The numbers are WEIGHTS, not percentages: they are normalized over whatever the table holds, so 60/30/10 and 6/3/1 behave identically. A row naming a companion with no `companions/<id>.yml` file is dropped when the egg loads, with one console warning, and the remaining weights renormalize on their own |
 | `animation` | The hatch show. `enabled` switches it off entirely; `shake-ticks` is clamped to 4-600 and `reveal-ticks` to 0-600, and the three sound keys take `"SOUND_ID [volume] [pitch]"` or `none` |
 | `feedback.message-key` | Lang key sent to the opener of ONE egg that produced ONE companion. Anything larger sends `messages.egg-opened-bulk` instead, which summarizes the whole open. Empty sends nothing |
 | `feedback.broadcast-key` | Lang key announced to the whole server, once per DISTINCT companion won. Empty announces nothing |
-| `cooldown-seconds` | Wait enforced between two PAID opens of this egg. `0` disables it entirely and costs nothing at runtime. An admin open ignores it: it costs nobody anything |
+| `cooldown-seconds` | Wait enforced between two PAID opens of this egg. `0` disables it entirely and costs nothing at runtime. It is armed only after the money really moved, so a refused purchase never starts one. An admin open ignores it: it costs nobody anything |
 
 An egg that opens **always** produces a companion. There is no failure roll: an open is either
 refused before anything is spent - the master switch is off, the player's row is still loading, the
-table has no rollable row left, or their storage cannot take the whole roll - or it goes through.
+table has no rollable row left, their storage cannot take the whole roll, or they cannot pay - or it
+goes through.
+
+### What an egg costs
+
+`price.currency` picks the wallet, and it is the only thing that does:
+
+| Value | Charged through |
+|-------|-----------------|
+| `vault` (the default) | The server economy, through Vault or whatever backend SnLib is configured with |
+| `edtools:<id>` | The EdTools currency with that id, through the EdTools currency API |
+
+{% hint style="warning" %}
+**A missing provider refuses the purchase; it never makes the egg free.** With no economy plugin
+installed, a `vault` egg answers `messages.egg-no-economy` and opens nothing. With EdTools absent,
+or with an `<id>` EdTools does not serve, an `edtools:` egg answers `messages.egg-no-currency` -
+and the console names that egg when `eggs.yml` loads, so a typo is visible before a player finds
+it. This is deliberately unlike a costed fusion, which is free when there is no economy: a fusion
+consumes companions the player already owns, while an egg PRODUCES them, so a free egg would hand
+out companions nobody paid for.
+{% endhint %}
+
+**EdTools egg prices do not depend on `edtools.enabled`.** That switch owns the companion BOOSTERS
+and nothing else. An egg priced in an EdTools currency is charged whenever EdTools itself is
+reachable, even on a server that has turned companion boosters off.
+
+The order money moves in is: the creative gate, the egg's cooldown, the price, the storage check,
+the cancellable `CompanionEggOpenEvent`, the storage reservation, the charge, the grant. The
+reservation is taken **before** the charge because the server economy settles a tick later, and if
+the charge then fails those places are handed straight back. If the companions cannot be WRITTEN
+after the money was taken - the one failure no gate can foresee - the whole price is refunded
+automatically, in the currency it was paid in, and the player is told both things. A PARTIAL loss
+is not refunded: the companions that did land were bought, and an `opens:` button prices a bundle
+rather than one egg.
+
+`/companions admin openegg` is a **gift**: it skips the creative gate, the cooldown and the price
+entirely, which is also why it can open an egg that declares no `opens:` button at all.
 
 ### The shipped file in full
 
@@ -1417,3 +1468,33 @@ Blank the value to switch that notification off for everyone, or suppress it per
 the `-s` flag (see [Commands](commands.md#silent-flags)). Offline players are never messaged.
 `/companions admin openegg` does not use it: what its target reads is the egg's own reward line,
 announced by the egg engine exactly as it would be for a bought egg.
+
+**1.5.0 adds eight**, all of them about BUYING an egg. None of them is ever seen by
+`/companions admin openegg`, which is a gift:
+
+| Key | Sent when | Placeholders |
+|---|---|---|
+| `messages.egg-creative` | a creative-mode player tries to buy while `eggs.allow-creative` is off | none |
+| `messages.egg-cooldown` | the egg's own `cooldown-seconds` is still running for that player | `{time}` |
+| `messages.egg-not-for-sale` | the egg declares no `opens:` button, so it has no price at all | `{egg}` |
+| `messages.egg-no-economy` | the egg is priced in `vault` and the server has no economy plugin | none |
+| `messages.egg-no-currency` | the egg is priced in an EdTools currency EdTools is not serving | `{currency}` |
+| `messages.egg-no-money` | the player cannot pay, or their balance moved between the check and the charge | `{price}` `{currency}` |
+| `messages.egg-charged` | the receipt, the moment the money is taken and just before the companions land | `{price}` `{currency}` |
+| `messages.egg-refunded` | right after `messages.egg-failed`, when a failed open was a purchase | `{price}` `{currency}` |
+
+`{price}` is the cost written with thousands separators. `{currency}` is the money word, and it
+comes from a **new `menus.eggs` block** at the end of the same file:
+
+```yaml
+menus:
+  eggs:
+    currency-vault: "Coins"
+    # currency-orbs: "Orbs"
+```
+
+`currency-vault` is the only key that ships with a value, because every install has a server
+economy to name. An egg priced with `price.currency: edtools:<id>` reads `currency-<id>` instead,
+and those ids are invented in your own EdTools configuration - so none of them can ship. Add one
+key per id you want renamed; an id with no key simply shows itself. The same block feeds the egg
+menu, so renaming a currency renames it everywhere at once.

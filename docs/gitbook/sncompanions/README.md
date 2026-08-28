@@ -21,9 +21,11 @@ duplicates into stronger ones, and manage everything from configurable menus.
 - Damage, resistance and speed buffs, each with a global cap and a per-world gate.
 - Fusion: combine duplicates into a stronger companion that inherits levels, with
   a server-wide announcement you can switch on per companion.
-- Companion eggs with weighted tables, price tiers in Vault or an EdTools currency, a hatch
-  animation and per-egg cooldowns. An egg is a purchase, not an item: the table rolls the moment it
-  is opened and the companions land straight in the owner's storage.
+- Companion eggs with weighted tables, price tiers charged in Vault or in one of your EdTools
+  currencies, a hatch animation and per-egg cooldowns. An egg is a purchase, not an item: the table
+  rolls the moment it is opened and the companions land straight in the owner's storage. A missing
+  economy refuses the purchase instead of giving the egg away, and a purchase whose companions
+  cannot be saved is refunded in full.
 - Companion items: shift + right click a stored companion, or press Q over it, to take it out as a physical
   head carrying its whole state, and let anyone right click it back into their own storage. That
   is how players trade companions. Since 1.17.0 the head also remembers who took it out, and only that
