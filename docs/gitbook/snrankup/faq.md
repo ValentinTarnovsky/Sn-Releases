@@ -28,6 +28,14 @@ The single menu only ever shows the next rank, so a rank further ahead is not me
 The paginated menu shows every rank, so if one is missing it failed to load. Check the server log
 after `/rankup reload`: a rank with no `order` or no `display` is reported by key.
 
+### How do I make every claimed rank look the same in the ladder?
+
+Write `material` (and `glow`, if you want it) on that state's template in `guis/rankup-list.yml` -
+`rank-claimed`, `rank-ready`, `rank-next` or `rank-locked` - and every tile of that state uses it.
+A rank that must stay different declares its own under `menu-item.states.<state>` in `rankup.yml`,
+which beats the template. Before 2.1.0 those two fields were read and then ignored on a template,
+so if the file looks configured and nothing changes, check the plugin version first.
+
 ### How do I make a rank cost money?
 
 Keep the `vault` currency in `config.yml`, install Vault and an economy plugin, then price the rank

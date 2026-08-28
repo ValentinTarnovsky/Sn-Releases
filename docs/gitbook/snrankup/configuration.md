@@ -240,7 +240,9 @@ action as reward lines.
 | `states` | Optional per state override used by the paginated menu |
 
 `states` takes `claimed`, `ready`, `next` and `locked`, each accepting the same fields. Anything you
-leave out of a state keeps what `menu-item` declares.
+leave out of a state keeps what `menu-item` declares. Use it for the one rank that has to look
+different in one state; to dress a whole state the same way on every rank, write `material` or
+`glow` once on that state's template in `guis/rankup-list.yml` instead.
 
 ## guis/
 
@@ -262,10 +264,16 @@ On the paginated menu, exactly one tile is ever `ready` or `next`, never both. `
 your next rank and you can afford it; `next` means it is your next rank and you cannot yet.
 {% endhint %}
 
-{% hint style="warning" %}
-When the plugin paints a cell with a rank's own item, only `display-name` and `lore` of the state
-template apply, and `display-name` replaces while `lore` appends. To give a state its own material
-or glow, put them under that rank's `menu-item.states.<state>` in `rankup.yml`.
+{% hint style="info" %}
+A state template takes four appearance fields. `display-name` replaces the rank item's name and
+`lore` appends after its own lore, while `material` (`basehead-<base64>` included) and `glow`
+dress every tile of that state at once - one line instead of the same field repeated on every
+rank. Leave a field out and each rank keeps what its own `menu-item` says. Anything else you
+write on a template is ignored, because the rank's item already carries it.
+
+One rank that has to look different in a single state still wins: `material` or `glow` under that
+rank's `menu-item.states.<state>` in `rankup.yml` beats the template. An unknown material on a
+template is reported once in the console and leaves that state showing each rank's own item.
 {% endhint %}
 
 {% hint style="info" %}
