@@ -1,8 +1,8 @@
 # SnCompanions
 
-SnCompanions gives every player a squad of floating companions that follow them on an arc formation, cut
-from a circle or from an oval that hugs their back. The formation rotates with the owner's
-camera, so the companions always stay in view.
+SnCompanions gives every player a squad of companions that follow them in a straight line behind
+them, at their feet - or, one key away, on an arc cut from a circle or from an oval that hugs their
+back. The formation rotates with the owner's camera, so the companions always stay in view.
 Companions are drawn with packets instead of entities, so they never collide, never despawn and
 never wander off. The whole server shares one animation tick, so companion count adds no scheduler
 tasks and unequipped companions cost nothing.
@@ -14,8 +14,8 @@ duplicates into stronger ones, and manage everything from configurable menus.
 
 ## Features
 
-- Packet arc formation, circle or oval, with configurable radius, back radius, arc width,
-  height and bob.
+- Packet formation - a straight line behind the owner, or an arc cut from a circle or an oval -
+  with configurable spacing, distance, radius, back radius, arc width, height and bob.
 - Levels and experience per companion type, with per-type level caps and a choice of six experience
   sources: vanilla XP, blocks, EdTools omnitool breaks, mobs, damage dealt or playtime.
 - Damage, resistance and speed buffs, each with a global cap and a per-world gate.

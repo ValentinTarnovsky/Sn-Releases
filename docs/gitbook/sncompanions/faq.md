@@ -64,47 +64,60 @@ boot after the update, so you can restyle or blank it like any other message and
 the player reads is the egg's own reward line, announced by the egg engine exactly as it would be
 for a bought egg, so `-s` does not touch it.
 
-### My companions changed shape after updating to 1.6.0. What happened?
+### What does `formation.shape: LINE` do, and how do I get the arc back?
 
-1.6.0 added `formation.shape`, which picks the curve the arc is cut from. `CIRCLE` is the old
-behaviour: every companion sits `formation.radius` blocks out. `OVAL` keeps `radius` at the owner's
-SIDES and uses the new `formation.back-radius` straight behind them, so the arc hugs the owner's
-back and opens out at the flanks.
+`LINE` is what the plugin ships. Every equipped companion stands on ONE straight line
+perpendicular to the owner's facing, `formation.line.distance` blocks behind them
+(`1.0` shipped), with `formation.line.spacing` blocks between neighbours (`0.8` shipped), ordered
+by equip slot from the owner's RIGHT. A lone companion stands dead centre behind the owner, and
+the row is always centred on the owner, so equipping one more slides the whole row half a spacing
+across instead of growing it out to one side. The arc keys - `radius`, `back-radius`,
+`arc-degrees`, `arc-center-offset` - are ignored under `LINE`.
 
-`config.yml` is managed, which means SnLib inserts the two new keys into your existing file but
-never overwrites a value you already had. So your server became an OVAL with your own old
-`radius` at the sides and `1.4` blocks behind.
+For the arc, set `formation.shape` to `CIRCLE` (every companion `formation.radius` blocks out) or
+`OVAL` (`radius` at the owner's sides, `back-radius` straight behind, so the arc hugs their back)
+and run `/companions reload`. Those four arc keys are still in your file and still mean what they
+always did.
 
-In practice that is a very small change, because a 180-degree arc puts its two ends exactly on
-the owner's sides, where an oval and a circle coincide. With the old `arc-degrees: 180`, one companion
-and two companions do not move at all, and from three companions up nothing moves more than 0.2 blocks. Set
-`formation.shape: CIRCLE` and run `/companions reload` to pin the old look exactly.
-
-Two behaviours are worth knowing before you keep the oval. The companions take an even share of the
-*angle*, which is an even spacing on the ground only on a circle - on an oval the ones near the
+Two behaviours are worth knowing before you pick the oval. The companions take an even share of
+the *angle*, which is an even spacing on the ground only on a circle - on an oval the ones near the
 ends bunch up (about 23% at four companions, 28% at six; one, two and three companions are unaffected). And
 `formation.facing: OUTWARD` / `CENTER` point along the circle's radius rather than the oval's true
 normal, off by up to 10 degrees; that costs nothing under the default `OWNER_YAW`, which ignores
 the angle entirely.
 
 An unknown value is not fatal: the plugin logs one warning per load and falls back to `CIRCLE`.
-An **absent** value falls back to `CIRCLE` silently - that is deliberate, and it is what keeps a
-config written before 1.6.0 on its old circle. So deleting the key does not restore `OVAL`, it
-gives you `CIRCLE`.
+An **absent** value falls back to `CIRCLE` silently - that is deliberate, and it is what leaves a
+config you commented the key out of on the arc rather than dragging it onto whatever the current
+default happens to be. So deleting the key gives you `CIRCLE`, not the shipped `LINE`.
 
-### I updated to 1.6.0 but my companions are still the old size and height. Why?
+### I updated and my companions still float in an arc. Why?
 
-Because that is deliberate. 1.6.0 also changed the SHIPPED defaults - `formation.radius` 1.6 to
-2.0, `height-offset` 0.35 to 1.9, `arc-degrees` 180 to 190, `facing-offset` 0 to 180,
-`animation.head-size` 0.7 to 1.3 and the bounce to 0.06 / 0.1 - but a managed file only ever
-gains missing KEYS, never new VALUES. A new install gets the new look; an existing one keeps
-every number you set. Copy the values above into your `config.yml` by hand if you want it.
+Because that is deliberate. `config.yml` is managed, which means SnLib inserts missing KEYS into
+your existing file but never overwrites a VALUE you already had. The two new keys
+(`formation.line.spacing` and `formation.line.distance`) arrive on the next boot, but the three
+values the update CHANGED do not reach an existing file. Set them by hand and run
+`/companions reload`:
 
-One to watch: `models.height-offset` is SUMMED with `formation.height-offset`. A BetterModel companion
-that should stand on the ground wants roughly the negative of whatever `formation.height-offset`
-is on **your** server - about `-1.9` if you adopt the new `1.9`, but still about `-0.35` if you
-kept your old value. Copying `-1.9` onto a server that never adopted `1.9` sinks the model about
-1.55 blocks into the floor.
+```yaml
+formation:
+  shape: LINE
+  height-offset: 0.08
+animation:
+  bounce:
+    height: 0.0
+```
+
+`height-offset` is what puts them on the ground rather than at head height. It is the blocks above
+the owner's FEET the companion origin sits at, and a player head drawn as a ground item hangs 1/16
+of its scale below its origin - so the number you want is `0.0625 x animation.head-size`, which is
+`0.08` at the shipped `head-size: 1.3`. Scale the head up and scale this with it: `head-size: 4.0`
+gives a companion about one block tall and wants `height-offset: 0.25`.
+
+One to watch: `models.height-offset` is SUMMED with `formation.height-offset` and moves only the
+companions drawn as models. A model's own origin is at its feet, so at the shipped values `0.0`
+leaves it standing `0.08` above the floor, and `-0.08` - the negative of whatever
+`formation.height-offset` is on **your** server - puts its feet exactly on the ground.
 
 ### Can I announce only SOME fusions?
 
@@ -268,7 +281,7 @@ Because the offset is measured from the companion, and "the companion" is not th
 head companion's label rides the head itself, which already sits `formation.height-offset` above the
 owner's feet. A model companion's label rides the invisible carrier its bones ride, which also carries
 `models.height-offset` - so on a server that pushed models down to stand on the ground
-(`models.height-offset: -1.9`), a label at `0.9` lands 0.9 blocks above the model's FEET.
+(`models.height-offset: -0.08`), a label at `0.9` lands 0.9 blocks above the model's FEET.
 
 Give those companions a bigger `hologram.height-offset` of their own. The shipped `stone_golem.yml` does
 exactly that, with `1.2`.

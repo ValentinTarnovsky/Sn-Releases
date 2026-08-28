@@ -151,33 +151,47 @@ slots:
   unique-group: false
 
 # ------------------------------------------------------------
-#  Formation. The equipped companions stand on an arc around their owner that turns
-#  with the owner's camera. The arc is always used whole, end to end: the companions
-#  spread evenly across it and slide over whenever one is equipped or unequipped.
-#  The arc is cut from a circle or from an oval, see "shape" below.
+#  Formation. The equipped companions stand behind their owner and turn with the
+#  owner's camera. By default they form a straight LINE, side by side, at the
+#  owner's feet, ordered by equip slot from the owner's right.
+#  Set "shape" to CIRCLE or OVAL instead and they stand on an arc around the owner.
+#  The arc is always used whole, end to end: the companions spread evenly across it
+#  and slide over whenever one is equipped or unequipped.
 #  "Evenly" means an even share of the ANGLE, which is an even spacing on the
 #  ground only on a CIRCLE. On an OVAL the companions near the ends sit closer together
 #  than the ones near the middle - about 23% closer at 4 companions and 28% at 6, at the
 #  values below. 1, 2 and 3 companions are unaffected.
+#  The radius / back-radius / arc-degrees / arc-center-offset keys apply to
+#  CIRCLE and OVAL only; LINE reads the "line" block instead.
 # ------------------------------------------------------------
 formation:
-  # Blocks between the owner and the arc at their SIDES. Under shape CIRCLE this
-  # is the distance in every direction; under shape OVAL the back of the arc uses
-  # back-radius instead.
+  # CIRCLE and OVAL only. Blocks between the owner and the arc at their SIDES.
+  # Under shape CIRCLE this is the distance in every direction; under shape OVAL
+  # the back of the arc uses back-radius instead.
   radius: 2.0
+  # LINE puts every companion on one straight line behind the owner, see "line" below.
   # CIRCLE keeps every companion at "radius" blocks. OVAL keeps "radius" at the owner's
   # sides and "back-radius" straight behind (and in front), so the arc hugs the
   # owner's back and opens out at the flanks.
-  # Delete this key and the plugin uses CIRCLE, not the OVAL shipped here: that is
-  # what keeps a config written before 1.6.0 on the circle it always had. A value
-  # that is neither logs one warning and falls back to CIRCLE too.
-  shape: OVAL
-  # Blocks between the owner and the arc straight behind them. Read on every load
-  # but only USED when shape is OVAL; a CIRCLE ignores it in favour of radius.
+  # Delete this key and the plugin uses CIRCLE, not the LINE shipped here. A value
+  # that names none of the three logs one warning and falls back to CIRCLE too.
+  shape: LINE
+  # LINE only.
+  line:
+    # Blocks between two neighbouring companions on the line.
+    spacing: 0.8
+    # Blocks behind the owner the line runs. Negative puts it in front (screenshots).
+    distance: 1.0
+  # CIRCLE and OVAL only. Blocks between the owner and the arc straight behind them.
+  # Read on every load but only USED when shape is OVAL; a CIRCLE ignores it in
+  # favour of radius.
   back-radius: 1.4
-  # Blocks above the owner's feet the companions float at.
-  height-offset: 1.9
-  # Total width of the arc in degrees, capped at 360. Read together with
+  # Blocks above the owner's feet the companion ORIGIN sits at. A player head drawn
+  # as a ground item hangs 1/16 of its scale below its origin, so
+  # 0.0625 x animation.head-size (0.08 at the 1.3 below) rests it on the floor.
+  # Raise it to make the companions float instead (SnPets used 1.9).
+  height-offset: 0.08
+  # CIRCLE and OVAL only. Total width of the arc in degrees, capped at 360. Read together with
   # arc-center-offset below: at the default centre of 180, an arc of 180 puts the
   # first companion exactly at the owner's right and the second exactly at their left,
   # and going past 180 swings both ends a little in FRONT of the shoulders (at the
@@ -185,8 +199,8 @@ formation:
   # the middle, so a single companion moves forward with them. At a different
   # arc-center-offset "past 180" swings the ends somewhere else entirely.
   arc-degrees: 190.0
-  # Degrees from the owner's facing to the centre of the arc. 180 puts the arc
-  # behind the owner, 0 in front of them, 90 at their right.
+  # CIRCLE and OVAL only. Degrees from the owner's facing to the centre of the arc.
+  # 180 puts the arc behind the owner, 0 in front of them, 90 at their right.
   arc-center-offset: 180.0
   # Where a companion looks: OWNER_YAW (the same way as the owner), OUTWARD (away from
   # the owner) or CENTER (at the owner).
@@ -195,7 +209,7 @@ formation:
   # drawn looking forward. Under the default facing of OWNER_YAW, 180 points every
   # head OPPOSITE the owner's yaw - which is what faces them toward the camera in
   # third person, and toward anyone standing behind the owner. (Turning around
-  # never shows you your own companions: the arc is camera-relative and comes with you.)
+  # never shows you your own companions: the formation is camera-relative and comes with you.)
   # Note that 180 also swaps OUTWARD and CENTER.
   facing-offset: 180.0
 
@@ -217,8 +231,9 @@ animation:
   async-packet-send: true
   # Vertical bob of a companion.
   bounce:
-    # Blocks the companion rises and falls; 0 keeps the companions perfectly still.
-    height: 0.06
+    # Blocks the companion rises and falls; 0 keeps the companions still on the ground.
+    # 0.06 was the floating bob the companions had while they hovered.
+    height: 0.0
     # Radians of bob phase advanced per animation tick; higher bobs faster.
     speed: 0.1
 
@@ -238,16 +253,16 @@ models:
   enabled: true
   # Blocks per second of companion movement above which the moving animation plays.
   # The companions also travel when the owner only turns the camera, because the whole
-  # arc swings with it, so looking around counts as moving.
+  # formation swings with it, so looking around counts as moving.
   move-threshold: 0.8
   # Ticks the companion must stay below the threshold before the idle animation comes
   # back. Keeps a single step from flickering between the two animations.
   idle-delay-ticks: 8
   # Blocks added to a model companion's height, on top of formation.height-offset.
-  # Heads float; a model usually wants to sit lower or stand on the ground, so a
-  # negative value here lowers only the companions drawn as models. The two are SUMMED,
-  # so with formation.height-offset at 1.9 a model that should walk on the floor
-  # needs roughly -1.9 here.
+  # The two are SUMMED, and this one moves ONLY the companions drawn as models.
+  # A model's own origin is at its feet, so at the shipped values 0.0 leaves it
+  # standing 0.08 blocks above the floor; -0.08 (minus formation.height-offset)
+  # puts its feet exactly on the ground.
   height-offset: 0.0
   # There is nothing to smooth here, which is why no setting for it exists: a
   # model companion's bones ride an invisible carrier that moves exactly like the heads
@@ -746,7 +761,7 @@ worlds:
     damage: []
 
 # ------------------------------------------------------------
-#  Menus. Everything the three menus look like lives in guis/<id>.yml: the
+#  Menus. Everything the four menus look like lives in guis/<id>.yml: the
 #  titles, the masks, every material, every name, every lore line and every
 #  click action. These two keys are the exceptions, because neither can be
 #  written as an item field.

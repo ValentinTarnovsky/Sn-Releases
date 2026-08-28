@@ -181,7 +181,9 @@ boxes were replaced by companion eggs, and added `CompanionEggOpenEvent` and
 payable, so `isCharged()` can now be `true` on both of those events, but no type, method or
 signature changed. `1.6.0` removed nothing and added nothing either: the eggs shop menu buys through
 the same engine, so `CompanionEggOpenEvent` and `CompanionEggRewardEvent` now also fire for a
-purchase made from a menu, with the same fields they always had.
+purchase made from a menu, with the same fields they always had. `1.7.0` removed nothing and added
+nothing either: the new `formation.shape: LINE` moves where the companions are DRAWN, which no part
+of this contract exposes.
 
 `API_VERSION` is deliberately held at `1.0.0` across those removals rather than claiming a stability
 this contract does not have yet, so **the version does not tell you whether surface went away**.
