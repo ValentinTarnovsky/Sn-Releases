@@ -101,6 +101,16 @@
 * [Developer API](sncrates/api.md)
 * [FAQ](sncrates/faq.md)
 
+## SnCredits
+
+* [Overview](sncredits/README.md)
+* [Installation](sncredits/installation.md)
+* [Commands](sncredits/commands.md)
+* [Permissions](sncredits/permissions.md)
+* [Configuration](sncredits/configuration.md)
+* [Placeholders](sncredits/placeholders.md)
+* [FAQ](sncredits/faq.md)
+
 ## SnCustomCrafting
 
 * [Overview](sncustomcrafting/README.md)
