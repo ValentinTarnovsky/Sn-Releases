@@ -264,7 +264,11 @@ super-chest:
 #  NOTE: when the in-game editor saves a lootbox it rewrites the
 #  whole file in its own serialized reward form (see the REWARDS
 #  banner below), replacing hand-written display-item blocks and
-#  all comments.
+#  all comments. A reward the plugin could not read at load time
+#  (typo'd material, item saved by a newer server) is skipped with a
+#  console warning; the editor then refuses to save this lootbox
+#  until the file is fixed and /lootbox reload is run, so a save can
+#  never delete a reward it did not load.
 #
 #  Rarity colors used below:
 #    &f Common   &a Uncommon   &b Rare   &5 Epic   &6 Legendary

@@ -1,6 +1,6 @@
 # Commands
 
-The root command is `/lootbox`. It ships with no aliases; add your own under `command.aliases` in `config.yml`. Running `/lootbox` with no arguments shows the generated help.
+The root command is `/lootbox`. It ships with no aliases; add your own under `command.aliases` in `config.yml`. Running `/lootbox` with no arguments shows the generated help, filtered to the subcommands the sender has permission for; the root itself needs no permission.
 
 | Command | Permission | Description |
 |---------|------------|-------------|
