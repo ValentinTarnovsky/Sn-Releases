@@ -156,6 +156,12 @@ Synchronous methods read in-memory state. Call them on the main thread.
 | `isGenerator(Location)` | `boolean` | Cheap existence check |
 | `getPlacedHopperCount(UUID)` | `int` | Infinite hoppers placed by that owner |
 | `getTotalPlacedHoppers()` | `int` | Infinite hoppers placed server wide |
+| `getOwnerHoppers(UUID)` | `List<HopperView>` | Every hopper that owner placed, with its contents |
+| `getIslandHoppers(UUID)` | `List<HopperView>` | The same for every member of that player's island |
+| `getPlacedCollectorCount(UUID)` | `int` | Collectors placed by that owner |
+| `getTotalPlacedCollectors()` | `int` | Collectors placed server wide |
+| `getOwnerCollectors(UUID)` | `List<CollectorView>` | Every collector that owner placed, with its contents |
+| `getIslandCollectors(UUID)` | `List<CollectorView>` | The same for every member of that player's island |
 | `getActiveServerEvent()` | `Optional<ServerEventView>` | Empty between events |
 | `getTopSnapshot()` | `List<TopEntryView>` | The last computed leaderboard |
 | `getRank(UUID)` | `OptionalInt` | Rank of a player or an island |
@@ -166,7 +172,19 @@ Synchronous methods read in-memory state. Call them on the main thread.
 ```java
 api.getGeneratorAt(block.getLocation())
    .ifPresent(view -> player.sendMessage("Generator: " + view.displayName()));
+
+for (HopperView hopper : api.getOwnerHoppers(player.getUniqueId())) {
+    for (StoredItemView stored : hopper.contents()) {
+        // stored.item() is a decoded ItemStack, ready for a menu icon
+        menu.addIcon(stored.item(), stored.amount(), stored.totalValue());
+    }
+}
 ```
+
+{% hint style="info" %}
+Hoppers and collectors are held in memory in full, so these listings need no database
+read and no chunk scanning. You can call them straight from a menu open.
+{% endhint %}
 
 Asynchronous methods hit the database, so they also see generators in unloaded chunks.
 
@@ -175,6 +193,8 @@ Asynchronous methods hit the database, so they also see generators in unloaded c
 | `getIslandGeneratorStats(UUID)` | `CompletableFuture<IslandGeneratorStats>` | Folds in every island member, or falls back to the single owner |
 | `getOwnerGeneratorCount(UUID)` | `CompletableFuture<Long>` | Total generators of one owner |
 | `getOwnerGeneratorValue(UUID)` | `CompletableFuture<Double>` | Total value of one owner |
+| `getOwnerGenerators(UUID)` | `CompletableFuture<List<GeneratorView>>` | Every generator that owner placed, including unloaded chunks |
+| `getIslandGenerators(UUID)` | `CompletableFuture<List<GeneratorView>>` | The same for every member of that player's island |
 
 {% hint style="warning" %}
 `CompletableFuture` results complete on an async thread. Hop back to the main thread before
@@ -202,6 +222,12 @@ so mutating them never affects SnGens.
 | `ServerEventView` | `id`, `type`, `displayName`, `remainingSeconds` |
 | `TopEntryView` | `rank`, `scopeId`, `headOwner`, `displayName`, `value` |
 | `SellContext` | `itemCount`, `baseValue`, `effectiveMultiplier`, `finalAmount`, `source` |
+| `HopperView` | `id`, `owner`, `location`, `maxTypes`, `slotsUsed`, `totalItems`, `contents`, `estimatedValue`, `createdAt`, `updatedAt` |
+| `CollectorView` | `id`, `owner`, `location`, `totalItems`, `slotsUsed`, `contents`, `estimatedValue`, `createdAt`, `updatedAt` |
+| `StoredItemView` | `key`, `item`, `amount`, `unitValue`, `totalValue` |
+
+A `HopperView` or `CollectorView` is a snapshot taken when you asked for it. Both keep
+absorbing items afterwards, so query again on each menu refresh instead of caching.
 
 ## Extension points
 
