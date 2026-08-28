@@ -1,0 +1,2302 @@
+# Configuration
+
+SnCompanions ships with the YAML files below. `config.yml`, the language files and the menu layouts
+are managed by SnLib: new keys are auto-merged on boot, and your values and comments are
+preserved. Set `update-configs: false` to freeze them, in which case SnLib only warns about
+missing keys instead of inserting them.
+
+`traits.yml`, `boost-grades.yml`, `boxes.yml` and the `companions/` folder are seeded once, on a
+fresh install, and never written to again. A companion file you delete stays deleted, and a file you
+add is picked up on the next reload; one file is one companion, and the file name is its id. Boxes
+work the same way but live as keys inside `boxes.yml` rather than as separate files - if you are
+upgrading from a version that used a `boxes/` folder, see [boxes.yml](#boxesyml), which is
+migrated for you automatically.
+
+## config.yml
+```yaml
+# ============================================================
+#  SnCompanions - configuration
+#  Managed by SnLib: new keys are auto-merged on boot; your values and
+#  comments are preserved. Do NOT add a config-version key (retired).
+#  Set update-configs: false to freeze this file (SnLib only warns about
+#  missing keys instead of inserting them).
+#  Sections marked "# sn:extensible" are yours: entries you delete there
+#  stay deleted.
+# ============================================================
+
+# Active language code; loads lang/messages_<code>.yml (falls back to en).
+lang: en
+
+# Master switch of the SnLib auto-updater for this plugin's managed files.
+update-configs: true
+
+# Runtime debug output (also toggleable live via /companions debug).
+debug:
+  # Master toggle of the debug output.
+  enabled: false
+  # Verbosity threshold: OFF, INFO, DEBUG or TRACE.
+  level: DEBUG
+  # Category filter; an empty list lets every category through.
+  categories: []
+
+# ------------------------------------------------------------
+#  Main command.
+# ------------------------------------------------------------
+command:
+  # Aliases of /companions. Re-read on /companions reload.
+  aliases: [companion]
+
+  # Companions listed per page by /companions admin list. Raising it makes one command
+  # print more lines at once and pushes more of the sender's chat history
+  # off screen; 1 to 50, values outside that are clamped.
+  list-page-size: 8
+
+# ------------------------------------------------------------
+#  Database. type=sqlite needs nothing else; type=mysql reads host/port/etc.
+#  ONE SERVER PER DATABASE: SnCompanions loads a player on join, caches them in
+#  memory and saves on quit, so two servers pointing at the same MySQL will
+#  overwrite each other and silently destroy companions. Cross-server sharing is
+#  not supported.
+# ------------------------------------------------------------
+database:
+  # sqlite or mysql
+  type: sqlite
+  # MySQL connection (ignored when type is sqlite).
+  host: localhost
+  port: 3306
+  database: sncompanions
+  username: root
+  password: ""
+
+# ------------------------------------------------------------
+#  Public developer API.
+# ------------------------------------------------------------
+# Public developer API events. When false, no API event is dispatched (zero
+# cost) and cancellable hooks report "not cancelled" so gameplay proceeds.
+# The query facade stays available either way.
+api-events:
+  enabled: true
+
+# ------------------------------------------------------------
+#  Groups. A group is a free-text label a companion file points at with its
+#  "group" key. It is not a rarity system: the plugin uses it for the
+#  storage sort order, the bulk delete buttons, the companion lore and the colour
+#  the menus draw that companion's lines in, nothing else. A companion whose group is
+#  not listed here sorts last and gets no bulk delete button.
+# ------------------------------------------------------------
+# sn:extensible
+groups:
+  common:
+    # Name shown in the companion lore and on the bulk delete button.
+    display: "&7Common"
+    # Colour prefix exposed to the menus as {group-color}: a legacy code (&7), a hex
+    # (&#55ff55) or the SnLib [rgb] gradient tag. [rgb] only works when {group-color}
+    # is the first thing on the line. Leave empty to reuse the colour display starts
+    # with, which is what every install made before this key existed does.
+    color: "&7"
+    # Sort weight in the storage grid; lower sorts first.
+    order: 1
+  rare:
+    display: "&9Rare"
+    color: "&9"
+    order: 2
+  epic:
+    display: "&5Epic"
+    color: "&5"
+    order: 3
+
+# ------------------------------------------------------------
+#  Companion storage.
+# ------------------------------------------------------------
+storage:
+  # Companions a player may keep before permissions or purchases raise it. The
+  # effective capacity is max(base-capacity, sncompanions.storage.<n>) plus whatever
+  # was bought with "/companions admin storage give|set": the permission names the
+  # absolute capacity a rank grants, and purchases add on top of it.
+  base-capacity: 54
+
+  # Ceiling of the TOTAL storage that "/companions admin storage give|set" may leave
+  # a player with. 0 disables it, which is the shipped value: storage is
+  # paginated, so unlike the equip slots it has no visual limit to agree with.
+  # A command that would go past the ceiling is NOT cancelled - the purchase is
+  # trimmed so the total lands on the ceiling, and says so. This does not limit
+  # the "sncompanions.storage.<n>" permission grants, which are the floor purchases
+  # stack onto.
+  max-capacity: 0
+
+# ------------------------------------------------------------
+#  Equip slots.
+# ------------------------------------------------------------
+slots:
+  # Companions a player may equip at once before permissions or purchases raise it.
+  # The effective count is max(base-count, sncompanions.slots.<n>) plus whatever was
+  # bought with "/companions admin slots give|set": the permission names the absolute
+  # count a rank grants, and purchases add on top of it, so with base-count 1
+  # a player who buys one slot equips two companions.
+  base-count: 1
+
+  # Ceiling of the TOTAL slots that "/companions admin slots give|set" may leave a
+  # player with. 0 disables it. Keep it equal to the number of 's' cells in the
+  # layout of guis/main.yml (7 in the shipped menu): the menu can only draw that
+  # many, so slots past it are bought and never usable. The two files are not
+  # read from each other on purpose - this comment is the link.
+  # A command that would go past the ceiling is NOT cancelled - the purchase is
+  # trimmed so the total lands on the ceiling, and says so. This does not limit
+  # the "sncompanions.slots.<n>" permission grants, which are the floor purchases
+  # stack onto.
+  max-count: 7
+
+  # Forbid equipping two companions that belong to the same group. Off by default: a
+  # player may equip as many companions of one group as they have slots for. Companions that
+  # declare no group are never blocked by this rule.
+  unique-group: false
+
+# ------------------------------------------------------------
+#  Formation. The equipped companions stand on an arc around their owner that turns
+#  with the owner's camera. The arc is always used whole, end to end: the companions
+#  spread evenly across it and slide over whenever one is equipped or unequipped.
+#  The arc is cut from a circle or from an oval, see "shape" below.
+#  "Evenly" means an even share of the ANGLE, which is an even spacing on the
+#  ground only on a CIRCLE. On an OVAL the companions near the ends sit closer together
+#  than the ones near the middle - about 23% closer at 4 companions and 28% at 6, at the
+#  values below. 1, 2 and 3 companions are unaffected.
+# ------------------------------------------------------------
+formation:
+  # Blocks between the owner and the arc at their SIDES. Under shape CIRCLE this
+  # is the distance in every direction; under shape OVAL the back of the arc uses
+  # back-radius instead.
+  radius: 2.0
+  # CIRCLE keeps every companion at "radius" blocks. OVAL keeps "radius" at the owner's
+  # sides and "back-radius" straight behind (and in front), so the arc hugs the
+  # owner's back and opens out at the flanks.
+  # Delete this key and the plugin uses CIRCLE, not the OVAL shipped here: that is
+  # what keeps a config written before 1.6.0 on the circle it always had. A value
+  # that is neither logs one warning and falls back to CIRCLE too.
+  shape: OVAL
+  # Blocks between the owner and the arc straight behind them. Read on every load
+  # but only USED when shape is OVAL; a CIRCLE ignores it in favour of radius.
+  back-radius: 1.4
+  # Blocks above the owner's feet the companions float at.
+  height-offset: 1.9
+  # Total width of the arc in degrees, capped at 360. Read together with
+  # arc-center-offset below: at the default centre of 180, an arc of 180 puts the
+  # first companion exactly at the owner's right and the second exactly at their left,
+  # and going past 180 swings both ends a little in FRONT of the shoulders (at the
+  # 190 shipped here, 0.12 blocks). A LONE companion takes the right END of the arc, not
+  # the middle, so a single companion moves forward with them. At a different
+  # arc-center-offset "past 180" swings the ends somewhere else entirely.
+  arc-degrees: 190.0
+  # Degrees from the owner's facing to the centre of the arc. 180 puts the arc
+  # behind the owner, 0 in front of them, 90 at their right.
+  arc-center-offset: 180.0
+  # Where a companion looks: OWNER_YAW (the same way as the owner), OUTWARD (away from
+  # the owner) or CENTER (at the owner).
+  facing: OWNER_YAW
+  # Degrees added to every companion's facing, to correct a head texture that is not
+  # drawn looking forward. Under the default facing of OWNER_YAW, 180 points every
+  # head OPPOSITE the owner's yaw - which is what faces them toward the camera in
+  # third person, and toward anyone standing behind the owner. (Turning around
+  # never shows you your own companions: the arc is camera-relative and comes with you.)
+  # Note that 180 also swaps OUTWARD and CENTER.
+  facing-offset: 180.0
+
+# ------------------------------------------------------------
+#  Animation. ONE shared task moves every companion of every player; there is no task
+#  per companion and no task per player.
+# ------------------------------------------------------------
+animation:
+  # Ticks between formation updates, minimum 2. The client interpolates between
+  # updates, so 2 already looks fluid and a lower value would only cost tick.
+  interval-ticks: 2
+  # Uniform scale of a floating companion head.
+  head-size: 1.3
+  # Blocks a client keeps rendering a companion for, and the radius the plugin scans
+  # for viewers.
+  view-range: 48
+  # Hands the movement packet write to a dedicated thread instead of the server
+  # thread. Turn it off to send inline.
+  async-packet-send: true
+  # Vertical bob of a companion.
+  bounce:
+    # Blocks the companion rises and falls; 0 keeps the companions perfectly still.
+    height: 0.06
+    # Radians of bob phase advanced per animation tick; higher bobs faster.
+    speed: 0.1
+
+# ------------------------------------------------------------
+#  BetterModel models. A companion whose file declares a "model" block is drawn as an
+#  animated model instead of a floating head, with one animation while it holds
+#  still and another while it moves. BetterModel is optional: without it, with
+#  the switch below off, or when the engine does not know the model id, the companion
+#  falls back to its head and nothing breaks. Companions that fell back pick their
+#  model up on their own when BetterModel enables or reloads its models.
+#  The vertical bob under "animation" is never applied to a model: a model
+#  animates itself, so use height-offset below to place it instead.
+# ------------------------------------------------------------
+models:
+  # Draw companions that declare a model as models. Off renders every companion as its head
+  # even with BetterModel installed.
+  enabled: true
+  # Blocks per second of companion movement above which the moving animation plays.
+  # The companions also travel when the owner only turns the camera, because the whole
+  # arc swings with it, so looking around counts as moving.
+  move-threshold: 0.8
+  # Ticks the companion must stay below the threshold before the idle animation comes
+  # back. Keeps a single step from flickering between the two animations.
+  idle-delay-ticks: 8
+  # Blocks added to a model companion's height, on top of formation.height-offset.
+  # Heads float; a model usually wants to sit lower or stand on the ground, so a
+  # negative value here lowers only the companions drawn as models. The two are SUMMED,
+  # so with formation.height-offset at 1.9 a model that should walk on the floor
+  # needs roughly -1.9 here.
+  height-offset: 0.0
+  # There is nothing to smooth here, which is why no setting for it exists: a
+  # model companion's bones ride an invisible carrier that moves exactly like the heads
+  # beside them, and the client interpolates that carrier on its own.
+
+# ------------------------------------------------------------
+#  EdTools boosters. An equipped companion whose file declares an "edtools-boosts"
+#  block grants EdTools boosters: one per currency it names, plus the GLOBAL
+#  enchant multiplier. EdTools is optional - without it, or with the switch
+#  below off, nothing is granted and nothing breaks.
+#
+#  How the numbers work, because it surprises people:
+#   - A companion declares its boost in PERCENT, exactly like its buff: 10.0 is +10%.
+#     Every equipped companion's percentages for the same currency are SUMMED, and the
+#     companion's BUFF boost grade and its trait widen them the same way they widen
+#     its buff.
+#   - EdTools is then handed a fraction (0.5 is "+50%", 1.0 is "double"),
+#     ROUNDED TO ONE DECIMAL. That is a hard rule of this integration and it
+#     means the granted boost moves in steps of 10%: a total of 4% rounds down
+#     to nothing and grants no booster at all, 5% rounds up to +10%, and 26%
+#     lands on +30%. Write your companions in tens if you want what you wrote.
+#   - The boosters never expire and are never saved by EdTools. They exist for
+#     exactly as long as the companion is equipped, and are re-applied on every join.
+#   - Each entry of a companion's "edtools-boosts" block accepts an optional "max":
+#     a ceiling in percentage points for THAT companion, applied before the summing
+#     and before the rounding. It caps one companion, never the player's total.
+#     Documented in companions/ember_fox.yml and in the GitBook.
+#
+#  Only the GLOBAL enchant multiplier can be boosted, never one named enchant:
+#  that is the whole of what EdTools exposes to other plugins.
+# ------------------------------------------------------------
+edtools:
+  # Let equipped companions grant EdTools boosters. Turning this off and reloading
+  # removes the ones already granted; it does not wait for a restart.
+  enabled: true
+  # Name EdTools shows for this plugin's boosters in its own booster list.
+  booster-display-name: "&dCompanions"
+  # Ticks to wait after a player joins before writing their boosters, so EdTools
+  # has finished restoring its own state first. 20 ticks = 1 second.
+  join-delay-ticks: 20
+
+# ------------------------------------------------------------
+#  Holograms. Text drawn above every companion, riding the companion itself: the client
+#  moves it with the companion, so it never lags behind. One line of text is one
+#  packet entity; nothing is spawned for a companion whose lines are empty.
+#  A companion file may declare its own "hologram:" block (enabled, lines,
+#  height-offset); a companion that declares none uses default-lines below.
+#  Placeholders: every companion placeholder of the menus ({companion} {level} {level-cap}
+#  {exp} {exp-next} {percent} {group} {group-color} {trait} {buff} {buff-value}
+#  {owner}). PlaceholderAPI tokens resolve against the OWNER.
+#  The text is only rewritten when something on the companion changes - a level up, a
+#  trait or boost roll, an admin edit - never on the animation tick.
+# ------------------------------------------------------------
+holograms:
+  # Master switch. Off spawns nothing at all.
+  enabled: true
+  # Blocks above the companion's origin the FIRST (top) line sits at. Careful: the
+  # origin is not the same for both kinds of companion. A head companion's is the head
+  # itself (formation.height-offset above the owner's feet); a model companion's is
+  # its carrier, which also carries models.height-offset - so a model pushed
+  # down to stand on the ground needs a LARGER offset here, or the text lands
+  # inside it. A companion file can override this per companion, which is what the golem
+  # example does.
+  height-offset: 0.9
+  # Blocks between two lines.
+  line-spacing: 0.25
+  # Uniform scale of the text.
+  scale: 1.0
+  # Background colour as ARGB hex; empty for no background. 40000000 is the
+  # vanilla translucent black.
+  background: ""
+  # Draw the text with a shadow.
+  shadow: false
+  # Let the text show through blocks.
+  see-through: false
+  # Pixels before a line wraps.
+  line-width: 200
+  # How the text turns towards the player.
+  #   vertical   - stays upright and turns only around the vertical axis, so the
+  #                lines never lean however far above or below you stand
+  #   center     - turns on both axes and tilts towards the camera
+  #   horizontal - turns around the horizontal axis only
+  #   fixed      - never turns, keeping the facing it was spawned at
+  billboard: vertical
+  # Lines of a companion whose file declares no hologram block. Empty draws nothing.
+  default-lines:
+    - "{companion}"
+    - "&7Lv. &f{level}&7/&f{level-cap}"
+
+# ------------------------------------------------------------
+#  Visibility. Two independent switches per player, stored in the database and
+#  kept across relogs, so all four combinations are valid:
+#    /companions toggle -> hides the player's OWN companions, from themselves AND from
+#                    everyone else (permission sncompanions.toggle)
+#    /companions hide   -> hides EVERY other player's companions, for that player only
+#                    (permission sncompanions.hide)
+# ------------------------------------------------------------
+visibility:
+  # Seconds a player must wait between two uses of /companions toggle. 0 disables the
+  # cooldown. It survives a relog, so reconnecting does not reset it.
+  own-cooldown-seconds: 3
+  # Seconds a player must wait between two uses of /companions hide. Counted
+  # separately from the one above, so one toggle never blocks the other.
+  others-cooldown-seconds: 3
+
+# ------------------------------------------------------------
+#  Experience. Every companion declares its own source and its own ratio in its
+#  companions/<id>.yml file; this section only decides which sources are live at all,
+#  how often the playtime one pays and what a level up feels like. All equipped
+#  companions gain from the same event, each one from its own source. Stored companions
+#  never gain anything, and a companion at its level cap freezes: it keeps what it had
+#  and resumes exactly there if the cap ever rises.
+# ------------------------------------------------------------
+experience:
+  # Master switch of every experience source. Off freezes every companion where it is.
+  enabled: true
+
+  # Per-source switches. Turning one off only stops the gain: no level is ever
+  # touched and no companion loses anything.
+  sources:
+    # Companion experience per point of vanilla XP the owner picks up. The owner's XP
+    # is observed, never consumed.
+    vanilla-xp: true
+    # Companion experience per block broken. A companion may declare a material whitelist in
+    # its own file; without one every block counts, which on a mine or generator
+    # world is thousands of events a second.
+    block-break: true
+    # Companion experience per block broken through an EdTools omnitool. This is NOT
+    # the same event as block-break above: EdTools consumes the blocks its tools
+    # break without ever firing a vanilla BlockBreakEvent, so a companion has to pick
+    # the source its server actually produces. Needs EdTools installed; without
+    # it nothing is registered and no class of it is ever loaded. A companion may also
+    # restrict itself to certain tool ids with `experience.tools` in its own file.
+    edtools-block-break: true
+    # Companion experience per mob killed. A dead player is not a mob kill: PvP feeds
+    # the damage-dealt source instead.
+    mob-kill: true
+    # Companion experience per point of damage the owner deals, melee and projectile,
+    # counted after armor and after the companions' own damage buff.
+    damage-dealt: true
+    # Companion experience per minute the owner stays connected.
+    playtime: true
+
+  playtime:
+    # Seconds between playtime grants. Every companion's playtime ratio is read per
+    # MINUTE whatever this says, so changing it only changes how often the grant
+    # is paid, never what a companion earns per minute of play.
+    interval-seconds: 60
+
+  level-up:
+    # Sends messages.companion-level-up to the owner when one of their equipped companions
+    # gains a level.
+    message: true
+    # Sound played to the owner on level up. "none" plays nothing.
+    sound: "ENTITY_PLAYER_LEVELUP 1.0 1.6"
+
+# ------------------------------------------------------------
+#  Buffs. A companion declares which of the three it grants, what it gives at level 1
+#  and what each level adds. The engine then computes, per buff:
+#
+#    base       = initial + (level - 1) x per-level
+#    companion buff   = base x (1 + buff boost% + trait buff%)
+#    player     = the sum of every equipped companion
+#    effect     = that sum capped by the "cap" below
+#
+#  The two modifiers are added to each other and multiply the base once; the cap
+#  applies LAST, to the summed total, never per companion. A total that comes out
+#  negative is treated as zero.
+# ------------------------------------------------------------
+buffs:
+  # Master switch of all three buffs.
+  enabled: true
+
+  damage:
+    # Whether companions grant the damage buff at all.
+    enabled: true
+    # Highest total the buff may reach, in percent. 100 means at most double
+    # damage.
+    cap: 100.0
+    # Apply the buff to melee hits.
+    melee: true
+    # Apply the buff to projectiles the owner fired.
+    projectile: true
+    # Apply the buff when the victim is another player. Off leaves PvE buffed
+    # and PvP vanilla.
+    pvp: true
+
+  resistance:
+    # Whether companions grant the resistance buff at all.
+    enabled: true
+    # Highest total the buff may reach, in percent. Capped at 95 whatever you
+    # write here: invulnerability is not a state this plugin can produce.
+    cap: 50.0
+    # Damage causes the reduction applies to. VOID, KILL, FALL, DROWNING,
+    # POISON, SUFFOCATION, SUICIDE and CUSTOM are refused with a warning: those
+    # would either be an exploit or would shield a player from /kill and the
+    # rest of the staff tools.
+    causes:
+      - ENTITY_ATTACK
+      - ENTITY_SWEEP_ATTACK
+      - PROJECTILE
+      - ENTITY_EXPLOSION
+      - BLOCK_EXPLOSION
+
+  speed:
+    # Whether companions grant the speed buff at all.
+    enabled: true
+    # Highest total the buff may reach, in percent. Applied as an attribute
+    # modifier on movement speed, never through setWalkSpeed, so EssentialsX
+    # /speed and impulse plates keep working. Values much above 40 are what
+    # anticheats start flagging.
+    cap: 40.0
+    # Also apply the buff to flight speed. Off by default; turning it back off
+    # removes the modifier from every player on the next reload.
+    affect-flying: false
+
+# ------------------------------------------------------------
+#  Traits. ONE global table in traits.yml: any trait can land on any companion, and a
+#  companion carries exactly one at a time. Rolling again replaces it and always
+#  spends the ticket, because the roll normalizes over the table and can never
+#  come up empty. The numbers in traits.yml are WEIGHTS, not percentages.
+#  A trait grants up to three things at once: percentage points of companion
+#  experience, flat levels on the companion's cap, and percentage points on ONE named
+#  buff - which only pays out on a companion that actually grants that buff.
+# ------------------------------------------------------------
+traits:
+  # Master switch of the trait system. Off refuses every trait roll and makes
+  # every trait worth 0; nothing is cleared, so switching it back on restores
+  # every companion's trait exactly as it was.
+  enabled: true
+
+  # The roulette the traits menu plays before it reveals what was rolled. Same
+  # four knobs, same names and same limits as a box's "animation:" block: both
+  # run on the ONE shared spinner, so a number typed here and the same number
+  # typed under a box's key in boxes.yml behave identically.
+  roll:
+    # Play the roulette at all. Off reveals the trait immediately.
+    enabled: true
+    # Ticks one spin lasts, clamped to 4-600.
+    duration-ticks: 30
+    # Ticks between two frames of the spin, minimum 2; lower spins faster.
+    step-ticks: 2
+    # Sound played on every frame of the spin. "none" plays nothing.
+    step-sound: "UI_BUTTON_CLICK 0.6 1.6"
+    # Sound played once the rolled trait is revealed. "none" plays nothing.
+    reveal-sound: "ENTITY_PLAYER_LEVELUP 1.0 1.4"
+
+# ------------------------------------------------------------
+#  Boosts. ONE global grade ladder in boost-grades.yml, shared by the three
+#  stats every companion carries. Same rule as the traits: the numbers there are
+#  WEIGHTS, the roll always produces a grade and the dice is always spent.
+#  A grade is worth a value inside its own min/max range, picked once per companion
+#  and stable for that companion's whole life, and either end may be negative.
+#    experience -> exp x (1 + experience grade% + trait exp%)
+#    level      -> floor(companion level cap x (1 + level grade%)) + trait levels
+#    buff       -> companion buff base x (1 + buff grade% + trait buff%)
+#  Rolling all three stats at once costs a normal dice; rolling one chosen stat
+#  costs a special dice.
+# ------------------------------------------------------------
+boosts:
+  # Master switch of the boost system. Off refuses every boost roll and makes
+  # every grade worth 0; nothing is cleared, so switching it back on restores
+  # every companion's three grades exactly as they were.
+  enabled: true
+
+  # The roulette the boosts menu plays before it reveals what was rolled. Same
+  # four knobs, same names and same limits as a box's "animation:" block.
+  roll:
+    # Play the roulette at all. Off reveals the grades immediately.
+    enabled: true
+    # Ticks one spin lasts, clamped to 4-600.
+    duration-ticks: 30
+    # Ticks between two frames of the spin, minimum 2; lower spins faster.
+    step-ticks: 2
+    # Sound played on every frame of the spin. "none" plays nothing.
+    step-sound: "UI_BUTTON_CLICK 0.6 1.6"
+    # Sound played once the rolled grades are revealed. "none" plays nothing.
+    reveal-sound: "ENTITY_PLAYER_LEVELUP 1.0 1.4"
+
+# ------------------------------------------------------------
+#  Fusion. Two companions of the SAME id become the companion that their own
+#  companions/<id>.yml names as its fusion target: it is a companion-to-companion map, never a
+#  rarity ladder, and a companion whose file names no target cannot be fused at all.
+#  The target, the success chance and the price of one attempt are declared per
+#  companion in that file; this section holds only the rules every fusion obeys.
+#  On a FAILED roll both parents are lost and the price is still paid. That is
+#  a normal outcome of a legal attempt, not an error.
+# ------------------------------------------------------------
+fusion:
+  # Master switch of the whole feature. Off refuses every fusion and every
+  # Fuse All; nothing is deleted and no companion loses its fusion target.
+  enabled: true
+
+  # Which parent the result takes each preserved field from.
+  #   BEST   - per FIELD, whichever parent holds the better value: the higher
+  #            level, the higher experience, the rarer trait and the better
+  #            grade of each boost stat. The result may take its level from one
+  #            parent and its trait from the other.
+  #   FIRST  - everything comes from the companion in the left input slot.
+  #   SECOND - everything comes from the companion in the right input slot.
+  keep-from: BEST
+
+  # What survives a fusion at all. A field switched off here is not taken from
+  # either parent: the result carries what a brand new companion carries, which is
+  # level 1, no experience, no trait and no boost grades.
+  keep:
+    # Carry over a level. It is capped by the TARGET companion's own max-level, since
+    # every companion declares its own ceiling.
+    level: true
+    # Carry over the experience banked toward the next level.
+    exp: true
+    # Carry over a trait. Under BEST the result keeps a trait when EITHER
+    # parent had one, and the rarer of the two when both did.
+    trait: true
+    # Carry over the experience boost grade.
+    boost-experience: true
+    # Carry over the level boost grade.
+    boost-level: true
+    # Carry over the buff boost grade.
+    boost-buff: true
+
+  cost:
+    # Charge the `fusion.cost` each companion file declares. The price is money, taken
+    # through Vault or through whatever economy backend SnLib is configured
+    # with. A server with no economy plugin at all fuses for FREE and says so
+    # once in the console: refusing instead would make every companion that names a
+    # price unfusable. Off makes every attempt free without editing companion files.
+    enabled: true
+
+  fuse-all:
+    # Let the Fuse All button fuse every possible pair at once. Off leaves
+    # single fusions working.
+    enabled: true
+    # Seconds the confirmation stays armed. Fuse All rolls the chance PER PAIR
+    # and can destroy most of a collection, so the first click only shows how
+    # many pairs would enter and a second click inside this window commits.
+    # Clamped to 1-60.
+    confirm-seconds: 5
+
+  # Default for a companion whose companions/<id>.yml fusion block declares no broadcast key
+  # of its own; a companion file overrides it either way, so you can announce the rare
+  # fusions and stay quiet about the common ones. Fuse All never broadcasts,
+  # whatever any companion says: it rolls per pair, so a good run would post one line
+  # per winning pair.
+  # HEADS UP: two shipped companion files already override this - stone_golem.yml sets
+  # broadcast: true and ember_fox.yml sets false - and companions/ is seed-only, so
+  # those stay whatever they are no matter what you put here. Turning this on will
+  # NOT make Ember Fox announce; edit or delete the key in its file to do that.
+  broadcast: false
+
+  # Sound played to the owner when a fusion produces a companion. "none" plays nothing.
+  success-sound: "ENTITY_PLAYER_LEVELUP 1.0 1.2"
+  # Sound played to the owner when a fusion fails and both parents are lost.
+  # "none" plays nothing.
+  failure-sound: "ENTITY_ITEM_BREAK 1.0 0.8"
+
+# ------------------------------------------------------------
+#  Companion boxes. A box is a physical item declared in boxes.yml, one key per box,
+#  and opened with a right click. What a box contains, how it looks, which
+#  sound it plays and what it says on opening lives in that file; this section
+#  holds only the rules every box obeys.
+#  Success chance: a box carries one, drawn from its own chance.min/chance.max
+#  when it is handed out - or forced with the [chance] argument of
+#  /companions admin givebox - and written onto the item itself. A failed open
+#  CONSUMES the box and grants nothing; a successful one rolls the box's
+#  weighted table, which always produces a companion.
+#  Storage full never blocks RECEIVING a box, only OPENING it: a single open
+#  refuses and hands the box straight back with its percentage intact, a bulk
+#  open opens what fits and returns the rest. Nothing is ever lost.
+# ------------------------------------------------------------
+boxes:
+  # Master switch of box opening. Off leaves every box item in place and in
+  # inventories, but a right click refuses and hands the box straight back.
+  enabled: true
+
+  # Let a creative-mode player open boxes. Off by default: creative
+  # middle-click copies any stack with its NBT intact, so one box would mint
+  # companions without limit.
+  allow-creative: false
+
+  # Blocks a box right click steps aside for, so the block wins the click.
+  # Without them, clicking a chest with a box in hand would open the box
+  # instead of the chest. An empty list makes every block openable.
+  #
+  # An entry starting with # is a vanilla BLOCK TAG and expands to everything
+  # in it on load, following whatever the running server version ships. That is
+  # what keeps this list short: #doors alone covers every wood and copper door,
+  # and #shulker_boxes covers the undyed box AND all sixteen dyed ones, which a
+  # bare SHULKER_BOX line does not. Anything else is one material name, and an
+  # unknown tag or material is skipped with one console warning.
+  #
+  # A server on 1.21 can also add CRAFTER, VAULT and TRIAL_SPAWNER. They are
+  # left out here because they do not exist on 1.20, which this plugin also
+  # supports, and an unknown name costs a console warning on every boot.
+  blocked-blocks:
+    # Tags: whole families in one line.
+    - "#shulker_boxes"
+    - "#doors"
+    - "#trapdoors"
+    - "#fence_gates"
+    - "#beds"
+    - "#buttons"
+    - "#anvil"
+    - "#cauldrons"
+    - "#all_signs"
+    - "#candles"
+    - "#flower_pots"
+    # Containers.
+    - CHEST
+    - TRAPPED_CHEST
+    - ENDER_CHEST
+    - BARREL
+    - HOPPER
+    - DISPENSER
+    - DROPPER
+    # Workstations and other blocks that open a screen.
+    - FURNACE
+    - BLAST_FURNACE
+    - SMOKER
+    - BREWING_STAND
+    - CRAFTING_TABLE
+    - ENCHANTING_TABLE
+    - BEACON
+    - LECTERN
+    - GRINDSTONE
+    - SMITHING_TABLE
+    - STONECUTTER
+    - LOOM
+    - CARTOGRAPHY_TABLE
+    - CHISELED_BOOKSHELF
+    # Blocks that do something visible when you click them.
+    - LEVER
+    - NOTE_BLOCK
+    - BELL
+    - COMPARATOR
+    - REPEATER
+    - DAYLIGHT_DETECTOR
+    - JUKEBOX
+    - RESPAWN_ANCHOR
+    - CAKE
+    - COMPOSTER
+    - DECORATED_POT
+    - CAMPFIRE
+    - SOUL_CAMPFIRE
+    - BEEHIVE
+    - BEE_NEST
+    - LODESTONE
+
+  bulk:
+    # Let shift + right click open the whole held stack at once. A box whose
+    # own file turns its reveal animation on can never be bulk opened: that
+    # click opens one box and says so, because 64 spinners firing together is
+    # what this rule exists to prevent.
+    enabled: true
+    # Most boxes one shift + right click may open. A vanilla stack holds 64, so
+    # raising this above 64 only matters for a box with a custom
+    # max-stack-size. Minimum 2.
+    max-per-click: 64
+    # Announce a bulk open too, once per DISTINCT companion won, using the box's own
+    # feedback.broadcast-key. Off by default: a wide table would otherwise turn
+    # one stack into a wall of chat.
+    broadcast: false
+
+# ------------------------------------------------------------
+#  Companion items. A stored companion can be taken out of the storage as a physical head
+#  (shift + right click on it in the main menu, or Q) and redeemed back with a
+#  right click, which is how companions change hands. The item carries the
+#  companion's whole state - level, experience, trait and the three boost grades - so
+#  a companion that comes back is the companion that left. Since 1.17.0 it also remembers
+#  WHO took it out, and a player who is not that owner is refused; heads
+#  extracted before 1.17.0 remember nobody and anyone may redeem them.
+#  A redeem into a full storage
+#  hands the item straight back, and so does every other refusal: the item is
+#  the companion, and it is never destroyed by a refusal.
+#  An EQUIPPED companion cannot be taken out (unequip it first) and neither can one
+#  whose companions/<id>.yml is gone, because it has no face left to travel with.
+#  The boxes.blocked-blocks list above applies to the redeem click too, so a
+#  companion item steps aside for a chest exactly like a box does.
+# ------------------------------------------------------------
+companion-items:
+  # Master switch of extracting and redeeming. Off refuses both and hands a
+  # clicked item back. Items already in circulation stay in inventories.
+  enabled: true
+
+  # Let a creative-mode player redeem companion items. Off by default: creative
+  # middle-click copies any stack with its NBT intact, so one companion item would
+  # mint companions without limit.
+  allow-creative: false
+
+  # Look of the extracted item. Its MATERIAL is always the companion's own head and
+  # cannot be set here; the name and lore below are yours.
+  # Every companion placeholder the menus use works here:
+  #   {companion} {companion-lore} {group} {group-color} {level} {level-cap} {exp}
+  #   {exp-next} {percent} {bar} {trait} {buff} {buff-value} {boosts} {owner}
+  # {companion-lore} and {boosts} are multi-line and expand to one lore line each.
+  # {owner} is the player the companion was taken out by. A companion item also REMEMBERS
+  # them: since 1.17.0 only that player can redeem it, and anyone else is
+  # refused and handed the item straight back. Items extracted before 1.17.0
+  # remember nobody and stay redeemable by whoever holds them.
+  item:
+    display-name: "{companion}"
+    lore:
+      - "{companion-lore}"
+      - ""
+      - "&8Group: &r{group-color}{group}"
+      - "&7Level &f{level}&7/&f{level-cap}"
+      - "&7Exp &f{exp}&7/&f{exp-next} &8({percent}%)"
+      - "&7Trait: &r{trait}"
+      - "&7Owner&8: &f{owner}"
+      - "{boosts}"
+      - ""
+      - "&a&lRIGHT CLICK"
+      - "&2Redeem this companion into your storage"
+```
+
+### A companion item remembers who took it out
+
+**Added in 1.17.0.** An extracted companion now carries two more tags in its item data: the UUID of the
+player who took it out, and their name. A player who right clicks a head that belongs to somebody
+else is refused with `messages.companion-item-not-yours`, which names the owner, and the head goes
+straight back into their inventory untouched.
+
+- **The UUID is the truth; the name is only printed.** A player who changes their nick keeps their
+  companions, and a player who takes the owner's old nick does not inherit them.
+- **Every head extracted before 1.17.0 remembers nobody, and an ownerless head stays redeemable by
+  whoever holds it.** That is deliberate: those items were traded on the promise that anyone could
+  redeem them, and nothing on the server records who extracted them, so there is nothing to
+  recover. The lock can only ever affect a companion taken out from 1.17.0 onwards.
+- There is **no config switch**. An item with no owner tag is free and an item with one is locked,
+  which is the whole rule.
+- Redeeming your OWN head works exactly as before, and the companion it creates belongs to whoever
+  redeemed it - so taking it out again stamps the new holder.
+
+{% hint style="warning" %}
+`config.yml` is **managed**: a merge adds keys you are missing but never rewrites a value you
+already have. The `&7Owner&8: &f{owner}` line above is a new entry in an existing `lore` list, so
+it reaches **fresh installs only**. To show the owner on a server that already runs SnCompanions, add
+that one line to `companion-items.item.lore` by hand, or delete the whole `lore` list and let the next
+boot write the shipped one back. The lock itself does not depend on the lore line - it works
+whether or not the item advertises an owner.
+{% endhint %}
+
+`{owner}` is also **no longer hologram-only**. It used to resolve only in a companion's name plate; since
+1.17.0 it is an ordinary companion placeholder and works in `companion-items.item.lore` and in the companion cells of
+`guis/main.yml` and `guis/selector.yml` too.
+
+### Scrolls
+
+**Added in 1.18.0.** A new managed band declares three consumable ITEMS, handed out with
+`/companions admin givescroll <player> <scroll> [amount] [levels]`. They are not balances: a scroll sits
+in an inventory, drops, and can be traded or sold like any other item, and nothing about it lives
+in the database.
+
+| Scroll | Applied to | Effect | Usable since |
+|---|---|---|---|
+| `ownership` | a companion ITEM in your own inventory | re-stamps that head as yours | 1.18.0 |
+| `level` | a companion cell of the main menu | raises its level by the number stamped on the stack | **1.19.0** |
+| `rarity` | a companion cell of the main menu | turns it into the companion its `upgrades-to` names | **1.19.0** |
+
+{% hint style="info" %}
+All three scrolls do something as of **1.19.0**; before it only the ownership one did. Scrolls
+handed out earlier work exactly as they would have: the number a level scroll is worth is stamped
+on the stack it was given on, so lowering `default-levels` later never devalues one already in
+circulation.
+{% endhint %}
+
+**A scroll is never right clicked.** All three are used by DROPPING one onto its target, which is
+why none of them registers a right-click action: a scroll that consumed itself on a right click
+would be eaten in mid-air the first time a player clicked with one in hand.
+
+#### Using a level or a rarity scroll
+
+Open the companions menu, pick the scroll up onto your cursor **out of your own inventory**, and left or
+right click a companion cell: an equipped slot marker along the top row, or a stored companion in the grid.
+The scroll is applied to that companion and one copy is consumed.
+
+That is what the new `player-inventory: open` key in `guis/main.yml` is for - see
+[Menus](#menus-guis) below. Your own inventory stays usable while the main menu is up, which is the
+only way to get a scroll onto your cursor with the menu open. Every click on the menu's own cells
+is still cancelled, so nothing rendered in the menu can be taken out of it.
+
+**The level scroll** raises the companion by the number stamped on that stack and stops at the companion's own
+level cap - the one its trait and its level boost grade widen, not the plain `max-level` of its
+file. A companion already at that cap is refused and keeps the scroll; a companion below it that the scroll
+would carry past it is raised to the cap and the scroll IS spent, so a companion can always finish its
+climb. The message reports the levels really gained rather than the number on the item.
+
+**The rarity scroll** turns the companion into whatever its `companions/<id>.yml` names under `upgrades-to`,
+keeping its level, experience, trait, boosts and obtained date. The upgraded companion always lands in
+**storage**, even when it was equipped - a new companion brings its own incompatibility and unique-group
+rules, so re-equipping is a decision you make - and the plugin says so when it happens.
+
+Both refuse, and consume nothing, when:
+
+| Situation | Message |
+|---|---|
+| the companion's `companions/<id>.yml` is gone | `messages.companion-unknown` |
+| the scroll is switched off, or the companion is outside its lists | `messages.scroll-not-applicable` |
+| level: the companion is already at its cap | `messages.scroll-level-capped` |
+| rarity: the companion declares no `upgrades-to` | `messages.scroll-no-upgrade` |
+| rarity: the `upgrades-to` target has no file any more | `messages.scroll-target-missing` |
+| an OWNERSHIP scroll is dropped on a menu cell | `messages.scroll-wrong-surface` |
+
+Dropping a scroll on an empty equip slot or an empty grid cell does nothing at all and costs
+nothing, and neither does clicking a cell while holding something that is not a scroll.
+
+**The ownership scroll is the way out of the 1.17.0 owner lock.** Since 1.17.0 a companion head remembers
+who took it out and only that player can redeem it, so handing a freshly extracted head over no
+longer hands the companion over. Pick an ownership scroll up onto your cursor, left or right click a companion
+head sitting in **your own** inventory, and the head becomes yours: the owner tags are rewritten,
+the `{owner}` line of its lore is repainted with your name, and one scroll is consumed. Nothing is
+written to the database, because a companion item's owner lives in the item's own tags until it is
+redeemed.
+
+It refuses, and consumes nothing, when:
+
+| Situation | Message |
+|---|---|
+| the head already names you | `messages.scroll-owner-already` |
+| the slot holds more than one head | `messages.scroll-owner-stacked` |
+| the companion is outside that scroll's lists | `messages.scroll-not-applicable` |
+| the companion's `companions/<id>.yml` is gone | `messages.companion-item-unknown` |
+| `companion-items.enabled` is off | `messages.companion-items-disabled` |
+| creative, and `companion-items.allow-creative` is off | `messages.scroll-creative` |
+
+A stack holds ONE set of item tags, which is why a stacked head is refused: a single scroll would
+otherwise re-stamp every copy in it. Split the stack first.
+
+Dropping a scroll onto anything that is **not** a companion item does nothing at all - the click is the
+ordinary inventory swap it looks like, and the scroll is not consumed. A level or rarity scroll
+dropped onto a companion item is likewise inert: those two act on a companion in the MENU, not on an item.
+
+Since 1.19.0 the ownership scroll also works with the companions menu open, because the menu no longer
+freezes your own inventory. It is the same gesture in the same place, and it needed no change of
+its own.
+
+| Key | Default | Meaning |
+|---|---|---|
+| `scrolls.<type>.enabled` | `true` | Master switch of one scroll. Off refuses the give command and makes every copy already in circulation inert; nothing is taken away from anybody |
+| `scrolls.level.default-levels` | `1` | Levels one level scroll is worth when `givescroll` omits `[levels]` |
+| `scrolls.<type>.item` | see below | The golden item spec, the same one `boxes.yml` and `companion-items` use. `{levels}` exists only on the level scroll |
+| `scrolls.<type>.whitelist` | `[]` | Companion ids this scroll may be used on. An EMPTY list means every companion |
+| `scrolls.<type>.blacklist` | `[]` | Companion ids it may NOT be used on, applied AFTER the whitelist |
+
+Neither list is checked when the file loads, the same rule the EdTools currency ids follow: an id
+naming no companion simply never matches, which is the same outcome as a typo minus a false alarm on
+every boot.
+
+{% hint style="info" %}
+`config.yml` is **managed**, so the whole `scrolls:` band is merged into an existing install on the
+first boot, comments and all, and your existing values are untouched.
+{% endhint %}
+
+```yaml
+# ------------------------------------------------------------
+#  Scrolls. Three consumable items handed out with
+#  /companions admin givescroll <player> <scroll> [amount] [levels].
+# ------------------------------------------------------------
+scrolls:
+
+  level:
+    # Master switch of this scroll. Off refuses the give command and makes
+    # every copy already in circulation inert; nothing is taken away.
+    enabled: true
+    # Levels one scroll is worth when the give command omits [levels].
+    default-levels: 1
+    # Look of the item. {levels} is resolved when the scroll is handed out and
+    # stamped onto the stack, so the lore and the effect can never disagree.
+    item:
+      material: BOOK
+      display-name: "&fScroll &a&lLEVEL"
+      lore:
+        - "&8Companion consumable"
+        - ""
+        - "&7Drag and drop this scroll onto"
+        - "&7a companion in your companions menu to raise"
+        - "&7its level by &f+{levels}&7."
+        - ""
+        - "&aDrag onto a companion"
+    # Companion ids this scroll may be used on. An EMPTY list means every companion.
+    whitelist: []
+    # Companion ids this scroll may NOT be used on, applied after the whitelist.
+    blacklist: []
+
+  ownership:
+    enabled: true
+    item:
+      material: BOOK
+      display-name: "&fScroll &e&lOWNERSHIP"
+      lore:
+        - "&8Companion consumable"
+        - ""
+        - "&7Drag and drop this scroll onto"
+        - "&7a companion item in your inventory to"
+        - "&7claim its ownership."
+        - ""
+        - "&eDrag onto a companion item"
+    whitelist: []
+    blacklist: []
+
+  rarity:
+    enabled: true
+    item:
+      material: BOOK
+      display-name: "&fScroll &d&lRARITY"
+      lore:
+        - "&8Companion consumable"
+        - ""
+        - "&7Drag and drop this scroll onto"
+        - "&7a companion in your companions menu to upgrade"
+        - "&7it to the next rarity."
+        - ""
+        - "&dDrag onto a companion"
+    whitelist: []
+    blacklist: []
+```
+
+```yaml
+# ------------------------------------------------------------
+#  Worlds. TWO separate lists, on purpose: where companions are DRAWN and where their
+#  buffs APPLY are different questions, and mixing them would turn a cosmetic
+#  decision into a combat-balance one.
+# ------------------------------------------------------------
+worlds:
+  # Whitelist of the worlds companions are drawn in. An EMPTY list means every world.
+  # Outside this list the companions stay equipped and their buffs keep applying;
+  # only the rendering stops. Use worlds.buff-disabled below to switch a buff
+  # off - this list never does.
+  render: []
+  # Narrows the list above for OTHER players' companions only. An EMPTY list means
+  # "wherever render allows". Name a world here to let players see their OWN
+  # companions there while everyone else's stay hidden, as in a lobby where a crowd of
+  # formations is noise. A world absent from render draws nothing either way.
+  render-others: []
+  # Blacklist per buff: the worlds that buff does NOT apply in. An empty list
+  # means the buff applies everywhere, and so does a buff removed from here.
+  # Entering or leaving one of these worlds removes or re-applies the buff.
+  # Example: leave speed on in your pvp world while damage is off there.
+  buff-disabled:
+    speed: []
+    resistance: []
+    damage: []
+
+# ------------------------------------------------------------
+#  Menus. Everything the seven menus look like lives in guis/<id>.yml: the
+#  titles, the masks, every material, every name, every lore line and every
+#  click action. These two keys are the exceptions, because neither can be
+#  written as an item field.
+#  There is deliberately no page-size key: the number of cells a menu gives its
+#  paged region IS its page size, so widening the letter run in that menu's
+#  layout widens the page and the arrows follow. A second knob could only ever
+#  disagree with the picture.
+# ------------------------------------------------------------
+menus:
+
+  # The experience bar spliced into a companion's {bar} lore line.
+  progress-bar:
+    # Cells the bar is drawn with, 1 to 64.
+    length: 20
+    # Glyph of a cell the companion already earned.
+    filled: "&a|"
+    # Glyph of a cell it has not.
+    empty: "&8|"
+
+  bulk-delete:
+    # Icon of a group button whose group names no material of its own below.
+    default-icon: RED_DYE
+    # Icon per group id, matching the keys of the `groups:` section above. A
+    # value may also be a head texture (a raw base64 payload or a basehead-
+    # prefixed one), exactly like any other material field.
+    # sn:extensible
+    icons:
+      common: WHITE_DYE
+      rare: BLUE_DYE
+      epic: PURPLE_DYE
+
+# ------------------------------------------------------------
+#  PlaceholderAPI. SnCompanions exposes %sncompanions_...% when PlaceholderAPI is
+#  installed; without it nothing is registered and no key here does
+#  anything. The tokens themselves are not configurable - another plugin's
+#  scoreboard refers to them by name - so this section only decides how the
+#  NUMBERS are written.
+#
+#  The full list:
+#    %sncompanions_companions_total%      %sncompanions_companions_stored%     %sncompanions_companions_equipped%
+#    %sncompanions_storage_used%    %sncompanions_storage_total%   %sncompanions_storage_free%
+#    %sncompanions_slots_used%      %sncompanions_slots_total%     %sncompanions_slots_free%
+#    %sncompanions_buff_damage%     %sncompanions_buff_resistance% %sncompanions_buff_speed%
+#    %sncompanions_currency_trait-ticket%  %sncompanions_currency_dice-normal%
+#    %sncompanions_currency_dice-special%
+#    %sncompanions_equipped_<n>%    the companion in equip slot <n>, or the status.none word
+#    %sncompanions_equipped_<n>_level%   _exp%   _exp_next%   _cap%
+#
+#  Every one of them is answered from memory: a player who is not loaded
+#  reads as zero rather than making the server wait for a database read,
+#  which is what lets a scoreboard use them every tick.
+# ------------------------------------------------------------
+placeholders:
+  # Decimal places of the three buff percentages (%sncompanions_buff_*%). 0 prints
+  # whole numbers, 2 prints 12.50. Written with a dot on every server no
+  # matter its language, so a scoreboard condition comparing the value to a
+  # number keeps working. 0 to 6.
+  #
+  # The default is 1 because that is what the MENUS print: raise it and the
+  # same buff reads 12.50 on your scoreboard and 12.5 in the companion lore at the
+  # same time. Raise it anyway if another plugin compares the token and needs
+  # the precision - the menus are a house style, this is a value.
+  decimals: 1
+
+  # Whether the counters and the experience numbers are abbreviated: on,
+  # 1500 prints as 1.5K. Leave it off if another plugin compares these
+  # placeholders against a number - an abbreviated value is text, not a
+  # number, and a requirement check on it will fail. The percentages above
+  # are never abbreviated.
+  compact-numbers: false
+```
+
+### How capacity is resolved
+
+Changed in 1.22.0. The effective slot count and storage capacity are
+**`max(config base, permission) + purchased`**: the config base (`slots.base-count` /
+`storage.base-capacity`) and the rank permission (`sncompanions.slots.<n>` / `sncompanions.storage.<n>`)
+compete - the permission names the absolute count a rank grants, so the higher of the two is the
+player's floor - and everything sold through `/companions admin slots|storage give` adds on top of that
+floor. With `base-count: 1`, a player who buys one slot equips two companions.
+
+Until 1.21.0 the purchased half competed too (the effective value was the highest of the three),
+so the first `base-count` slots sold in a shop changed nothing - that is the bug 1.22.0 replaces.
+The upgrade rewrites nothing: the same database rows simply resolve higher for players who have
+purchases, the moment 1.22.0 boots.
+
+### Capacity ceilings
+
+Added in 1.9.0; since 1.22.0 they bound the TOTAL. `slots.max-count` and `storage.max-capacity`
+cap the total the two admin capacity commands may leave a player with.
+
+| Key | Default | Caps |
+|---|---|---|
+| `slots.max-count` | `7` | the total equip slots `/companions admin slots give\|set` may leave |
+| `storage.max-capacity` | `0` (off) | the total storage `/companions admin storage give\|set` may leave |
+
+A command that would go past its ceiling is **not cancelled**. The purchase is trimmed so the
+total lands exactly on the ceiling and the admin is told, so on a stock install (base `1`,
+ceiling `7`) `/companions admin slots give Snopeyy 100` leaves 6 purchased slots - a total of 7 - and
+prints `messages.admin-slots-clamped` before the usual confirmation. That notice is shown even
+to an admin who typed `-sf`: that flag mutes success confirmations, and a number other than the one
+typed is corrective information. Set a key to `0` to remove its ceiling.
+
+{% hint style="info" %}
+Keep `slots.max-count` equal to the number of `s` cells in the layout of `guis/main.yml` - 7 in the
+shipped menu. The menu can only draw that many, so slots past it are bought and never usable.
+SnCompanions does not read `guis/main.yml` to derive the ceiling, on purpose: two files you edit
+independently should not silently depend on each other.
+{% endhint %}
+
+{% hint style="warning" %}
+The ceiling bounds **purchases only**. It does not limit the `sncompanions.slots.<n>` /
+`sncompanions.storage.<n>` permission grants, so a rank may still grant more than an admin command can -
+purchases stack on top of whatever floor the rank sets.
+
+It also never lowers a row on its own. If you reduce `slots.max-count` on a live server, players
+already above it keep what they have until the next `slots give`/`set` on them, which then clamps
+them down to the new ceiling. The same applies to rows whose purchases predate the 1.22.0
+total-bound semantics.
+{% endhint %}
+
+### How the label turns
+
+Added in 1.10.0. `holograms.billboard` decides whether the text above a companion leans towards the
+player or stays upright.
+
+| Value | What the text does |
+|---|---|
+| `vertical` (default) | turns only around the vertical axis, so the lines stay upright at every angle |
+| `center` | turns on both axes and tilts towards the camera |
+| `horizontal` | turns around the horizontal axis only |
+| `fixed` | never turns, keeping the facing it was spawned at |
+
+`vertical` is the DecentHolograms look and the shipped default from 1.10.0 on: a label read from a
+rooftop or from the bottom of a ravine is as straight as one read at eye level. `center` is what
+the labels did before the key existed - write it if you preferred the tilt, and nothing else
+changes. `horizontal` and `fixed` complete the set of what a text display can do; neither reads
+well on a name plate.
+
+An unknown value falls back to `vertical` and logs one line in the console naming what it read. The
+setting is global: there is no per-companion override, so a server has one label aesthetic rather than a
+mix. It applies on the next formation rebuild, which `/companions reload` performs.
+
+{% hint style="info" %}
+`config.yml` is managed, so servers upgrading from 1.9.0 or earlier receive `billboard: vertical`
+on the next boot and their labels straighten up with no file editing. Set it to `center` if you
+want the old look back.
+{% endhint %}
+
+## traits.yml
+
+```yaml
+# ============================================================
+#  SnCompanions - traits
+#  ONE global table for the whole server: any trait here can land on any companion,
+#  and a companion carries exactly one at a time. Rolling again replaces it.
+#  Seeded once and never merged again: this file is yours. Every top-level key
+#  below is a trait id. Add, rename and delete freely; a trait id still stored
+#  on a companion whose entry is gone is never cleared, it renders marked as unknown
+#  and is worth 0 until the entry comes back.
+#  The "weight" numbers are WEIGHTS, not percentages: the roll normalizes over
+#  the whole table, always produces a trait and always spends the ticket. They
+#  do not have to add up to 100.
+# sn:extensible-root
+# ============================================================
+
+# The default pack is deliberately small: five common traits and one rare one.
+# Copy an entry to add your own.
+
+studious:
+  # Name shown in the trait index and on the companion.
+  display-name: "&aStudious"
+  # Lore shown under the name in the trait index.
+  lore:
+    - "&7Learns faster than the rest."
+  # Slot of the trait index menu this entry renders at. Remove the key to let
+  # the menu place it in the next free slot.
+  slot: 11
+  # Material of the index icon.
+  icon: EXPERIENCE_BOTTLE
+  # Draws the index icon as a player head instead of the material above. Accepts
+  # a raw base64 payload, a basehead-/texture- prefixed value or an http skin
+  # URL; an unreadable value falls back to the material with one warning.
+  # head-texture: ""
+  # Roll weight relative to every other entry. 0 retires the trait: companions that
+  # already carry it keep it, it simply stops being rolled.
+  weight: 30.0
+  effects:
+    # Percentage points added to the experience the companion gains. Negative allowed.
+    exp-percent: 15.0
+    # Flat levels added to the companion's level cap.
+    level-bonus: 0
+    buff:
+      # Buff this trait pushes: DAMAGE, RESISTANCE or SPEED. Leave it empty for
+      # a trait that touches no buff. A trait only pays out on a companion that grants
+      # that same buff.
+      type: ""
+      # Percentage points added to the buff named above.
+      percent: 0.0
+    # Optional. FLAT percentage points added to an EdTools currency booster while
+    # a companion carrying this trait is EQUIPPED. One child per currency id, or one of
+    # enchants / enchant / global-enchants / encantamientos for the GLOBAL
+    # enchant multiplier.
+    # Unlike a companion's own edtools-boosts block, these do NOT scale with the companion's
+    # level and are not widened by its boost grades, and the companion does not need an
+    # edtools-boosts block of its own to pay them - any equipped companion carrying the
+    # trait does. They are not bounded by an entry's "max" either: that ceiling
+    # belongs to the entry that declared it.
+    # Remember the one-decimal rule of the integration: the total of every
+    # equipped companion is handed to EdTools with a single decimal, so the granted
+    # boost moves in steps of 10% and a total under 5 points grants nothing.
+    # edtools:
+    #   essence: 15.0
+    #   enchants: 10.0
+
+veteran:
+  display-name: "&eVeteran"
+  lore:
+    - "&7Has room to grow past its limit."
+  slot: 13
+  icon: GOLDEN_APPLE
+  weight: 20.0
+  effects:
+    exp-percent: 0.0
+    level-bonus: 5
+    buff:
+      type: ""
+      percent: 0.0
+
+swift:
+  display-name: "&bSwift"
+  lore:
+    - "&7Only helps a companion that grants Speed."
+  slot: 15
+  icon: FEATHER
+  weight: 25.0
+  effects:
+    exp-percent: 0.0
+    level-bonus: 0
+    buff:
+      type: SPEED
+      percent: 10.0
+
+fierce:
+  display-name: "&cFierce"
+  lore:
+    - "&7Only helps a companion that grants Damage."
+  slot: 20
+  icon: IRON_SWORD
+  weight: 25.0
+  effects:
+    exp-percent: 0.0
+    level-bonus: 0
+    buff:
+      type: DAMAGE
+      percent: 10.0
+
+stalwart:
+  display-name: "&9Stalwart"
+  lore:
+    - "&7Only helps a companion that grants Resistance."
+  slot: 22
+  icon: SHIELD
+  weight: 25.0
+  effects:
+    exp-percent: 0.0
+    level-bonus: 0
+    buff:
+      type: RESISTANCE
+      percent: 10.0
+
+prodigy:
+  display-name: "&6&lProdigy"
+  lore:
+    - "&7Rare. Learns fast and grows tall."
+  slot: 24
+  icon: NETHER_STAR
+  weight: 5.0
+  effects:
+    exp-percent: 25.0
+    level-bonus: 3
+    buff:
+      type: ""
+      percent: 0.0
+```
+
+### A trait that boosts an EdTools currency
+
+**Added in 1.16.0.** Beside its three original effects, a trait can carry an `effects.edtools`
+block: FLAT percentage points added to one or more EdTools boosters while a companion carrying the
+trait is EQUIPPED. One child per currency id, or one of `enchants` / `enchant` /
+`global-enchants` / `encantamientos` for the GLOBAL enchant multiplier. The key is optional and
+absent from every shipped entry; `traits.yml` is seeded once and never merged again, so on an
+existing server you add it by hand.
+
+```yaml
+lucrative:
+  display-name: "&6Lucrative"
+  weight: 10.0
+  effects:
+    exp-percent: 0.0
+    level-bonus: 0
+    buff:
+      type: ""
+      percent: 0.0
+    edtools:
+      essence: 15.0
+      enchants: 10.0
+```
+
+Four rules decide what that is actually worth, and they are what makes this effect different
+from a companion's own [`edtools-boosts`](#companions) block:
+
+| Rule | What it means |
+|---|---|
+| **The companion needs nothing of its own** | Any equipped companion carrying the trait pays these points, whether or not its `companions/<id>.yml` declares an `edtools-boosts` block. That is the point of the effect: it turns a trait into an economy upgrade for the whole collection rather than for one companion family. |
+| **Flat, always** | They do not scale with the companion's level and are not widened by its buff boost grade or by the trait's own buff percentage. `15.0` is `15.0` on a level 1 companion and on a level 1000 one, exactly like `exp-percent`. |
+| **Never clamped by `max:`** | A companion entry's optional `max:` ceiling bounds the contribution of the entry that declared it. A trait's points are not that entry's, so a companion capped at 10 carrying a trait worth 50 contributes 60. |
+| **The one-decimal rule still applies** | The points join the same per-currency total every equipped companion feeds, and that total is handed to EdTools with a single decimal. The granted boost therefore moves in steps of 10%, and a total under 5 points grants nothing at all. |
+
+Every equipped companion carrying the trait pays it, so two of them are worth double, and a trait's
+points and a companion's own entry for the same currency simply add up. Currency ids are not checked
+when the file is read - EdTools may still be starting - so an id it does not serve produces one
+console warning per id per load and is applied anyway, in case the currency registers later.
+
+Switching `traits.enabled` off in `config.yml` takes the points away with everything else a
+trait grants and clears the boosters on the next sync; nothing is deleted, and switching it back
+on restores them. Without EdTools installed, or with `edtools.enabled: false`, the block is
+simply inert.
+
+The trait index shows one line per currency a trait boosts, so a trait whose ONLY effect is a
+currency no longer reads as "no effect". Those lines come from the two language keys
+`menus.trait-effect-edtools` (which takes `{currency}` and `{percent}`) and
+`menus.trait-effect-edtools-enchant` (which takes `{percent}` only, since the global enchant
+multiplier has no currency id worth printing).
+
+## boost-grades.yml
+
+```yaml
+# ============================================================
+#  SnCompanions - boost grades
+#  ONE global ladder for the whole server, shared by all three boost stats
+#  (experience, level, buff). This file exists so a grade table is never copied
+#  into a per-companion file again.
+#  Seeded once and never merged again: this file is yours. Every top-level key
+#  below is a grade id. A grade id still stored on a companion whose entry is gone is
+#  never cleared, it renders marked as unknown and is worth 0 until the entry
+#  comes back.
+#  The "weight" numbers are WEIGHTS, not percentages: the roll normalizes over
+#  the ladder, always produces a grade and always spends the dice. They do not
+#  have to add up to 100.
+#  A grade is worth a value inside its min/max range, picked once per companion and
+#  stable for that companion's whole life. Both ends may be NEGATIVE: a penalty grade
+#  is content, not a mistake.
+#  What each stat does with the percentage:
+#    experience -> exp x (1 + experience grade% + trait exp%)
+#    level      -> floor(companion level cap x (1 + level grade%)) + trait levels
+#    buff       -> companion buff base x (1 + buff grade% + trait buff%)
+# sn:extensible-root
+# ============================================================
+
+# The default ladder is deliberately short: five rungs, one of them a penalty.
+
+flawed:
+  # Name shown wherever the grade is rendered.
+  display-name: "&8Flawed"
+  # Roll weight relative to every other rung. 0 retires the rung: companions that
+  # already carry it keep it, it simply stops being rolled.
+  weight: 25.0
+  # Low end of what this rung is worth, in percentage points. May be negative.
+  min-percent: -5.0
+  # High end. Set it equal to min-percent for a fixed-value rung.
+  max-percent: -1.0
+  # Stats this rung may be rolled for: experience, level, buff. An EMPTY list
+  # means all three, which is what makes the file read as one shared ladder.
+  stats: []
+
+common:
+  display-name: "&7Common"
+  weight: 40.0
+  min-percent: 0.0
+  max-percent: 3.0
+  stats: []
+
+fine:
+  display-name: "&aFine"
+  weight: 20.0
+  min-percent: 4.0
+  max-percent: 8.0
+  stats: []
+
+superior:
+  display-name: "&9Superior"
+  weight: 12.0
+  min-percent: 9.0
+  max-percent: 15.0
+  stats: []
+
+mythic:
+  display-name: "&6&lMythic"
+  weight: 3.0
+  min-percent: 16.0
+  max-percent: 25.0
+  stats: []
+```
+
+## companions/
+
+One file per companion type, named after its id. Three examples are seeded on a fresh install:
+`ember_fox.yml`, `gale_sprite.yml` and `stone_golem.yml`. A companion file declares the display
+name, the group it belongs to, the head or BetterModel it renders as, its level cap and
+experience curve, the buffs it grants per level, since 1.8.0 the hologram drawn above it,
+since 1.13.0 the optional `edtools-boosts` block and, since 1.18.0, the optional `upgrades-to`
+target. Copy one of the examples to add your own.
+
+The `hologram:` block is optional and, because this folder is seeded once and never merged
+again, it is never added to the companion files you already have. That is what
+`holograms.default-lines` in `config.yml` is for: a companion that declares no block uses those
+lines, so you only write a block for the companions that should differ. Only an explicit
+`enabled: false` silences a companion - `gale_sprite.yml` ships that way as the mute example, and
+`stone_golem.yml` ships its own `height-offset` because a model companion's label is measured from
+the carrier its bones ride, which also carries `models.height-offset`.
+
+The `edtools-boosts:` block, added in 1.13.0, is optional and ships **commented out**: it does
+something only on a server running EdTools. Each child key is an EdTools currency id, or one of
+`enchants`, `enchant`, `global-enchants`, `encantamientos` for the global enchant multiplier, and
+both numbers are percentages exactly like the `buff:` block above. It has the same seeded-once
+caveat as `hologram:` - the companion files you already have are never merged again, so you add the block
+to them by hand. See the `edtools` band of `config.yml` above for the one-decimal rule that decides
+what those percentages actually grant.
+
+Since **1.15.0** each entry of that block also accepts an optional `max:`, a ceiling in percentage
+points:
+
+```yaml
+edtools-boosts:
+  money:
+    initial: 0.4
+    per-level: 0.4
+    max: 30.0
+```
+
+Three things about where the ceiling sits, because they are what make it useful:
+
+- It applies to the value **this companion** produced *after* its buff boost grade and its trait have
+  widened it, not to the raw `initial + per-level` figure. A companion the grades pushed to 45 with
+  `max: 30` contributes 30.
+- It applies **before** the equipped companions are summed, so it caps one companion and never the player's
+  total. Two equipped companions that each declare `max: 10` still grant 20 together. There is no cap on
+  a player's total, deliberately.
+- The one-decimal rounding still happens **afterwards**, on the sum. Capping first and rounding
+  after is what lets three companions capped at 4 grant +10% instead of nothing.
+
+Absent, `0` and any negative number all mean **no ceiling**, which is why every companion file written
+before 1.15.0 keeps granting exactly what it granted. A negative value is logged once on load,
+naming the companion and the entry, and then read as no ceiling. The key exists for a per-level ramp
+running on a level cap it was not sized for: `per-level: 0.4` is +300% at level 750.
+
+Since **1.20.0** the `{buff}` and `{buff-value}` placeholders show this block too. Everywhere a
+companion is described - the menus, an extracted companion item, a hologram line - those two placeholders name
+the companion's EFFECT: a companion that declares a vanilla `buff:` shows it exactly as before, and a companion
+whose buff grants nothing resolves them from its `edtools-boosts` block instead. `{buff}` becomes
+the boosted currencies joined in file order and `{buff-value}` the live value at the companion's current
+level, with the grade and trait widening and the per-entry `max:` already applied - the same
+number, from the same formula, that the booster sum uses. A companion boosting several currencies at
+different values shows the highest one; a trait's flat `effects.edtools` points are not included,
+because they are the trait's effect and the trait's own lines already show them.
+
+Currency display names come from the language file: one `messages.edtools-currency-<id>` entry per
+currency you want renamed (e.g. `edtools-currency-money: "&6Money"`), with
+`menus.edtools-buff-separator` as the separator between two names. Only `enchant` ships named -
+every other id is invented on your server - and an id without an entry shows as the raw id. The
+trait index's currency lines resolve through the same entries, so one currency can never carry two
+names.
+
+### The rarity ladder: `upgrades-to`
+
+**Added in 1.18.0.** A companion file may name the companion a RARITY scroll turns it into:
+
+```yaml
+# companions/ember_fox.yml
+upgrades-to: stone_golem
+```
+
+Leave the key out and the rarity scroll refuses on that companion - a companion at the top of its ladder
+declares no target.
+
+It is **not** the same ladder as `fusion.into`. A fusion eats two companions and can fail; an upgrade
+eats one scroll and cannot. A companion may declare either, both, or neither, and the two may point at
+different companions.
+
+The target is not checked when the file loads - it may name a companion whose file arrives an hour later
+- so a typo surfaces when the scroll is used rather than as a warning on every boot.
+
+{% hint style="warning" %}
+`companions/` is **seed-only**: it is seeded once and never merged again, so `upgrades-to` does **not**
+arrive on the companion files you already have. Add it by hand. Only a fresh install receives the
+commented example that ships in `companions/ember_fox.yml`. Since **1.19.0** the rarity scroll reads it,
+so a companion with no `upgrades-to` is a companion no rarity scroll can be used on.
+{% endhint %}
+
+A companion whose `upgrades-to` names ITSELF is refused the same way a companion that declares nothing is:
+there is nowhere for it to go.
+
+Here is the seeded `companions/ember_fox.yml` in full, as a working reference:
+
+```yaml
+# ============================================================
+#  SnCompanions - companion definition: ember_fox
+#  One file per companion. The file name is the companion id used by commands, by the
+#  fusion targets of other companions and by the database rows.
+#  Seeded once and never merged again: this file is yours. Copy it to add a
+#  companion, delete it to remove one. A companion id still stored on a player whose file
+#  is gone is never deleted; it renders as a placeholder that cannot be
+#  equipped or fused until the file comes back.
+#  Every companion is independent: it declares its own level cap, curve, buff and
+#  fusion target. There is no rarity table.
+# ============================================================
+
+# Name shown on the companion item.
+display-name: "&6&lEmber Fox"
+
+# Lore shown on the companion item, above the progress lines the menus add.
+lore:
+  - "&7A restless fox that burns brighter"
+  - "&7the longer you fight beside it."
+
+# Head texture shown by the renderer and on the companion item. Accepts a raw base64
+# payload, a basehead-/texture- prefixed value or an http skin URL.
+head-texture: "eyJ0ZXh0dXJlcyI6eyJTS0lOIjp7InVybCI6Imh0dHA6Ly90ZXh0dXJlcy5taW5lY3JhZnQubmV0L3RleHR1cmUvZjdkOWE4ZDg5NTY1MmU4N2JmNmZkNTBmYmE2ZmFkMzljY2QwYmY4Y2E5NzgwZmE2ZDkxMTUzMjZkOWFkODNhYSJ9fX0="
+
+# Optional BetterModel model. Declare it to render an animated model instead of
+# the head; the head above stays the fallback when BetterModel is absent or the
+# model id is gone.
+# model:
+#   # Model id registered in BetterModel.
+#   id: ember_fox
+#   # Animation played while the owner stands still.
+#   animation-idle: idle
+#   # Animation played while the owner moves.
+#   animation-move: walk
+#   # Size multiplier of the model.
+#   scale: 1.0
+
+# ------------------------------------------------------------
+#  Hologram. The text drawn above this companion, riding the companion itself so the two
+#  move as one thing. Leave the whole block out and the companion uses
+#  holograms.default-lines from config.yml; the look (spacing, scale, shadow,
+#  background) always comes from the holograms band there.
+# ------------------------------------------------------------
+hologram:
+  # Draw a label above this companion. False silences this companion alone.
+  enabled: true
+  # This companion's own lines, top first. Every menu placeholder works here, plus
+  # {owner}; PlaceholderAPI tokens resolve against the owner.
+  lines:
+    - "{group-color}{companion}"
+    - "&7Lv. &f{level}&7/&f{level-cap}"
+    - "&8{owner}"
+  # Blocks above the companion the top line sits at. Leave it out to follow
+  # holograms.height-offset.
+  # height-offset: 0.9
+
+# This companion's own level cap, before trait and boost bonuses.
+max-level: 50
+
+# ------------------------------------------------------------
+#  Experience.
+# ------------------------------------------------------------
+experience:
+  # Experience needed to reach level 2.
+  base: 500
+  # Added to that requirement by each further level.
+  per-level: 500
+  # VANILLA_XP, BLOCK_BREAK, EDTOOLS_BLOCK_BREAK, MOB_KILL, DAMAGE_DEALT or
+  # PLAYTIME.
+  #
+  # EDTOOLS_BLOCK_BREAK is NOT the same source as BLOCK_BREAK: EdTools consumes
+  # the blocks its omnitools break without ever firing a vanilla
+  # BlockBreakEvent, so on a farming server the two count completely different
+  # things and this companion has to name the one your server actually produces. It
+  # needs EdTools installed; without it a companion on this source simply earns
+  # nothing.
+  source: VANILLA_XP
+  # Gain per unit of the source; here, per point of vanilla XP picked up.
+  ratio: 1.0
+  # Only for EDTOOLS_BLOCK_BREAK: count only the breaks made with these EdTools
+  # tool ids, spelled as EdTools itself names them. Left out or empty, every
+  # omnitool counts. A break EdTools reports with no tool at all never matches a
+  # filter, so a companion listed here earns from that tool and nothing else.
+  #
+  # tools:
+  #   - crop-tool
+  #   - mining-tool
+
+# ------------------------------------------------------------
+#  Buff. Only equipped companions apply it, and the totals of every equipped companion are
+#  summed before the per-buff cap is applied.
+# ------------------------------------------------------------
+buff:
+  # DAMAGE, RESISTANCE or SPEED.
+  type: DAMAGE
+  # Percent granted at level 1.
+  initial: 2.0
+  # Percent added by each level above 1.
+  per-level: 0.1
+
+# ------------------------------------------------------------
+#  EdTools boosters. Optional, and left commented out on purpose: uncomment it
+#  only on a server that runs EdTools. Only equipped companions grant these, the
+#  values of every equipped companion are summed per currency, and the companion's buff
+#  boost grade and its trait widen them exactly as they widen the buff above.
+#
+#  Each child key is an EdTools currency id, or one of "enchants", "enchant",
+#  "global-enchants", "encantamientos" for the GLOBAL enchant multiplier. There
+#  is no way to boost one named enchant: the global multiplier is all EdTools
+#  exposes to other plugins.
+#
+#  READ THIS BEFORE PICKING NUMBERS. The percentages here are summed and then
+#  handed to EdTools rounded to ONE decimal of the fraction it wants, which
+#  means the granted boost moves in steps of 10%: a total below 5% grants no
+#  booster at all, 5% to 14% grants +10%, 15% to 24% grants +20%. The rounding
+#  is a hard rule of this integration, so write your companions in tens.
+#
+#  The optional "max" below feeds that same rule from the other end: it is
+#  applied FIRST, to this companion alone, and the rounding happens afterwards on the
+#  sum. It does NOT bound the player's total - two equipped companions that each cap
+#  at 10 still add up to 20.
+# ------------------------------------------------------------
+# edtools-boosts:
+#   money:
+#     # Percent granted at level 1.
+#     initial: 10.0
+#     # Percent added by each level above 1.
+#     per-level: 1.0
+#     # Optional ceiling, in percentage points, applied to the value THIS companion
+#     # produced once its boost grade and trait have already widened it, before
+#     # the totals of your equipped companions are summed. Absent or 0 = no ceiling.
+#     # Use it when a per-level ramp would run away at a high level cap.
+#     max: 30.0
+#   enchants:
+#     initial: 10.0
+#     per-level: 0.0
+
+# Group label declared in config.yml; drives the storage order, the bulk delete
+# buttons and the lore, nothing else.
+group: common
+
+# ------------------------------------------------------------
+#  Fusion. Two of THIS companion produce the companion named below. Remove the section to
+#  make this companion unfusable.
+# ------------------------------------------------------------
+fusion:
+  # Companion id produced by a successful fusion.
+  into: stone_golem
+  # Success chance in percent; on failure both parents are lost.
+  chance: 50.0
+  # Money charged per attempt; 0 is free.
+  cost: 0
+  # Announce a successful fusion of two of THIS companion to the whole server. Leave the
+  # key out to follow config.yml fusion.broadcast.
+  broadcast: false
+
+# Companion a RARITY scroll turns this one into. Leave the key out and the scroll
+# refuses on this companion: a companion at the top of its ladder declares no target.
+# NOT the same ladder as fusion.into above - a fusion eats two companions and can
+# fail, an upgrade eats one scroll and cannot - so a companion may declare either,
+# both, or neither.
+# This folder is seeded once and never merged again, so an existing install
+# adds the key by hand; only a fresh install receives this example.
+# upgrades-to: stone_golem
+
+# Companion ids that cannot be equipped alongside this one.
+incompatible:
+  - gale_sprite
+```
+
+## boxes.yml
+
+**Every** companion box lives in this one file, one top-level key per box. The key is the box id the
+admin give commands take, and the physical item is registered as `box_<id>`. Two examples are
+seeded, `basic` and `rare`. Add, rename and delete keys freely.
+
+The file is seed-only and its header carries `# sn:extensible-root`, so a key you delete stays
+deleted and no key ever gains a sub-key from an update. Deleting the whole FILE re-seeds the two
+examples on the next reload; delete the KEYS you do not want instead.
+
+### Upgrading from the boxes/ folder
+
+Before 1.4.0 each box was its own `boxes/<id>.yml` file. On the first boot after updating, the
+plugin folds that folder into `boxes.yml` and renames it to `boxes-migrated/`. Nothing is
+deleted, every box id is kept, and the box items already in players' inventories keep opening.
+
+Three things worth knowing:
+
+- A file name containing a dot cannot be a yml key, so `my.box.yml` migrates as `my_box` with a
+  loud console warning. Its item id changes, so the copies of THAT box already handed out stop
+  opening. Every other box is unaffected.
+- Because `boxes.yml` is seed-only, a migrated box does **not** receive the keys 1.4.0 added.
+  `chance` defaults to 100/100 and `feedback.fail-broadcast-key` to empty, which is exactly the
+  behaviour those boxes had before. Add them by hand to any box you want to turn into a gamble,
+  and add `{chance}` to its lore if you want the odds shown on the item.
+- The per-box comments do not survive the move (a YAML reader cannot carry a file header onto a
+  key). Each migrated key gets a `# Migrated from boxes/<file>` line, and the originals are all
+  still there in `boxes-migrated/`.
+
+If the migration cannot finish - an unreadable file, a full disk, a read-only data folder - the
+plugin refuses to start instead of continuing with the two example boxes, and the console names
+the cause. Your folder is left untouched; fix it and start the server again.
+
+### The success chance
+
+A box can fail to open. Each one declares a band:
+
+```yaml
+rare:
+  chance:
+    min: 60
+    max: 90
+```
+
+When a box is **handed out**, a percentage is drawn in that band, rendered into the item's
+`{chance}` name and lore, and written onto the stack itself. **Opening rolls the number on the
+stack**, not the box's current band. That means lowering the band never devalues the boxes
+already in circulation, a shop can sell guaranteed boxes beside gambled ones, and two stacks of
+the same box at different odds never merge.
+
+`/companions admin givebox <player> <box> [amount] [chance]` forces an exact percentage instead of
+drawing one - `100` is what a shop wants. `giveallbox` draws once, so everybody gets the same
+number.
+
+A failed open **consumes the box** and grants nothing. The player gets
+`messages.box-chance-failed` (or `messages.box-chance-failed-bulk` for a stack), the box's
+cooldown starts as if it had opened, and if the box declares `feedback.fail-broadcast-key` the
+loss is announced to the server. Leave both band ends at `100` for a box that always opens.
+
+A box handed out before 1.4.0 carries no percentage and counts as 100%.
+
+### The shipped file in full
+
+```yaml
+# ============================================================
+#  SnCompanions - companion boxes
+#  ONE file for every box. Every top-level key below is a box id: it is the id
+#  the admin give commands take, and the physical item is registered as
+#  "box_<id>". Add, rename and delete freely.
+#  Seeded once and never merged again: this file is yours. Deleting the FILE
+#  re-seeds the two examples on the next reload; delete the KEYS you do not
+#  want, not the file. A box item already in a player's inventory whose key is
+#  gone keeps its look but no longer opens.
+#  Right click opens one box. Shift + right click opens the whole held stack,
+#  which requires "animation.enabled: false" on that box.
+#  Upgrading from an older version: a boxes/ folder is migrated into this file
+#  automatically on the first boot and the folder is renamed to boxes-migrated/.
+#  Nothing is deleted and the box items already handed out keep working.
+# sn:extensible-root
+# ============================================================
+
+# ------------------------------------------------------------
+#  basic - the plain example: no animation, no broadcast, no cooldown, and it
+#  always opens.
+# ------------------------------------------------------------
+basic:
+
+  # ----------------------------------------------------------
+  #  The physical item. Every appearance field of the SnLib item spec works
+  #  here: material, display-name, lore, glow, custom-model-data, enchantments,
+  #  flags, max-stack-size and the rest.
+  #  {chance} in the name or the lore is replaced, when the box is HANDED OUT,
+  #  by the success chance that box copy was stamped with. It is written into
+  #  the item itself, so two stacks handed out at different percentages never
+  #  merge and never lose their odds.
+  # ----------------------------------------------------------
+  item:
+    # Item material, or a head texture written as "texture-<base64>",
+    # "basehead-<base64>" or an http skin URL, which makes it a player head.
+    material: CHEST
+    # Name shown on the box item, and the {box} placeholder of every box message.
+    display-name: "&f&lBasic Companion Box"
+    # Lore shown on the box item.
+    lore:
+      - "&7Right click to open."
+      - "&7Shift + right click opens the whole stack."
+      - ""
+      - "&7Success chance: &f{chance}%"
+      - ""
+      - "&7Contains one companion:"
+      - "&f60% &7Ember Fox"
+      - "&f30% &7Stone Golem"
+      - "&f10% &7Gale Sprite"
+    # Adds the enchantment shimmer without an enchantment.
+    glow: false
+
+  # ----------------------------------------------------------
+  #  Chance of the box OPENING at all, in percent.
+  #  A box handed out without an explicit percentage is stamped with a value
+  #  drawn uniformly between min and max, and that value is what it rolls when
+  #  a player opens it. A failed open CONSUMES the box and grants nothing.
+  #  /companions admin givebox <player> <box> [amount] [chance] overrides the draw
+  #  with an exact number, which is how a shop sells guaranteed boxes.
+  #  Leave both at 100 for a box that always opens. min > max is swapped, and
+  #  both are clamped to 0-100.
+  #  A box handed out by an older version carries no percentage and counts as
+  #  100, so nothing already in circulation changes.
+  # ----------------------------------------------------------
+  chance:
+    min: 100
+    max: 100
+
+  # ----------------------------------------------------------
+  #  The drop table. One entry per companion id, which is a companions/<id>.yml file name.
+  #  The numbers are WEIGHTS, not percentages: they are normalized over whatever
+  #  the table holds, so 60/30/10 and 6/3/1 behave identically and the total does
+  #  not have to add up to anything. A box that OPENS always produces a companion;
+  #  the only way to get nothing is a failed chance roll above.
+  #  An entry naming a companion with no file is dropped when the box loads, with one
+  #  console warning, and the remaining weights renormalize on their own.
+  # ----------------------------------------------------------
+  drops:
+    ember_fox:
+      # How many of this companion one winning roll grants.
+      amount: 1
+      # Relative weight of this row.
+      weight: 60
+    stone_golem:
+      amount: 1
+      weight: 30
+    gale_sprite:
+      amount: 1
+      weight: 10
+
+  # ----------------------------------------------------------
+  #  Reveal animation. It delays only the FEEDBACK: the companion is granted the moment
+  #  the box opens, so quitting mid-spinner loses nothing.
+  #  An animated box CANNOT be bulk opened. A shift + right click on one opens a
+  #  single box instead and says so, because 64 spinners at once is what the rule
+  #  against it exists to prevent.
+  # ----------------------------------------------------------
+  animation:
+    # Delay the reveal behind a short spinner instead of showing it instantly.
+    enabled: false
+    # Ticks between the open and the reveal. 20 ticks is one second.
+    duration-ticks: 40
+    # Ticks between two spinner frames.
+    step-ticks: 4
+    # Sound played on each spinner frame, as "SOUND_ID [volume] [pitch]".
+    # "none" plays nothing.
+    step-sound: "BLOCK_NOTE_BLOCK_HAT 1.0 1.6"
+    # Sound played when the companion is revealed. "none" plays nothing.
+    reveal-sound: "ENTITY_PLAYER_LEVELUP 1.0 1.4"
+
+  # ----------------------------------------------------------
+  #  Feedback. Every key points at an entry of lang/messages_<code>.yml, so the
+  #  wording is translated and restyled with every other message rather than
+  #  living here. Leave one empty to send nothing.
+  #  Placeholders: {player} {box} {companion} {amount} {chance}
+  # ----------------------------------------------------------
+  feedback:
+    # Line sent to the player who opened the box. Applies to a SINGLE open; a bulk
+    # open sends messages.box-opened-bulk instead, which summarizes the stack.
+    message-key: "messages.box-opened"
+    # Line announced to the whole server. Empty announces nothing.
+    broadcast-key: ""
+    # Line announced to the whole server when an open FAILS its chance roll.
+    # Empty announces nothing. A bulk open only announces when
+    # boxes.bulk.broadcast is on in config.yml.
+    # Placeholders: {player} {box} {amount} {chance}
+    fail-broadcast-key: ""
+
+  # Seconds a player must wait between two opens of THIS box. 0 disables the
+  # cooldown entirely and costs nothing at runtime. A refused open never starts
+  # it; a FAILED open does, because the box was consumed all the same.
+  cooldown-seconds: 0
+
+# ------------------------------------------------------------
+#  rare - the other half of the feature set: a reveal animation, a server
+#  broadcast, a cooldown, a row worth more than one companion, and a chance band that
+#  makes an open a gamble.
+# ------------------------------------------------------------
+rare:
+
+  # ----------------------------------------------------------
+  #  The physical item.
+  # ----------------------------------------------------------
+  item:
+    # Item material, or a head texture written as "texture-<base64>",
+    # "basehead-<base64>" or an http skin URL, which makes it a player head.
+    material: ENDER_CHEST
+    # Name shown on the box item, and the {box} placeholder of every box message.
+    display-name: "&5&lRare Companion Box"
+    # Lore shown on the box item.
+    lore:
+      - "&7Right click to open."
+      - ""
+      - "&7Success chance: &f{chance}%"
+      - "&8A failed open destroys the box."
+      - ""
+      - "&7Contains:"
+      - "&f50% &7Stone Golem"
+      - "&f30% &7Gale Sprite"
+      - "&f20% &7Ember Fox &8x2"
+    # Adds the enchantment shimmer without an enchantment.
+    glow: true
+
+  # ----------------------------------------------------------
+  #  Chance of the box OPENING at all, in percent. Handed out without an
+  #  explicit percentage, this box is stamped somewhere between 60 and 90 and
+  #  keeps that number for good.
+  # ----------------------------------------------------------
+  chance:
+    min: 60
+    max: 90
+
+  # ----------------------------------------------------------
+  #  The drop table. The numbers are WEIGHTS, not percentages: they are
+  #  normalized over whatever the table holds. A box that OPENS always produces
+  #  a companion. A row naming a companion with no file is dropped when the box loads and
+  #  the remaining weights renormalize on their own.
+  # ----------------------------------------------------------
+  drops:
+    stone_golem:
+      # How many of this companion one winning roll grants.
+      amount: 1
+      # Relative weight of this row.
+      weight: 50
+    gale_sprite:
+      amount: 1
+      weight: 30
+    ember_fox:
+      # A row worth more than one companion. The box is opened only when the WHOLE row
+      # fits in the storage, so a bulk open never splits one box in half.
+      amount: 2
+      weight: 20
+
+  # ----------------------------------------------------------
+  #  Reveal animation. It delays only the FEEDBACK: the companion is granted the moment
+  #  the box opens, so quitting mid-spinner loses nothing.
+  #  An animated box CANNOT be bulk opened. A shift + right click on this one
+  #  opens a single box instead and says so.
+  # ----------------------------------------------------------
+  animation:
+    # Delay the reveal behind a short spinner instead of showing it instantly.
+    enabled: true
+    # Ticks between the open and the reveal. 20 ticks is one second.
+    duration-ticks: 50
+    # Ticks between two spinner frames.
+    step-ticks: 4
+    # Sound played on each spinner frame, as "SOUND_ID [volume] [pitch]".
+    # "none" plays nothing.
+    step-sound: "BLOCK_NOTE_BLOCK_HAT 1.0 1.8"
+    # Sound played when the companion is revealed. "none" plays nothing.
+    reveal-sound: "ENTITY_PLAYER_LEVELUP 1.0 1.2"
+
+  # ----------------------------------------------------------
+  #  Feedback. Every key points at an entry of lang/messages_<code>.yml.
+  #  Placeholders: {player} {box} {companion} {amount} {chance}
+  # ----------------------------------------------------------
+  feedback:
+    # Line sent to the player who opened the box. Applies to a SINGLE open.
+    message-key: "messages.box-opened"
+    # Line announced to the whole server. A bulk open only announces when
+    # boxes.bulk.broadcast is on in config.yml, and this box cannot be bulk
+    # opened anyway, because its animation is on.
+    broadcast-key: "messages.box-broadcast"
+    # Line announced to the whole server when an open FAILS its chance roll.
+    fail-broadcast-key: "messages.box-fail-broadcast"
+
+  # Seconds a player must wait between two opens of THIS box. 0 disables the
+  # cooldown entirely and costs nothing at runtime. A refused open never starts
+  # it; a FAILED open does, because the box was consumed all the same.
+  cooldown-seconds: 3
+```
+
+## guis/
+
+Seven menu layouts, all managed and all re-skinnable without touching code.
+
+| File | Menu |
+|------|------|
+| `main.yml` | Companion storage, the screen bare `/companions` opens |
+| `selector.yml` | Companion picker used when a screen needs one companion chosen |
+| `traits.yml` | Trait rolling for one companion |
+| `traits_index.yml` | Read-only catalogue of every trait and its odds |
+| `boosts.yml` | Boost rolling for one companion |
+| `fusion.yml` | Fusion, including the Fuse All bulk path |
+| `bulk_delete.yml` | Bulk deletion by group |
+
+{% hint style="warning" %}
+A menu file defines a fixed number of cells. If you raise a player's equip slots above the
+cell count of `main.yml`, the extra companions cannot be shown. The plugin warns about this at
+runtime, and `/companions admin unequip` always recovers a companion that ended up out of reach.
+{% endhint %}
+
+### `main.yml` is a drop target: `player-inventory` and `input`
+
+**Added in 1.19.0**, and the reason the level and rarity scrolls can be used at all. Three keys
+arrive in your `main.yml` on the next boot, and together they are the whole feature:
+
+```yaml
+# Your own inventory stays USABLE while this menu is open, which is what lets
+# you pick a scroll up and drop it onto one of your companions.
+player-inventory: open
+
+items:
+  # Never rendered: the storage grid's own bind owns every "p" cell. It exists
+  # for ONE key - input: true - which is what makes those cells accept a scroll.
+  storage-drop-target:
+    material: GRAY_STAINED_GLASS_PANE
+    key: p
+    input: true
+    display-name: "&8Companion Storage"
+
+templates:
+  slot-filled:
+    input: true          # the equipped row accepts a scroll too
+```
+
+`player-inventory: open` governs the BOTTOM half of the window. Plain clicks, number keys, drops
+and drags inside your own inventory are left alone; every click on the MENU's cells is still
+cancelled, and so is the double-click gather, so no rendered stack can reach your cursor. Set it
+back to `locked` for the pre-1.19.0 behaviour, in which the bottom half is frozen - the level and
+rarity scrolls then stop working, because a cursor that can never hold anything cannot drop one.
+
+`input: true` is per CELL and decides which cells receive an item. `slot-filled` carries it so an
+equipped companion can be a target; `slot-free` deliberately does not, so a scroll aimed at an empty slot
+is left on your cursor. A click with an EMPTY cursor still runs the cell's normal actions, which is
+why right click still unequips.
+
+{% hint style="warning" %}
+Do not delete `storage-drop-target`. It never renders - the paged bind owns those cells and paints
+over it - so removing it changes nothing you can see, and silently stops both scrolls from working
+on a stored companion. The storage grid is paged, and a paged bind cannot declare its own cells as input,
+so declaring an item on the grid's layout letter is the only way to say it. The next boot merges
+the entry back.
+{% endhint %}
+
+### close-actions
+
+All seven files carry the same top-level key, and it is what makes the companion a player picked in
+Boosts or Traits last exactly one visit to the menus:
+
+```yaml
+# Runs on the natural close of this menu (ESC). Navigating to another SnCompanions
+# menu keeps the selected companion; leaving the menus entirely forgets it.
+close-actions:
+  - "[companions-forget-selection]"
+```
+
+`[companions-forget-selection]` only clears the pick when no SnCompanions menu is open any more, so walking
+Boosts to the selector and back, or Traits to the trait index and back, keeps it. Remove the key
+from a file if you want a pick made there to survive closing that screen.
+
+### The roll animation switch
+
+Since **1.12.0** each player decides whether their own trait and boost roulettes play, on a
+button `boosts.yml` and `traits.yml` both draw at **slot 8**. Two templates, one bound per
+render depending on what that player chose:
+
+```yaml
+  anim-on:
+    material: CLOCK
+    slots: [8]
+    glow: true
+    display-name: "&e&lRoll Animation: &aOn"
+    lore:
+      - "&7Your trait and boost rolls play a short"
+      - "&7roulette before showing what they rolled."
+    click-actions:
+      - "[companions-toggle-roll-anim]"
+      - "[sound] UI_BUTTON_CLICK"
+
+  anim-off:
+    material: CLOCK
+    slots: [8]
+    display-name: "&e&lRoll Animation: &cOff"
+    lore:
+      - "&7Your trait and boost rolls show what they"
+      - "&7rolled at once, with no roulette."
+    click-actions:
+      - "[companions-toggle-roll-anim]"
+      - "[sound] UI_BUTTON_CLICK"
+```
+
+`[companions-toggle-roll-anim]` flips the setting, says so in chat and redraws the menu. The choice is
+stored on the player's own database row, so it survives a relog and a restart. With the animation
+off the result appears at once with the same reveal sound, the same message and the same redraw
+the spin would have produced at its end - it can never change what came out, because the roll is
+decided and saved before the first frame would have been drawn.
+
+It covers the two roulettes only. A companion box keeps its own `animation:` block in `boxes.yml`, which
+is your setting rather than the player's, and a roulette you switched off entirely with
+`traits.roll.enabled: false` or `boosts.roll.enabled: false` stays off and silent for everyone no
+matter what a player picks.
+
+Both templates place themselves with `slots: [8]` instead of a letter of the `layout:` mask, on
+purpose: that is what puts them in the right cell on a server whose layout was edited before this
+button existed. Move the button by editing the two `slots:` lines; give each template a different
+slot if you want the two states in different cells.
+
+{% hint style="info" %}
+**Upgrading from 1.11.0 or earlier.** `anim-on` and `anim-off` are new keys, so SnLib inserts
+both into your `boosts.yml` and `traits.yml` on the next boot, comments included, and the button
+starts working.
+
+The click-to-skip that 1.3.0 put on the `spinning` template is **retired** in the same release.
+Its `click-actions` block and its `&eClick to skip the animation` lore line are gone from the
+shipped file, but removing a value is not something the updater propagates, so your file keeps
+both and the line stays on screen. Clicking the spinning cell now does nothing:
+`[companions-skip-spin]` is still registered, as a deliberate no-op, so an install that kept the block
+gets silence instead of a console warning on every click. Delete the lore line and the
+`click-actions:` block from your `templates.spinning` whenever you like - the tag itself is
+removed in the next minor version.
+{% endhint %}
+
+### Where the boost roulette spins: `stat-spinning` and the per-stat roll buttons
+
+Since **1.21.0** the boost roulette plays on the STAT cell(s) the roll is deciding, never on the
+companion: the companion at slot 19 keeps showing your selection the whole time, and each rolling stat's cell
+in the `stats` region binds the new `stat-spinning` template instead - ONE cell for a single-stat
+button, all three for Roll Every Boost. Which cells spin comes from the roll itself, so the menu
+can never animate a stat that was not rolled.
+
+```yaml
+  stat-spinning:
+    material: ENDER_EYE
+    display-name: "&e&lRolling {stat}..."
+    lore:
+      - "&7{candidate}"
+    glow: true
+```
+
+`{candidate}` scrolls real grade names off that stat's own table, with the real odds; `{stat}` is
+the stat's display name from the language file and `{group-color}` is bound too. The template is
+region-bound and must not declare a `key:`.
+
+The same release splits the single shared `roll-stat` template into **one template per button** -
+`roll-stat-experience`, `roll-stat-level` and `roll-stat-buff` - so each of the three buttons at
+slots 39-41 is styled and worded on its own. Their `click-actions` name their stat directly
+(`[companions-roll-boost] experience`, `level`, `buff`), and `{stat}`, `{currency}`, `{balance}` and
+`{group-color}` still resolve on all three. The greyed-out state stays on the one shared
+`roll-stat-locked`, exactly like `roll-all-locked` covers the fourth button.
+
+{% hint style="info" %}
+**Upgrading from 1.20.0 or earlier.** The four new templates merge into your `guis/boosts.yml` on
+the next boot, comments included. Your old `templates.spinning` and `templates.roll-stat` stay in
+the file - a managed merge never deletes - but nothing reads them any more: delete them whenever
+you like, and if you had restyled `roll-stat`, copy your style into the three new templates. The
+traits menu is untouched - it has no stat cells, so its roulette keeps playing on the
+selected-companion cell.
+{% endhint %}
+
+### Colouring a companion by its group
+
+Every template that draws a companion binds `{group-color}`, the colour its group declares under
+`groups:` in `config.yml`. Use it wherever you want the group to tint a line:
+
+```yaml
+  companion-entry:
+    material: "{texture}"
+    display-name: "{group-color}{companion}"
+    lore:
+      - "&8Group: &r{group-color}{group}"
+```
+
+It is available in `main.yml`, `selector.yml`, `fusion.yml`, `boosts.yml`, `traits.yml` and
+`bulk_delete.yml`. The value is inserted before SnLib's text pipeline runs, so a legacy code, a
+hex code and the `[rgb]` gradient tag all work. `[rgb]` is a PREFIX tag: it only applies when
+`{group-color}` is the first thing on the line.
+
+None of the shipped templates use it, so nothing changes appearance until you add it yourself.
+
+Since **1.8.1** it also reaches two more places: `menus.boost-line` in the language file, so each
+of a companion's three boost lines can start with its group colour, and the three stat cells and four
+roll buttons of `boosts.yml`, which the file's own header had been promising since 1.3.0. On the
+roll buttons it is empty while no companion is selected, so a template that uses it never shows a
+literal token.
+
+Where it does **not** work, and why:
+
+| Place | Why |
+|---|---|
+| `menus.grade-row` | describes a ladder rung, not a companion: there is no group in scope |
+| `menus.group-separator` | joins group names on the information clock; no single companion |
+| `menus.trait-effect-exp` / `-level` / `-buff` / `-edtools` / `-edtools-enchant` | describe a trait in the index, not a companion |
+| the `lore:` of a `companions/<id>.yml` file | that lore is itself the value of `{companion-lore}`, and a placeholder value is never re-scanned for further placeholders. No plugin placeholder resolves there, only PlaceholderAPI tokens. Put the colour on the menu line that carries `{companion-lore}` |
+
+### Prefix tags in a display name
+
+`[rgb]`, `[small]` and `[center]` are PREFIX tags: SnLib reads them at the start of a finished
+line and nowhere else. That is why a `{group-color}` carrying `[rgb]` has to be first on its line,
+and it used to bite display names too - a box in `boxes.yml` or a companion in `companions/<id>.yml` whose
+`display-name` began with `[rgb]` drew its gradient on the ITEM but printed the literal tag in
+chat, because a name spliced into a message as `{box}` or `{companion}` lands in the middle of the line:
+
+```
+SnCompanions | The [rgb]Basic Companion Box failed to open (1% chance)...
+```
+
+**1.8.1 fixes this.** Both files have their display-name prefix tags applied when the file is
+read, so the name looks the same on the item and in every message that names it. Nothing in your
+files changes: `boxes.yml` and `companions/` are seed-only and untouched, and the item is still built
+from the raw yml, so a name is never expanded twice. `[center]` is the one tag dropped from the
+chat copy - centering a fragment that lives inside somebody else's line means nothing.
+
+{% hint style="info" %}
+`groups:` is marked `# sn:extensible`, so the `color:` key added in 1.3.0 never reaches a
+config that already exists. Until you write one, `{group-color}` falls back to the colour codes
+that group's `display` already starts with (`"&9Rare"` yields `&9`, `"&#ff00aa&lEpic"` yields
+`&#ff00aa&l`), so the placeholder is correct either way.
+{% endhint %}
+
+### The bulk delete icons
+
+`bulk_delete.yml` draws a group with two templates, `group-button` and `group-empty`, and both
+take their material from the same `{icon}` the group names under `menus.bulk-delete.icons` in
+`config.yml`. A group the player stores nothing of therefore keeps its own icon and only greys
+its name and lore, so the row never changes shape under the cursor.
+
+{% hint style="info" %}
+Upgrading from 1.2.0 or earlier: `group-empty` used to be a `GRAY_STAINED_GLASS_PANE`, and SnLib
+never overwrites a value your file already has. Set `templates.group-empty.material` to
+`"{icon}"` by hand, or delete `guis/bulk_delete.yml` and restart to have it reseeded.
+{% endhint %}
+
+### Taking a companion out: the two triggers
+
+`templates.companion-entry` in `main.yml` declares two lists that both run the same action, so a stored
+companion leaves the storage either way:
+
+```yaml
+    shift-right-click-actions:
+      - "[companions-extract] {instance}"
+    drop-click-actions:      # 1.11.0. Q, and Ctrl+Q with it.
+      - "[companions-extract] {instance}"
+```
+
+`drop-click-actions` is new in 1.11.0 and needs SnLib 1.31.0. Declaring it is also what lets Q
+reach the cell at all: `main.yml` runs with `strict-clicks: true`, which discards every key
+outside the four basic mouse clicks *unless the item under the cursor declares that key itself*.
+So Q takes a companion out over a storage cell and does nothing anywhere else in the menu, and the
+hotbar numbers, F and the offhand swap stay inert everywhere, as before.
+
+The equipped slot markers on the top row deliberately declare neither list. Taking an equipped companion
+out is refused anyway - it would strand its slot and its buff - so the key is simply absent there
+rather than present and rejected.
+
+{% hint style="warning" %}
+**Deleting either list does not stick.** `guis/main.yml` is managed and carries no extensible
+marker, so the next boot merges any key you delete straight back. (This is not new in 1.11.0 -
+it was equally true of `shift-right-click-actions` in 1.7.0, which older documentation wrongly
+offered as an opt-out.) What holds instead:
+
+- `companion-items.enabled: false` in `config.yml` - the intended switch, and it stops both triggers.
+- `update-configs: false` in `config.yml` - freezes merging for **every** file, so you take on
+  adding future keys by hand.
+- a `# sn:extensible` comment line written directly above `companion-entry:` in your own `main.yml` -
+  SnLib treats a marker you type as your decision and stops inserting anything under that
+  template, including keys a future SnCompanions version adds there, logging one warning naming what it
+  withholds.
+
+The last one is how you keep exactly one of the two triggers: delete the list you do not want and
+mark the template.
+{% endhint %}
+
+## lang/
+
+Every user facing string lives in `lang/messages_<code>.yml`. English and Spanish ship with
+the plugin. Pick the active one with the `lang` key at the top of `config.yml`, which falls
+back to English when the named file is missing. To add a language, copy `messages_en.yml` to
+`messages_<code>.yml`, translate the values, and point `lang` at the new code.
+
+New keys are merged into your existing file on boot, with your values and your comments left
+alone, so an update never overwrites a line you restyled.
+
+**1.17.0 adds one**, sent when a player right clicks a companion head that belongs to somebody else,
+described under [companion-items](#a-companion-item-remembers-who-took-it-out):
+
+| Key | Sent to | Placeholders |
+|---|---|---|
+| `messages.companion-item-not-yours` | a player redeeming a companion item stamped with another player's UUID | `{owner}` |
+
+**1.16.0 adds two**, both lore lines of the trait index rather than messages, described under
+[traits.yml](#a-trait-that-boosts-an-edtools-currency):
+
+| Key | Shown for | Placeholders |
+|---|---|---|
+| `menus.trait-effect-edtools` | a trait boosting one EdTools currency | `{currency}` `{percent}` |
+| `menus.trait-effect-edtools-enchant` | a trait boosting the global enchant multiplier | `{percent}` |
+
+**1.12.0 adds two**, both sent to the player who clicks the roll animation switch described
+under [guis/](#the-roll-animation-switch). Neither takes a placeholder:
+
+| Key | Sent when |
+|---|---|
+| `messages.roll-animation-on` | the player switches their roulette animation back on |
+| `messages.roll-animation-off` | the player switches it off, so results appear instantly |
+
+**1.5.0 added two**, both sent to the player who RECEIVES something from an admin command:
+
+| Key | Sent by | Placeholders |
+|---|---|---|
+| `messages.companion-received` | `/companions admin give` | `{amount}` `{companion}` `{level}` |
+| `messages.box-received` | `/companions admin givebox`, `/companions admin giveallbox` | `{amount}` `{box}` `{chance}` |
+
+Blank either value to switch that notification off for everyone, or suppress it per command with
+the `-s` flag (see [Commands](commands.md#silent-flags)). Offline players are never messaged.

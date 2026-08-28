@@ -79,6 +79,17 @@
 * [Developer API](snclans/api.md)
 * [FAQ](snclans/faq.md)
 
+## SnCompanions
+
+* [Overview](sncompanions/README.md)
+* [Installation](sncompanions/installation.md)
+* [Commands](sncompanions/commands.md)
+* [Permissions](sncompanions/permissions.md)
+* [Configuration](sncompanions/configuration.md)
+* [Placeholders](sncompanions/placeholders.md)
+* [Developer API](sncompanions/api.md)
+* [FAQ](sncompanions/faq.md)
+
 ## SnCrates
 
 * [Overview](sncrates/README.md)
