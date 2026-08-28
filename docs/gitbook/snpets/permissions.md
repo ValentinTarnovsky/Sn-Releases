@@ -55,7 +55,9 @@ granted per rank.
 These two nodes are numeric, so they cannot be declared in `plugin.yml`. Grant them per rank
 in your permissions plugin, for example `snpets.storage.250` and `snpets.slots.4` on a
 LuckPerms group. The plugin reads the highest `<n>` a player holds, so stacking several nodes
-is safe: the largest one wins rather than summing.
+is safe: the largest one wins rather than summing. Since 1.22.0 that value is the player's
+FLOOR - it replaces the config base when higher, and slots or storage sold with
+`/pets admin slots|storage give` add on top of it.
 
 {% hint style="info" %}
 The resolved capacity is frozen into the database when the player joins. That means an admin

@@ -566,15 +566,25 @@ that is the player's actual state and not a pet counted twice.
 
 Grant `snpets.slots.<n>` or `snpets.storage.<n>` in your permissions plugin. The highest value
 a player holds wins, so stacking nodes across ranks is safe. The value is read on join, so a
-rank change applies the next time the player logs in.
+rank change applies the next time the player logs in. Since 1.22.0 the permission is the FLOOR:
+it replaces the config base when higher, and everything sold with `/pets admin slots|storage
+give` adds on top of it.
+
+### I gave a player 1 slot and their total did not go up. Why?
+
+You are on 1.21.0 or earlier. Until then the effective count was the *highest* of the config
+base, the rank permission and the purchased value, so with `slots.base-count: 1` a first
+purchased slot vanished into the base the player already had. Since 1.22.0 purchases ADD on top
+of `max(base, permission)`: give 1 slot on a stock install and the total goes from 1 to 2.
+Nothing has to be migrated - existing purchases simply start counting the moment 1.22.0 boots.
 
 ### I gave someone 100 slots and they only got 7. Why?
 
 `slots.max-count` in `config.yml`, which ships at `7` from 1.9.0 on. It is the ceiling on the
-purchased slots an admin command may leave, and a command past it is clamped rather than
-cancelled - so the grant went through, it just stopped at 7, and the admin was told so before the
-usual confirmation. `7` is the number of pet cells the shipped `guis/main.yml` layout can draw;
-anything past it would be bought and never usable.
+TOTAL slots an admin command may leave (on the purchased slots before 1.22.0), and a command past
+it is clamped rather than cancelled - so the grant went through, it just stopped at a total of 7,
+and the admin was told so before the usual confirmation. `7` is the number of pet cells the
+shipped `guis/main.yml` layout can draw; anything past it would be bought and never usable.
 
 Raise the key if you widened the menu layout, or set it to `0` to remove the ceiling entirely.
 `storage.max-capacity` is the same knob for storage and ships at `0`, so storage grants are

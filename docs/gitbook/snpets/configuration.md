@@ -109,15 +109,19 @@ groups:
 #  Pet storage.
 # ------------------------------------------------------------
 storage:
-  # Pets a player may keep before permissions or purchases raise it.
+  # Pets a player may keep before permissions or purchases raise it. The
+  # effective capacity is max(base-capacity, snpets.storage.<n>) plus whatever
+  # was bought with "/pets admin storage give|set": the permission names the
+  # absolute capacity a rank grants, and purchases add on top of it.
   base-capacity: 54
 
-  # Ceiling of the PURCHASED storage that "/pets admin storage give|set" may
-  # leave on a player. 0 disables it, which is the shipped value: storage is
+  # Ceiling of the TOTAL storage that "/pets admin storage give|set" may leave
+  # a player with. 0 disables it, which is the shipped value: storage is
   # paginated, so unlike the equip slots it has no visual limit to agree with.
-  # A command that would go past the ceiling is NOT cancelled - it is clamped to
-  # the ceiling and says so. This does not limit the "snpets.storage.<n>"
-  # permission grants, which are a separate half of the same total.
+  # A command that would go past the ceiling is NOT cancelled - the purchase is
+  # trimmed so the total lands on the ceiling, and says so. This does not limit
+  # the "snpets.storage.<n>" permission grants, which are the floor purchases
+  # stack onto.
   max-capacity: 0
 
 # ------------------------------------------------------------
@@ -125,16 +129,21 @@ storage:
 # ------------------------------------------------------------
 slots:
   # Pets a player may equip at once before permissions or purchases raise it.
+  # The effective count is max(base-count, snpets.slots.<n>) plus whatever was
+  # bought with "/pets admin slots give|set": the permission names the absolute
+  # count a rank grants, and purchases add on top of it, so with base-count 1
+  # a player who buys one slot equips two pets.
   base-count: 1
 
-  # Ceiling of the PURCHASED slots that "/pets admin slots give|set" may leave on
-  # a player. 0 disables it. Keep it equal to the number of 's' cells in the
+  # Ceiling of the TOTAL slots that "/pets admin slots give|set" may leave a
+  # player with. 0 disables it. Keep it equal to the number of 's' cells in the
   # layout of guis/main.yml (7 in the shipped menu): the menu can only draw that
   # many, so slots past it are bought and never usable. The two files are not
   # read from each other on purpose - this comment is the link.
-  # A command that would go past the ceiling is NOT cancelled - it is clamped to
-  # the ceiling and says so. This does not limit the "snpets.slots.<n>"
-  # permission grants, which are a separate half of the same total.
+  # A command that would go past the ceiling is NOT cancelled - the purchase is
+  # trimmed so the total lands on the ceiling, and says so. This does not limit
+  # the "snpets.slots.<n>" permission grants, which are the floor purchases
+  # stack onto.
   max-count: 7
 
   # Forbid equipping two pets that belong to the same group. Off by default: a
@@ -1057,19 +1066,34 @@ placeholders:
   compact-numbers: false
 ```
 
+### How capacity is resolved
+
+Changed in 1.22.0. The effective slot count and storage capacity are
+**`max(config base, permission) + purchased`**: the config base (`slots.base-count` /
+`storage.base-capacity`) and the rank permission (`snpets.slots.<n>` / `snpets.storage.<n>`)
+compete - the permission names the absolute count a rank grants, so the higher of the two is the
+player's floor - and everything sold through `/pets admin slots|storage give` adds on top of that
+floor. With `base-count: 1`, a player who buys one slot equips two pets.
+
+Until 1.21.0 the purchased half competed too (the effective value was the highest of the three),
+so the first `base-count` slots sold in a shop changed nothing - that is the bug 1.22.0 replaces.
+The upgrade rewrites nothing: the same database rows simply resolve higher for players who have
+purchases, the moment 1.22.0 boots.
+
 ### Capacity ceilings
 
-Added in 1.9.0. `slots.max-count` and `storage.max-capacity` cap what the two admin capacity
-commands may leave on a player.
+Added in 1.9.0; since 1.22.0 they bound the TOTAL. `slots.max-count` and `storage.max-capacity`
+cap the total the two admin capacity commands may leave a player with.
 
 | Key | Default | Caps |
 |---|---|---|
-| `slots.max-count` | `7` | the purchased equip slots `/pets admin slots give\|set` may leave |
-| `storage.max-capacity` | `0` (off) | the purchased storage `/pets admin storage give\|set` may leave |
+| `slots.max-count` | `7` | the total equip slots `/pets admin slots give\|set` may leave |
+| `storage.max-capacity` | `0` (off) | the total storage `/pets admin storage give\|set` may leave |
 
-A command that would go past its ceiling is **not cancelled**. It writes the ceiling and tells the
-admin it did, so on a stock install `/pets admin slots give Snopeyy 100` leaves 7 purchased slots
-and prints `messages.admin-slots-clamped` before the usual confirmation. That notice is shown even
+A command that would go past its ceiling is **not cancelled**. The purchase is trimmed so the
+total lands exactly on the ceiling and the admin is told, so on a stock install (base `1`,
+ceiling `7`) `/pets admin slots give Snopeyy 100` leaves 6 purchased slots - a total of 7 - and
+prints `messages.admin-slots-clamped` before the usual confirmation. That notice is shown even
 to an admin who typed `-sf`: that flag mutes success confirmations, and a number other than the one
 typed is corrective information. Set a key to `0` to remove its ceiling.
 
@@ -1083,12 +1107,12 @@ independently should not silently depend on each other.
 {% hint style="warning" %}
 The ceiling bounds **purchases only**. It does not limit the `snpets.slots.<n>` /
 `snpets.storage.<n>` permission grants, so a rank may still grant more than an admin command can -
-the effective total a player ends up with is the highest of the config base, what their rank grants
-and what they bought.
+purchases stack on top of whatever floor the rank sets.
 
 It also never lowers a row on its own. If you reduce `slots.max-count` on a live server, players
 already above it keep what they have until the next `slots give`/`set` on them, which then clamps
-them down to the new ceiling.
+them down to the new ceiling. The same applies to rows whose purchases predate the 1.22.0
+total-bound semantics.
 {% endhint %}
 
 ### How the label turns
