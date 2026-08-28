@@ -248,8 +248,12 @@ broken-pickup: true
 animation-break: false
 # Restrict repairs of corrupted generators to the owner.
 repair-owner-only: true
-# Hand back generators when their owner is removed from a SuperiorSkyblock2
-# island (kicked / left / disbanded). When false, the generators disappear.
+# Hand back generators, Collectors and Infinite Hoppers when their owner is
+# removed from a SuperiorSkyblock2 island (kicked / left / banned / disbanded).
+# Everything is stored in the player's vault, claimed with /gens recover.
+# When false, the blocks are destroyed instead. What happens to the ITEMS held
+# inside a Collector or Hopper is decided by island-removal.drop-contents in
+# storages.yml.
 island-pickup: true
 # Restrict generator placement to islands the player is a member of.
 # Requires SuperiorSkyblock2; if SSB2 is not loaded this is a no-op
@@ -1413,6 +1417,23 @@ the visible sucked up effect players like.
 Both blocks cap how many one player may place, both can be restricted to islands, and both draw
 a hologram with `{owner}` and their contents.
 
+Both also follow the generators when their owner leaves an island. A kick, leave, ban or disband
+removes them from the island and stores the blocks in the owner's vault, claimed with
+`/gens recover`. The `island-pickup` key in `config.yml` decides whether they are refunded or
+destroyed, and `island-removal` here decides what happens to the items they were holding.
+
+```yaml
+island-removal:
+  drop-contents: false   # true drops the stored items on the ground instead of voiding them
+```
+
+{% hint style="info" %}
+The default voids the contents because the block is being removed from an island that is about
+to be reset, or that now belongs to someone else. Dropping them there would either let them
+despawn or hand them to the island owner. Set `drop-contents: true` if you would rather they
+fall on the ground exactly as if a player had broken the block.
+{% endhint %}
+
 ```yaml
 collector:
   enabled: true
@@ -1454,6 +1475,23 @@ wider than a vanilla hopper cup so items arriving on a water stream are caught r
 #  share one config surface. Both behaviour AND cosmetics live here - the
 #  plugin reads it via STORAGES_CONFIG and Settings caches the values.
 # =============================================================================
+
+# -----------------------------------------------------------------------------
+# Island removal (shared by Collector and Infinite Hopper)
+# -----------------------------------------------------------------------------
+# When a player is kicked from, leaves, is banned from, or disbands a
+# SuperiorSkyblock2 island, their Collectors and Hoppers are removed from the
+# island and the blocks are returned through the refund vault, exactly like
+# generators. The `island-pickup` flag in config.yml governs whether they are
+# refunded or simply destroyed.
+island-removal:
+  # What happens to the ITEMS stored inside those Collectors and Hoppers.
+  # false = the contents are voided with the block (default). The island is
+  #         about to be reset or belongs to someone else, so dropped items
+  #         would either despawn or be handed to the island owner.
+  # true  = the contents drop on the ground where the block stood, exactly as
+  #         if a player had broken it. Hoppers respect hopper.break-drop-cap.
+  drop-contents: false
 
 # -----------------------------------------------------------------------------
 # Collector
@@ -2844,6 +2882,11 @@ vault-recover-all-confirm: "&e&lWARNING &7- &fThis will recover &eEVERYTHING&f f
 vault-recover-all-done: "&aRecovered &e{amount} &agenerator(s) from your vault. &7Overflow dropped on the ground."
 vault-join-notice: "&eHey! You have &6{amount} &egenerator(s) stored ({reason}&e). Use &6/gens recover&e to claim them."
 vault-island-notice: "&eYour &6{amount} &egenerator(s) were stored in your vault ({reason}&e). Use &6/gens recover&e."
+# Storage blocks (Collectors and Infinite Hoppers) are refunded through the same
+# vault as generators, so they get their own line next to the generator ones.
+vault-recover-storages: "&aRecovered &e{hoppers} &ahopper(s) and &e{collectors} &acollector(s) from your vault."
+vault-join-notice-storages: "&eYou also have &6{hoppers} &ehopper(s) and &6{collectors} &ecollector(s) stored ({reason}&e). Use &6/gens recover&e to claim them."
+vault-island-notice-storages: "&eYour &6{hoppers} &ehopper(s) and &6{collectors} &ecollector(s) were stored in your vault ({reason}&e). Use &6/gens recover&e."
 vault-reason-pickup: "&7you picked them up"
 vault-reason-kick: "&7you were kicked from the island"
 vault-reason-disband: "&7the island was disbanded"

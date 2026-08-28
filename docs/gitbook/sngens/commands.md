@@ -37,7 +37,9 @@ land in the target's vault and the owner claims them with `/gens recover`.
 
 **`/gens recover`** claims what fits in the inventory and tells the player how many are still
 stored. `/gens recover all` claims everything, and anything that does not fit is dropped on the
-ground, so it asks for confirmation first: run it twice within the confirmation window.
+ground, so it asks for confirmation first: run it twice within the confirmation window. The
+same command also hands back collectors and infinite hoppers stored by an island kick, leave,
+ban or disband. They are reported on their own line.
 
 **`/gens repair`** repairs your own corrupted generators. Passing a player name requires
 `sngens.admin`.

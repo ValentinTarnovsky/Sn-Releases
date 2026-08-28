@@ -43,7 +43,8 @@ production. Everything is configured in YAML, and nothing is hardcoded.
 - **Leaderboard.** `/gens top` ranks players or entire islands by the total value of everything
   they have placed, with broadcasts when the podium changes.
 - **Generator vault.** Generators removed by a pickup, an island kick or a disband are stored
-  instead of destroyed, and the owner claims them back with `/gens recover`.
+  instead of destroyed, and the owner claims them back with `/gens recover`. Collectors and
+  infinite hoppers removed by an island event go into the same vault.
 - **Performance first.** Drops are merged per chunk into single stacked item entities, the tick
   loop is chunk bucketed, database work is async, and the plugin runs on Folia.
 
@@ -51,9 +52,9 @@ production. Everything is configured in YAML, and nothing is hardcoded.
 
 - **SuperiorSkyblock2**: unlocks island mode. The leaderboard can rank islands instead of
   players, placement and wand use can be restricted to islands you belong to, island members can
-  upgrade each other's generators, and generators are returned to the vault when a member is
-  kicked, banned, leaves or the island is disbanded. Without it every island option is a no-op
-  and the plugin ranks individual players.
+  upgrade each other's generators, and generators, collectors and hoppers are returned to the
+  vault when a member is kicked, banned, leaves or the island is disbanded. Without it every
+  island option is a no-op and the plugin ranks individual players.
 - **SnDisplayShops**: a sellwand swung at a display shop sells the generator drops stored in
   that shop, instead of falling through to the generic container path. Only the shop owner, or
   a player with `sngens.admin`, may do it. Without it the click is treated as a normal block.

@@ -139,6 +139,18 @@ and the player claims them with `/gens recover`. They are told on their next joi
 The same happens when a player leaves, is banned, or the island is disbanded. Set
 `island-pickup: false` if you want removal to be permanent instead.
 
+### What happens to a player's collectors and hoppers when they leave an island?
+
+The same thing that happens to their generators. The blocks are removed from the island and
+stored in the player's vault, claimed with `/gens recover`. They used to stay behind on the
+island and keep counting against the player's placement cap, so a player who disbanded an
+island could not place a new hopper anywhere.
+
+The items those blocks were holding are voided with them, because the island is either about
+to be reset or now belongs to someone else. Set `island-removal.drop-contents: true` in
+`storages.yml` if you would rather they fall on the ground exactly as if a player had broken
+the block.
+
 ### `/gens recover` says some generators are still stored.
 
 The command only gives back what fits in the inventory, and reports the remainder. The player
@@ -254,6 +266,7 @@ which the plugin creates on first connect. Moving existing data means copying th
 
 ### Does the plugin expose a developer API?
 
-Yes, fourteen events, a read-only query service and a sell multiplier extension point, all in
-the plugin jar. See [Developer API](api.md). Server owners can switch every API event off with
+Yes, nineteen events, a read-only query service and a sell multiplier extension point, all in
+the plugin jar. Every wand swing fires a cancellable event, and the service reads and creates
+wand items. See [Developer API](api.md). Server owners can switch every API event off with
 `api-events.enabled: false`.

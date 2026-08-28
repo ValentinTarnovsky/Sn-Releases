@@ -86,6 +86,10 @@ and no items lost.
 | `GeneratorRepairEvent` | A corrupted generator is repaired | It stays corrupted |
 | `GeneratorSellEvent` | Any sale, before the deposit | No payout, no items consumed |
 | `CollectorSellEvent` | A collector's contents are sold | The contents stay stored |
+| `SellwandPreUseEvent` | A sellwand is swung at a block | Nothing is sold, no use is spent |
+| `BuildWandUseEvent` | A build wand preview is confirmed | Nothing is built, no charge, no use spent |
+| `UpgradeWandUseEvent` | An upgrade wand is swung, free or radius | No upgrade, no charge, no use spent |
+| `AdminWandSelectEvent` | The admin region wand sets a corner | The previous selection is kept |
 
 Notification events fire after the fact. They cannot be cancelled.
 
@@ -97,10 +101,15 @@ Notification events fire after the fact. They cannot be cancelled.
 | `ServerEventEndEvent` | A server wide event ended | Delivered on the main thread |
 | `TopUpdateEvent` | The leaderboard finished recomputing | Delivered on the main thread |
 | `RefundIssuedEvent` | Generators were added to a player's vault | Delivered on the main thread |
+| `StorageRefundIssuedEvent` | Collectors or hoppers were added to a player's vault | Delivered on the main thread |
 
-The last four originate off the main thread inside SnGens, but the plugin hops through its
+The last five originate off the main thread inside SnGens, but the plugin hops through its
 Folia aware scheduler before dispatching, so your listener always runs on the main thread and
 can touch the Bukkit API freely.
+
+`RefundIssuedEvent` stays generator only. When an island kick, leave, ban or disband also
+removes the player's collectors and hoppers, those arrive as a separate
+`StorageRefundIssuedEvent`, so a generator listener never sees an empty id list.
 
 Listen like any Bukkit event:
 
@@ -139,6 +148,29 @@ public void onSell(GeneratorSellEvent event) {
 }
 ```
 
+Wand swings are vetoed through their own event, not through the generator ones. A build wand
+places its whole line in one batch and an upgrade wand upgrades its whole square in one batch,
+so neither fires `GeneratorPlaceEvent`, `GeneratorUpgradeEvent` or
+`GeneratorBulkUpgradeEvent`. Cancel `BuildWandUseEvent` or `UpgradeWandUseEvent` to stop them.
+
+```java
+@EventHandler
+public void onBuildWand(BuildWandUseEvent event) {
+    for (Location target : event.getTargets()) {
+        if (myRegionPlugin.isProtected(target)) {
+            event.setCancelled(true);
+            event.getPlayer().sendMessage("You cannot build into that region.");
+            return;
+        }
+    }
+}
+```
+
+`SellwandPreUseEvent` fires the moment the wand is swung, before SnGens looks at what the
+clicked block holds, so it vetoes the swing whatever the target is: a chest, a collector, an
+infinite hopper or a display shop. `SellwandUseEvent` is its notification counterpart and only
+fires once a sale actually went through.
+
 Event payloads are read-only. To influence the money a sale pays, use the extension point
 below instead of looking for setters.
 
@@ -167,6 +199,12 @@ Synchronous methods read in-memory state. Call them on the main thread.
 | `getRank(UUID)` | `OptionalInt` | Rank of a player or an island |
 | `getValue(UUID)` | `OptionalDouble` | Value of a player or an island |
 | `isIslandModeAvailable()` | `boolean` | Whether the skyblock integration is active |
+| `getWand(ItemStack)` | `Optional<WandView>` | Empty when the item is not a SnGens wand |
+| `createSellwand(double, int)` | `Optional<ItemStack>` | Multiplier and uses. Pass `-1` uses for unlimited |
+| `createBuildWand(int, int)` | `Optional<ItemStack>` | Line length and uses |
+| `createFreeUpgradeWand(int)` | `Optional<ItemStack>` | Uses |
+| `createRadiusUpgradeWand(int, int)` | `Optional<ItemStack>` | Radius and uses. The radius must be odd |
+| `createAdminWand()` | `ItemStack` | The staff region selector |
 | `getApiVersion()` | `String` | The API contract version |
 
 ```java
@@ -225,9 +263,25 @@ so mutating them never affects SnGens.
 | `HopperView` | `id`, `owner`, `location`, `maxTypes`, `slotsUsed`, `totalItems`, `contents`, `estimatedValue`, `createdAt`, `updatedAt` |
 | `CollectorView` | `id`, `owner`, `location`, `totalItems`, `slotsUsed`, `contents`, `estimatedValue`, `createdAt`, `updatedAt` |
 | `StoredItemView` | `key`, `item`, `amount`, `unitValue`, `totalValue` |
+| `WandView` | `type`, `uses`, `unlimited`, `sellMultiplier`, `distance`, `radius` |
 
 A `HopperView` or `CollectorView` is a snapshot taken when you asked for it. Both keep
 absorbing items afterwards, so query again on each menu refresh instead of caching.
+
+A `WandView` reports one of five types: `SELLWAND`, `BUILDWAND`, `UPGRADEWAND_FREE`,
+`UPGRADEWAND_RADIUS`, `ADMINWAND`. Read `type()` first, then only the field that belongs to
+it. The others stay at zero. `uses()` is `-1` on an unlimited wand, and the admin wand has no
+counter so it always reports `-1`.
+
+```java
+ItemStack held = player.getInventory().getItemInMainHand();
+api.getWand(held).ifPresent(wand -> {
+    if (wand.type() == WandType.SELLWAND) {
+        player.sendMessage("Sellwand x" + wand.sellMultiplier()
+                + (wand.unlimited() ? " (unlimited)" : ", " + wand.uses() + " uses left"));
+    }
+});
+```
 
 ## Extension points
 
