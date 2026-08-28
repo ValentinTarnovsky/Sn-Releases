@@ -516,6 +516,59 @@ No. Disabling or enabling EdTools unregisters or registers the break listener on
 or starts the drain with it. The same is true if you install EdTools after SnCompanions has already
 started.
 
+### How do I add a second egg?
+
+Write a second top-level key in `eggs.yml` and reload. There is nothing else to do: `guis/eggs.yml`
+is ONE menu for every egg, so the new key gets its shop page automatically and
+`/companions eggs <id>` tab-completes it from the moment it loads.
+
+```yaml
+rare_egg:
+  display-name: "&b&lRare Egg"
+  price:
+    currency: vault
+  opens:
+    - amount: 1
+      price: 25000
+    - amount: 10
+      price: 220000
+  drops:
+    gale_sprite:
+      amount: 1
+      weight: 70
+    stone_golem:
+      amount: 1
+      weight: 30
+```
+
+The egg button of the storage menu always opens `eggs.default` from `config.yml` - point it at the
+egg you want players to land on. To reach the others, give them a `/companions eggs rare_egg`
+button in another menu, a command block, or a shop entry.
+
+`eggs.yml` is seed-only, so the file is yours: adding, renaming and deleting keys is never undone
+by an update. An id may not contain a dot, which is the yml path separator.
+
+### The eggs menu shows only five companions and my egg has eight. Where are the rest?
+
+The pool is sized by the menu mask, not by the egg. `guis/eggs.yml` ships with five `p` cells, so
+the first five rows of the drop table are drawn and the rest are not - that is configuration, and
+the plugin never invents a slot of its own. Widen the run:
+
+```yaml
+layout:
+  - "    i    "
+  - " ppppppp "
+  - "  ppppp  "
+  - "         "
+  - "  oo<oo  "
+```
+
+That mask shows twelve. The rows are drawn in the order `eggs.yml` writes them, so the ones you
+want visible go first. The odds are unaffected either way: `{chance}` is normalized over the WHOLE
+table, and a companion that is not drawn can still be won.
+
+The same rule governs the `o` run and the price buttons: four cells, four `opens:` entries drawn.
+
 ### Can eggs cost an EdTools currency?
 
 Yes, and it does not depend on `edtools.enabled`. Give the egg a `price.currency` of

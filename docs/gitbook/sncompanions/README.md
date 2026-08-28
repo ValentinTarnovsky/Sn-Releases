@@ -26,13 +26,16 @@ duplicates into stronger ones, and manage everything from configurable menus.
   rolls the moment it is opened and the companions land straight in the owner's storage. A missing
   economy refuses the purchase instead of giving the egg away, and a purchase whose companions
   cannot be saved is refunded in full.
+- An in-game eggs shop, `/companions eggs [egg]` or the egg button of the storage menu: every
+  companion the egg can give with its live odds, and one button per price tier. One menu file
+  serves every egg you declare.
 - Companion items: shift + right click a stored companion, or press Q over it, to take it out as a physical
   head carrying its whole state, and let anyone right click it back into their own storage. That
   is how players trade companions. Since 1.17.0 the head also remembers who took it out, and only that
   player can redeem it.
 - Holograms: configurable text above every companion, per companion type, drawn as packet entities that
   RIDE the companion, so the text and the companion can never move at different times.
-- Three menus you can re-skin without touching code, with a per-group
+- Four menus you can re-skin without touching code, with a per-group
   colour every companion template can draw with.
 - Equipped companions are kept in slots 1..n with no gap, so the free slots are always the last ones.
 

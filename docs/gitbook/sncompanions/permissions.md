@@ -1,6 +1,6 @@
 # Permissions
 
-The three player nodes default to `true`, so everyone can use the plugin straight away.
+The four player nodes default to `true`, so everyone can use the plugin straight away.
 Every admin node defaults to `op`. The two numeric capacity nodes have no default and must be
 granted per rank.
 
@@ -9,6 +9,7 @@ granted per rank.
 | Permission | Default | Description |
 |-----------|---------|-------------|
 | `sncompanions.use` | true | Basic usage of SnCompanions |
+| `sncompanions.eggs` | true | Allows `/companions eggs` |
 | `sncompanions.toggle` | true | Allows `/companions toggle` |
 | `sncompanions.hide` | true | Allows `/companions hide` |
 

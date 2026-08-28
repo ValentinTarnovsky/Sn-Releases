@@ -12,6 +12,7 @@ Arguments in `<angle brackets>` are required. Arguments in `[square brackets]` a
 | Command | Permission | Description |
 |---------|-----------|-------------|
 | `/companions` | `sncompanions.use` | Opens the companion menu |
+| `/companions eggs [egg]` | `sncompanions.eggs` | Opens the companion eggs shop. With no argument it shows `eggs.default`; the optional `[egg]` tab-completes over the ids `eggs.yml` declares |
 | `/companions toggle` | `sncompanions.toggle` | Shows or hides your own companions |
 | `/companions hide` | `sncompanions.hide` | Shows or hides other players' companions |
 | `/companions help` | `sncompanions.use` | Shows the generated help |
@@ -89,11 +90,12 @@ unknown egg) or a failed query always reaches the admin who ran the command - an
 fails in silence is the worst possible outcome.
 {% endhint %}
 
-`-s` silences the message the RECEIVER gets. Three commands send one: `give`
-(`messages.companion-received`). `openegg` only looks like a third: what the player reads is the
+`-s` silences the message the RECEIVER gets. One command sends one: `give`
+(`messages.companion-received`). `openegg` only looks like a second: what the player reads is the
 egg's own reward line, announced by the egg engine exactly as it would be for a bought egg, so `-s`
-does not touch it.
-The other fifteen have never messaged their target, so `-s` is
+does not touch it - and neither does it touch the other lines an open can produce, such as a
+storage that filled or companions that could not be saved, which come from the same engine.
+The other sixteen have never messaged their target, so `-s` is
 accepted there and simply has nothing to silence. An offline receiver is never messaged either way.
 
 {% hint style="warning" %}

@@ -1322,11 +1322,12 @@ basic_egg:
 
 ## guis/
 
-Three menu layouts, all managed and all re-skinnable without touching code.
+Four menu layouts, all managed and all re-skinnable without touching code.
 
 | File | Menu |
 |------|------|
 | `main.yml` | Companion storage, the screen bare `/companions` opens |
+| `eggs.yml` | The companion eggs shop, opened by `/companions eggs [egg]` and by the egg button of `main.yml`. ONE file for every egg you declare |
 | `fusion.yml` | Fusion, including the Fuse All bulk path |
 | `bulk_delete.yml` | Bulk deletion by group |
 
@@ -1334,6 +1335,69 @@ Three menu layouts, all managed and all re-skinnable without touching code.
 A menu file defines a fixed number of cells. If you raise a player's equip slots above the
 cell count of `main.yml`, the extra companions cannot be shown. The plugin warns about this at
 runtime, and `/companions admin unequip` always recovers a companion that ended up out of reach.
+{% endhint %}
+
+### The eggs menu
+
+`guis/eggs.yml` is ONE file for every egg `eggs.yml` declares. Which egg is on screen travels with
+the player rather than with the file, so adding a key to `eggs.yml` gives it a shop page with
+nothing to write here, and deleting one leaves no orphan menu behind.
+
+The shipped mask is five rows:
+
+```yaml
+layout:
+  - "    i    "
+  - "  p p p  "
+  - "   p p   "
+  - "         "
+  - "  oo<oo  "
+
+regions:
+  pool: p
+  opens: o
+```
+
+| Cells | What |
+|---|---|
+| 4 (`i`) | `egg-info`: the egg on screen and the money it is priced in |
+| 11, 13, 15, 21, 23 (`p`) | the `pool` region: one companion this egg can give per cell |
+| 36 | reserved for the hatch animation switch, which arrives in the next version |
+| 38, 39, 41, 42 (`o`) | the `opens` region: one price button per `opens:` entry of the egg |
+| 40 (`<`) | `back`, which returns to `main.yml` |
+
+Both regions are drawn in the order `eggs.yml` writes them and both are sized by the mask alone:
+the plugin never names a slot. An egg with more drop rows than `p` cells shows the first ones and
+the rest are simply not drawn - that is configuration, not a mistake. **Widen the run to show
+more**, and the same holds for the `o` run and the price buttons.
+
+The templates the plugin binds:
+
+| Template | Placeholders |
+|---|---|
+| `egg-info` | `{egg}` `{currency}` |
+| `pool-entry` | `{id}` `{companion}` `{companion-lore}` `{icon}` `{texture}` `{group}` `{group-color}` `{chance}` `{amount}` |
+| `open-button`, `open-button-locked` | `{egg}` `{index}` `{amount}` `{price}` `{currency}` |
+| `anim-on`, `anim-off` | none yet - declared for the next version, and not drawn until then |
+
+`{chance}` is the row's weight **normalized over the whole table**, in percentage points with one
+decimal, never the raw weight you wrote: 60/30/10 and 6/3/1 both read 60.0/30.0/10.0. A row dropped
+because its companion file is gone does not dilute the survivors. `{amount}` means two different
+things on purpose - how many COMPANIONS a pool row grants, and how many EGGS a price button buys.
+
+`open-button-locked` is drawn instead of `open-button` when the player cannot pay for that bundle.
+Its click is deliberately left enabled: pressing it runs exactly the same purchase, which refuses
+with the message naming the price and the currency. The menu decides nothing about money - the
+master switch, the creative rule, the egg's cooldown, the price, the storage decision, the charge
+and the refund are all re-taken when the button is pressed.
+
+`{currency}` is `menus.eggs.currency-<id>` from the lang file, the same word the chat lines use.
+
+{% hint style="info" %}
+**On an existing install the egg button of `main.yml` does not appear by itself.** That file is
+managed, so the merge adds the new `eggs-button` entry but keeps YOUR `layout:`, which has no
+letter for it. Put an `e` where you want it - the shipped mask uses slot 45, the first cell of the
+bottom row, as `"e  < > Fd"`. `/companions eggs` works either way.
 {% endhint %}
 
 ### Colouring a companion by its group
@@ -1349,7 +1413,7 @@ Every template that draws a companion binds `{group-color}`, the colour its grou
       - "&8Group: &r{group-color}{group}"
 ```
 
-It is available in `main.yml`, `fusion.yml` and `bulk_delete.yml`. The value is inserted before SnLib's text pipeline runs, so a legacy code, a
+It is available in `main.yml`, `eggs.yml`, `fusion.yml` and `bulk_delete.yml`. The value is inserted before SnLib's text pipeline runs, so a legacy code, a
 hex code and the `[rgb]` gradient tag all work. `[rgb]` is a PREFIX tag: it only applies when
 `{group-color}` is the first thing on the line.
 
@@ -1450,6 +1514,17 @@ back to English when the named file is missing. To add a language, copy `message
 
 New keys are merged into your existing file on boot, with your values and your comments left
 alone, so an update never overwrites a line you restyled.
+
+**1.6.0 adds one**, sent by the [eggs menu](#the-eggs-menu):
+
+| Key | Sent when | Placeholders |
+|---|---|---|
+| `messages.egg-unknown` | the shop was asked for an egg `eggs.yml` does not declare - an `eggs.default` that names a renamed or deleted key, or a price button clicked after that same edit | none |
+
+Typing an id on `/companions eggs <egg>` cannot reach it: that argument only accepts ids that exist
+right now. When it fires on the way IN, both doors - the command and the egg button of `main.yml` -
+refuse to open rather than showing a blank window; the player's cursor still points at the id they
+asked for, so fixing `eggs.yml` and reloading is enough.
 
 **1.17.0 adds one**, sent when a player right clicks a companion head that belongs to somebody else,
 described under [companion-items](#a-companion-item-remembers-who-took-it-out):
