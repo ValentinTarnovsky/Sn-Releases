@@ -61,8 +61,7 @@ The `<what>` argument of `clear` is `storage` (every companion that is not equip
 | Command | Permission | Description |
 |---------|-----------|-------------|
 | `/companions admin give <player> <companion> [amount] [level]` | `sncompanions.admin.give` | Gives companions to a player |
-| `/companions admin givebox <player> <box> [amount] [chance]` | `sncompanions.admin.givebox` | Gives companion boxes to an online player. Never refused: a box is an item, and a full companion storage only blocks OPENING it |
-| `/companions admin giveallbox <box> [amount] [chance]` | `sncompanions.admin.giveallbox` | Gives companion boxes to every online player, all at one success chance |
+| `/companions admin openegg <player> <egg> [amount]` | `sncompanions.admin.openegg` | Opens companion eggs for an online player without charging them; the companions go to their storage. This is the command a shop, a crate or a vote reward runs |
 | `/companions admin slots <mode> <player> <amount>` | `sncompanions.admin.slots` | Adds or sets the equip slots a player bought; they add on top of `max(base, permission)`, with the total capped at `slots.max-count` |
 | `/companions admin storage <mode> <player> <amount>` | `sncompanions.admin.storage` | Adds or sets the storage a player bought; it adds on top of `max(base, permission)`, with the total capped at `storage.max-capacity` |
 
@@ -80,26 +79,28 @@ Every `/companions admin` command accepts two optional flags, in any order and c
 
 ```
 /companions admin give Bob ember_fox 3 5 -s -sf
-/companions admin givebox Bob starter_box 10 -s
+/companions admin openegg Bob basic_egg 10 -s
 /companions admin clear Bob all -sf
 ```
 
 {% hint style="info" %}
 `-sf` silences **success confirmations only**. An error, a refusal (storage full, no such companion, an
-unknown box) or a failed query always reaches the admin who ran the command - an admin command that
+unknown egg) or a failed query always reaches the admin who ran the command - an admin command that
 fails in silence is the worst possible outcome.
 {% endhint %}
 
 `-s` silences the message the RECEIVER gets. Three commands send one: `give`
-(`messages.companion-received`), and `givebox` and `giveallbox` (`messages.box-received`).
+(`messages.companion-received`). `openegg` only looks like a third: what the player reads is the
+egg's own reward line, announced by the egg engine exactly as it would be for a bought egg, so `-s`
+does not touch it.
 The other fifteen have never messaged their target, so `-s` is
 accepted there and simply has nothing to silence. An offline receiver is never messaged either way.
 
 {% hint style="warning" %}
 Put the flags **last**. Everything after the first flag is treated as part of the flag tail, so
 `/companions admin give Bob ember_fox -s 5` grants one companion, not five - the `5` is read as trailing noise.
-Only the five commands with an optional argument (`list`, `clear`, `give`, `givebox`,
-`giveallbox`) are sensitive to the order; the rest have nothing to confuse.
+Only the four commands with an optional argument (`list`, `clear`, `give`, `openegg`) are
+sensitive to the order; the rest have nothing to confuse.
 {% endhint %}
 
 ### Tab completion

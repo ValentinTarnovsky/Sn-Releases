@@ -5,12 +5,11 @@ are managed by SnLib: new keys are auto-merged on boot, and your values and comm
 preserved. Set `update-configs: false` to freeze them, in which case SnLib only warns about
 missing keys instead of inserting them.
 
-`boxes.yml` and the `companions/` folder are seeded once, on a
+`eggs.yml` and the `companions/` folder are seeded once, on a
 fresh install, and never written to again. A companion file you delete stays deleted, and a file you
-add is picked up on the next reload; one file is one companion, and the file name is its id. Boxes
-work the same way but live as keys inside `boxes.yml` rather than as separate files - if you are
-upgrading from a version that used a `boxes/` folder, see [boxes.yml](#boxesyml), which is
-migrated for you automatically.
+add is picked up on the next reload; one file is one companion, and the file name is its id. Eggs
+work the same way but live as keys inside `eggs.yml` rather than as separate files - see
+[eggs.yml](#eggsyml).
 
 ## config.yml
 ```yaml
@@ -533,32 +532,57 @@ fusion:
   failure-sound: "ENTITY_ITEM_BREAK 1.0 0.8"
 
 # ------------------------------------------------------------
-#  Companion boxes. A box is a physical item declared in boxes.yml, one key per box,
-#  and opened with a right click. What a box contains, how it looks, which
-#  sound it plays and what it says on opening lives in that file; this section
-#  holds only the rules every box obeys.
-#  Success chance: a box carries one, drawn from its own chance.min/chance.max
-#  when it is handed out - or forced with the [chance] argument of
-#  /companions admin givebox - and written onto the item itself. A failed open
-#  CONSUMES the box and grants nothing; a successful one rolls the box's
-#  weighted table, which always produces a companion.
-#  Storage full never blocks RECEIVING a box, only OPENING it: a single open
-#  refuses and hands the box straight back with its percentage intact, a bulk
-#  open opens what fits and returns the rest. Nothing is ever lost.
+#  Companion eggs. An egg is a PURCHASE, not an item: nothing is minted, traded
+#  or right-clicked. A player buys one from the egg menu, it rolls its weighted
+#  table straight away and the companions land in their storage.
+#  What a single egg contains, costs, looks like on hatching and says lives in
+#  eggs.yml, one key per egg; this section holds only the rules every egg obeys.
+#  An egg that opens ALWAYS produces a companion: the numbers in its drops table
+#  are weights, not percentages, and there is no failure roll.
+#  Storage is checked ONCE, up front, for every companion the roll produced: if
+#  the whole bundle does not fit, nothing is charged and nothing is granted.
 # ------------------------------------------------------------
-boxes:
-  # Master switch of box opening. Off leaves every box item in place and in
-  # inventories, but a right click refuses and hands the box straight back.
+eggs:
+  # Master switch of egg opening: the menu, the command and the admin open. Off
+  # refuses every one of them.
   enabled: true
 
-  # Let a creative-mode player open boxes. Off by default: creative
-  # middle-click copies any stack with its NBT intact, so one box would mint
-  # companions without limit.
+  # The egg the main menu button opens. Must be an id declared in eggs.yml; an
+  # id that names nothing leaves that button doing nothing.
+  default: basic_egg
+
+  # Let a creative-mode player BUY eggs. Off by default: a creative player has
+  # unlimited resources on most servers, so paying for an egg means nothing.
+  # An admin open ignores this: nobody is charged there.
   allow-creative: false
 
-  # Blocks a box right click steps aside for, so the block wins the click.
-  # Without them, clicking a chest with a box in hand would open the box
-  # instead of the chest. An empty list makes every block openable.
+# ------------------------------------------------------------
+#  Companion items. A stored companion can be taken out of the storage as a physical head
+#  (shift + right click on it in the main menu) and redeemed back by anyone
+#  with a right click, which is how companions change hands. The item carries the
+#  companion's whole state - level and experience - so
+#  a companion that comes back is the companion that left. A redeem into a full storage
+#  hands the item straight back, and so does every other refusal: the item is
+#  the companion, and it is never destroyed by a refusal.
+#  An EQUIPPED companion cannot be taken out (unequip it first) and neither can one
+#  whose companions/<id>.yml is gone, because it has no face left to travel with.
+#  The blocked-blocks list below makes the redeem click step aside for a chest,
+#  a door or a workstation, so the block wins the click instead of the item.
+# ------------------------------------------------------------
+companion-items:
+  # Master switch of extracting and redeeming. Off refuses both and hands a
+  # clicked item back. Items already in circulation stay in inventories.
+  enabled: true
+
+  # Let a creative-mode player redeem companion items. Off by default: creative
+  # middle-click copies any stack with its NBT intact, so one companion item would
+  # mint companions without limit.
+  allow-creative: false
+
+  # Blocks the redeem right click steps aside for, so the block wins the click.
+  # Without them, clicking a chest with a companion item in hand would redeem the
+  # companion instead of opening the chest. An empty list makes every block
+  # redeemable-on.
   #
   # An entry starting with # is a vanilla BLOCK TAG and expands to everything
   # in it on load, following whatever the running server version ships. That is
@@ -624,44 +648,6 @@ boxes:
     - BEE_NEST
     - LODESTONE
 
-  bulk:
-    # Let shift + right click open the whole held stack at once. A box whose
-    # own file turns its reveal animation on can never be bulk opened: that
-    # click opens one box and says so, because 64 spinners firing together is
-    # what this rule exists to prevent.
-    enabled: true
-    # Most boxes one shift + right click may open. A vanilla stack holds 64, so
-    # raising this above 64 only matters for a box with a custom
-    # max-stack-size. Minimum 2.
-    max-per-click: 64
-    # Announce a bulk open too, once per DISTINCT companion won, using the box's own
-    # feedback.broadcast-key. Off by default: a wide table would otherwise turn
-    # one stack into a wall of chat.
-    broadcast: false
-
-# ------------------------------------------------------------
-#  Companion items. A stored companion can be taken out of the storage as a physical head
-#  (shift + right click on it in the main menu) and redeemed back by anyone
-#  with a right click, which is how companions change hands. The item carries the
-#  companion's whole state - level and experience - so
-#  a companion that comes back is the companion that left. A redeem into a full storage
-#  hands the item straight back, and so does every other refusal: the item is
-#  the companion, and it is never destroyed by a refusal.
-#  An EQUIPPED companion cannot be taken out (unequip it first) and neither can one
-#  whose companions/<id>.yml is gone, because it has no face left to travel with.
-#  The boxes.blocked-blocks list above applies to the redeem click too, so a
-#  companion item steps aside for a chest exactly like a box does.
-# ------------------------------------------------------------
-companion-items:
-  # Master switch of extracting and redeeming. Off refuses both and hands a
-  # clicked item back. Items already in circulation stay in inventories.
-  enabled: true
-
-  # Let a creative-mode player redeem companion items. Off by default: creative
-  # middle-click copies any stack with its NBT intact, so one companion item would
-  # mint companions without limit.
-  allow-creative: false
-
   # Look of the extracted item. Its MATERIAL is always the companion's own head and
   # cannot be set here; the name and lore below are yours.
   # Every companion placeholder the menus use works here:
@@ -684,6 +670,7 @@ companion-items:
       - ""
       - "&a&lRIGHT CLICK"
       - "&2Redeem this companion into your storage"
+
 ```
 
 ### A companion item remembers who took it out
@@ -1120,146 +1107,113 @@ incompatible:
   - gale_sprite
 ```
 
-## boxes.yml
+## eggs.yml
 
-**Every** companion box lives in this one file, one top-level key per box. The key is the box id the
-admin give commands take, and the physical item is registered as `box_<id>`. Two examples are
-seeded, `basic` and `rare`. Add, rename and delete keys freely.
+**Every** companion egg lives in this one file, one top-level key per egg. The key is the egg id the
+menu and `/companions admin openegg` take. One example is seeded, `basic_egg`. Add, rename and
+delete keys freely; an id may not contain a dot, which is the yml path separator.
 
 The file is seed-only and its header carries `# sn:extensible-root`, so a key you delete stays
-deleted and no key ever gains a sub-key from an update. Deleting the whole FILE re-seeds the two
-examples on the next reload; delete the KEYS you do not want instead.
+deleted and no key ever gains a sub-key from an update. Deleting the whole FILE re-seeds the
+example on the next reload; delete the KEYS you do not want instead.
 
-### Upgrading from the boxes/ folder
+{% hint style="info" %}
+**An egg is a purchase, not an item.** Nothing is minted, traded or right-clicked: a player buys an
+egg from the egg menu, its table is rolled straight away and the companions go into their storage.
+That is why an egg has no `item:` block - what the menu draws lives in `guis/eggs.yml`, beside every
+other button of that screen.
+{% endhint %}
 
-Before 1.4.0 each box was its own `boxes/<id>.yml` file. On the first boot after updating, the
-plugin folds that folder into `boxes.yml` and renames it to `boxes-migrated/`. Nothing is
-deleted, every box id is kept, and the box items already in players' inventories keep opening.
+### The keys
 
-Three things worth knowing:
+| Key | Meaning |
+|-----|---------|
+| `display-name` | The name the menu and every `{egg}` placeholder show. `[rgb]`, `[small]` and `[noprefix]` are applied when the file is read, so the name renders the same in the menu and spliced into the middle of a chat line |
+| `price.currency` | `vault` for the server economy, or `edtools:<id>` for one of your EdTools currencies. Anything else is refused with a console warning and charged as `vault` |
+| `opens` | The buttons of the egg menu: a LIST, one entry per bundle, each with its own `amount` and its own explicit `price`. There is no unit price multiplied by an amount - an owner who wants "10 for the price of 9" writes that number. An egg with no `opens` cannot be bought and stays admin-only |
+| `drops` | The weighted table, one entry per companion id, each with an `amount` and a `weight`. The numbers are WEIGHTS, not percentages: they are normalized over whatever the table holds, so 60/30/10 and 6/3/1 behave identically. A row naming a companion with no `companions/<id>.yml` file is dropped when the egg loads, with one console warning, and the remaining weights renormalize on their own |
+| `animation` | The hatch show. `enabled` switches it off entirely; `shake-ticks` is clamped to 4-600 and `reveal-ticks` to 0-600, and the three sound keys take `"SOUND_ID [volume] [pitch]"` or `none` |
+| `feedback.message-key` | Lang key sent to the opener of ONE egg that produced ONE companion. Anything larger sends `messages.egg-opened-bulk` instead, which summarizes the whole open. Empty sends nothing |
+| `feedback.broadcast-key` | Lang key announced to the whole server, once per DISTINCT companion won. Empty announces nothing |
+| `cooldown-seconds` | Wait enforced between two PAID opens of this egg. `0` disables it entirely and costs nothing at runtime. An admin open ignores it: it costs nobody anything |
 
-- A file name containing a dot cannot be a yml key, so `my.box.yml` migrates as `my_box` with a
-  loud console warning. Its item id changes, so the copies of THAT box already handed out stop
-  opening. Every other box is unaffected.
-- Because `boxes.yml` is seed-only, a migrated box does **not** receive the keys 1.4.0 added.
-  `chance` defaults to 100/100 and `feedback.fail-broadcast-key` to empty, which is exactly the
-  behaviour those boxes had before. Add them by hand to any box you want to turn into a gamble,
-  and add `{chance}` to its lore if you want the odds shown on the item.
-- The per-box comments do not survive the move (a YAML reader cannot carry a file header onto a
-  key). Each migrated key gets a `# Migrated from boxes/<file>` line, and the originals are all
-  still there in `boxes-migrated/`.
-
-If the migration cannot finish - an unreadable file, a full disk, a read-only data folder - the
-plugin refuses to start instead of continuing with the two example boxes, and the console names
-the cause. Your folder is left untouched; fix it and start the server again.
-
-### The success chance
-
-A box can fail to open. Each one declares a band:
-
-```yaml
-rare:
-  chance:
-    min: 60
-    max: 90
-```
-
-When a box is **handed out**, a percentage is drawn in that band, rendered into the item's
-`{chance}` name and lore, and written onto the stack itself. **Opening rolls the number on the
-stack**, not the box's current band. That means lowering the band never devalues the boxes
-already in circulation, a shop can sell guaranteed boxes beside gambled ones, and two stacks of
-the same box at different odds never merge.
-
-`/companions admin givebox <player> <box> [amount] [chance]` forces an exact percentage instead of
-drawing one - `100` is what a shop wants. `giveallbox` draws once, so everybody gets the same
-number.
-
-A failed open **consumes the box** and grants nothing. The player gets
-`messages.box-chance-failed` (or `messages.box-chance-failed-bulk` for a stack), the box's
-cooldown starts as if it had opened, and if the box declares `feedback.fail-broadcast-key` the
-loss is announced to the server. Leave both band ends at `100` for a box that always opens.
-
-A box handed out before 1.4.0 carries no percentage and counts as 100%.
+An egg that opens **always** produces a companion. There is no failure roll: an open is either
+refused before anything is spent - the master switch is off, the player's row is still loading, the
+table has no rollable row left, or their storage cannot take the whole roll - or it goes through.
 
 ### The shipped file in full
 
 ```yaml
 # ============================================================
-#  SnCompanions - companion boxes
-#  ONE file for every box. Every top-level key below is a box id: it is the id
-#  the admin give commands take, and the physical item is registered as
-#  "box_<id>". Add, rename and delete freely.
+#  SnCompanions - companion eggs
+#  ONE file for every egg. Every top-level key below is an egg id: it is the id
+#  the egg menu and /companions admin openegg take. Add, rename and delete
+#  freely; an id may not contain a dot, which is the yml path separator.
 #  Seeded once and never merged again: this file is yours. Deleting the FILE
-#  re-seeds the two examples on the next reload; delete the KEYS you do not
-#  want, not the file. A box item already in a player's inventory whose key is
-#  gone keeps its look but no longer opens.
-#  Right click opens one box. Shift + right click opens the whole held stack,
-#  which requires "animation.enabled: false" on that box.
-#  Upgrading from an older version: a boxes/ folder is migrated into this file
-#  automatically on the first boot and the folder is renamed to boxes-migrated/.
-#  Nothing is deleted and the box items already handed out keep working.
+#  re-seeds the example below on the next reload; delete the KEYS you do not
+#  want, not the file.
+#
+#  An egg is a PURCHASE, not an item. Nothing is minted, traded or right-clicked:
+#  a player buys an egg from the menu, its table is rolled straight away and the
+#  companions go into their storage. That is why an egg has no "item:" block -
+#  what the menu draws lives in guis/eggs.yml, beside every other button.
+#
+#  The numbers under "drops" are WEIGHTS, not percentages: they are normalized
+#  over whatever the table holds, so 60/30/10 and 6/3/1 behave identically and
+#  the total does not have to add up to anything. An egg that opens ALWAYS
+#  produces a companion; there is no failure roll. A row naming a companion with
+#  no companions/<id>.yml file is dropped when the egg loads, with one console
+#  warning, and the remaining weights renormalize on their own.
+#
+#  The entries under "opens" are the BUTTONS the egg menu shows, each with its
+#  own explicit price. There is no unit price multiplied by an amount: an owner
+#  who wants "10 for the price of 9" writes that number. An egg with no opens
+#  cannot be bought at all and stays admin-only.
+#
+#  "price.currency" is either "vault" (the server economy) or "edtools:<id>",
+#  which names one of your EdTools currencies. Anything else is refused with a
+#  console warning and charged as vault.
+#
+#  "animation" is the hatch show played when the egg is opened. It delays only
+#  the FEEDBACK: the companions are granted and saved before the first frame is
+#  drawn, so quitting mid-hatch costs the show and nothing else.
 # sn:extensible-root
 # ============================================================
 
 # ------------------------------------------------------------
-#  basic - the plain example: no animation, no broadcast, no cooldown, and it
-#  always opens.
+#  basic_egg - the shipped example: the three companions this plugin ships,
+#  four price tiers, a full hatch animation and no cooldown.
 # ------------------------------------------------------------
-basic:
+basic_egg:
+
+  # Name shown in the menu and spliced into the {egg} placeholder of every egg
+  # message. [rgb], [small] and [noprefix] work here and are applied on load.
+  display-name: "&d&lBasic Egg"
 
   # ----------------------------------------------------------
-  #  The physical item. Every appearance field of the SnLib item spec works
-  #  here: material, display-name, lore, glow, custom-model-data, enchantments,
-  #  flags, max-stack-size and the rest.
-  #  {chance} in the name or the lore is replaced, when the box is HANDED OUT,
-  #  by the success chance that box copy was stamped with. It is written into
-  #  the item itself, so two stacks handed out at different percentages never
-  #  merge and never lose their odds.
+  #  What it costs, and in what.
   # ----------------------------------------------------------
-  item:
-    # Item material, or a head texture written as "texture-<base64>",
-    # "basehead-<base64>" or an http skin URL, which makes it a player head.
-    material: CHEST
-    # Name shown on the box item, and the {box} placeholder of every box message.
-    display-name: "&f&lBasic Companion Box"
-    # Lore shown on the box item.
-    lore:
-      - "&7Right click to open."
-      - "&7Shift + right click opens the whole stack."
-      - ""
-      - "&7Success chance: &f{chance}%"
-      - ""
-      - "&7Contains one companion:"
-      - "&f60% &7Ember Fox"
-      - "&f30% &7Stone Golem"
-      - "&f10% &7Gale Sprite"
-    # Adds the enchantment shimmer without an enchantment.
-    glow: false
+  price:
+    # "vault" for the server economy, or "edtools:<id>" for an EdTools currency.
+    currency: vault
 
   # ----------------------------------------------------------
-  #  Chance of the box OPENING at all, in percent.
-  #  A box handed out without an explicit percentage is stamped with a value
-  #  drawn uniformly between min and max, and that value is what it rolls when
-  #  a player opens it. A failed open CONSUMES the box and grants nothing.
-  #  /companions admin givebox <player> <box> [amount] [chance] overrides the draw
-  #  with an exact number, which is how a shop sells guaranteed boxes.
-  #  Leave both at 100 for a box that always opens. min > max is swapped, and
-  #  both are clamped to 0-100.
-  #  A box handed out by an older version carries no percentage and counts as
-  #  100, so nothing already in circulation changes.
+  #  The buttons of the egg menu. One entry per bundle: how many eggs it opens
+  #  and what the whole bundle costs. Order is the order they are drawn in.
   # ----------------------------------------------------------
-  chance:
-    min: 100
-    max: 100
+  opens:
+    - amount: 1
+      price: 1000
+    - amount: 3
+      price: 2900
+    - amount: 10
+      price: 9500
+    - amount: 50
+      price: 45000
 
   # ----------------------------------------------------------
-  #  The drop table. One entry per companion id, which is a companions/<id>.yml file name.
-  #  The numbers are WEIGHTS, not percentages: they are normalized over whatever
-  #  the table holds, so 60/30/10 and 6/3/1 behave identically and the total does
-  #  not have to add up to anything. A box that OPENS always produces a companion;
-  #  the only way to get nothing is a failed chance roll above.
-  #  An entry naming a companion with no file is dropped when the box loads, with one
-  #  console warning, and the remaining weights renormalize on their own.
+  #  The drop table. One entry per companion id, which is a companions/<id>.yml
+  #  file name. The numbers are WEIGHTS, not percentages.
   # ----------------------------------------------------------
   drops:
     ember_fox:
@@ -1275,22 +1229,22 @@ basic:
       weight: 10
 
   # ----------------------------------------------------------
-  #  Reveal animation. It delays only the FEEDBACK: the companion is granted the moment
-  #  the box opens, so quitting mid-spinner loses nothing.
-  #  An animated box CANNOT be bulk opened. A shift + right click on one opens a
-  #  single box instead and says so, because 64 spinners at once is what the rule
-  #  against it exists to prevent.
+  #  The hatch animation. It delays only the FEEDBACK.
   # ----------------------------------------------------------
   animation:
-    # Delay the reveal behind a short spinner instead of showing it instantly.
-    enabled: false
-    # Ticks between the open and the reveal. 20 ticks is one second.
-    duration-ticks: 40
-    # Ticks between two spinner frames.
-    step-ticks: 4
-    # Sound played on each spinner frame, as "SOUND_ID [volume] [pitch]".
+    # Play the hatch show instead of naming the companion instantly.
+    enabled: true
+    # Ticks the egg shakes before it breaks. 20 ticks is one second.
+    # Clamped to 4-600.
+    shake-ticks: 60
+    # Ticks between the break and the companion being named. 0 reveals in the
+    # same frame the egg breaks. Clamped to 0-600.
+    reveal-ticks: 40
+    # Sound played on each shake frame, as "SOUND_ID [volume] [pitch]".
     # "none" plays nothing.
-    step-sound: "BLOCK_NOTE_BLOCK_HAT 1.0 1.6"
+    step-sound: "BLOCK_NOTE_BLOCK_HAT 1.0 1.2"
+    # Sound played when the egg cracks open. "none" plays nothing.
+    break-sound: "ENTITY_ENDER_DRAGON_GROWL 0.6 1.4"
     # Sound played when the companion is revealed. "none" plays nothing.
     reveal-sound: "ENTITY_PLAYER_LEVELUP 1.0 1.4"
 
@@ -1298,122 +1252,21 @@ basic:
   #  Feedback. Every key points at an entry of lang/messages_<code>.yml, so the
   #  wording is translated and restyled with every other message rather than
   #  living here. Leave one empty to send nothing.
-  #  Placeholders: {player} {box} {companion} {amount} {chance}
+  #  Placeholders: {player} {egg} {companion} {amount}
   # ----------------------------------------------------------
   feedback:
-    # Line sent to the player who opened the box. Applies to a SINGLE open; a bulk
-    # open sends messages.box-opened-bulk instead, which summarizes the stack.
-    message-key: "messages.box-opened"
-    # Line announced to the whole server. Empty announces nothing.
+    # Line sent to the player who opened the egg. Applies to a SINGLE egg that
+    # produced ONE companion; anything larger sends messages.egg-opened-bulk
+    # instead, which summarizes the whole open.
+    message-key: "messages.egg-opened"
+    # Line announced to the whole server, once per DISTINCT companion won.
+    # Empty announces nothing.
     broadcast-key: ""
-    # Line announced to the whole server when an open FAILS its chance roll.
-    # Empty announces nothing. A bulk open only announces when
-    # boxes.bulk.broadcast is on in config.yml.
-    # Placeholders: {player} {box} {amount} {chance}
-    fail-broadcast-key: ""
 
-  # Seconds a player must wait between two opens of THIS box. 0 disables the
-  # cooldown entirely and costs nothing at runtime. A refused open never starts
-  # it; a FAILED open does, because the box was consumed all the same.
+  # Seconds a player must wait between two PAID opens of THIS egg. 0 disables
+  # the cooldown entirely and costs nothing at runtime. An admin open ignores
+  # it: it costs nobody anything.
   cooldown-seconds: 0
-
-# ------------------------------------------------------------
-#  rare - the other half of the feature set: a reveal animation, a server
-#  broadcast, a cooldown, a row worth more than one companion, and a chance band that
-#  makes an open a gamble.
-# ------------------------------------------------------------
-rare:
-
-  # ----------------------------------------------------------
-  #  The physical item.
-  # ----------------------------------------------------------
-  item:
-    # Item material, or a head texture written as "texture-<base64>",
-    # "basehead-<base64>" or an http skin URL, which makes it a player head.
-    material: ENDER_CHEST
-    # Name shown on the box item, and the {box} placeholder of every box message.
-    display-name: "&5&lRare Companion Box"
-    # Lore shown on the box item.
-    lore:
-      - "&7Right click to open."
-      - ""
-      - "&7Success chance: &f{chance}%"
-      - "&8A failed open destroys the box."
-      - ""
-      - "&7Contains:"
-      - "&f50% &7Stone Golem"
-      - "&f30% &7Gale Sprite"
-      - "&f20% &7Ember Fox &8x2"
-    # Adds the enchantment shimmer without an enchantment.
-    glow: true
-
-  # ----------------------------------------------------------
-  #  Chance of the box OPENING at all, in percent. Handed out without an
-  #  explicit percentage, this box is stamped somewhere between 60 and 90 and
-  #  keeps that number for good.
-  # ----------------------------------------------------------
-  chance:
-    min: 60
-    max: 90
-
-  # ----------------------------------------------------------
-  #  The drop table. The numbers are WEIGHTS, not percentages: they are
-  #  normalized over whatever the table holds. A box that OPENS always produces
-  #  a companion. A row naming a companion with no file is dropped when the box loads and
-  #  the remaining weights renormalize on their own.
-  # ----------------------------------------------------------
-  drops:
-    stone_golem:
-      # How many of this companion one winning roll grants.
-      amount: 1
-      # Relative weight of this row.
-      weight: 50
-    gale_sprite:
-      amount: 1
-      weight: 30
-    ember_fox:
-      # A row worth more than one companion. The box is opened only when the WHOLE row
-      # fits in the storage, so a bulk open never splits one box in half.
-      amount: 2
-      weight: 20
-
-  # ----------------------------------------------------------
-  #  Reveal animation. It delays only the FEEDBACK: the companion is granted the moment
-  #  the box opens, so quitting mid-spinner loses nothing.
-  #  An animated box CANNOT be bulk opened. A shift + right click on this one
-  #  opens a single box instead and says so.
-  # ----------------------------------------------------------
-  animation:
-    # Delay the reveal behind a short spinner instead of showing it instantly.
-    enabled: true
-    # Ticks between the open and the reveal. 20 ticks is one second.
-    duration-ticks: 50
-    # Ticks between two spinner frames.
-    step-ticks: 4
-    # Sound played on each spinner frame, as "SOUND_ID [volume] [pitch]".
-    # "none" plays nothing.
-    step-sound: "BLOCK_NOTE_BLOCK_HAT 1.0 1.8"
-    # Sound played when the companion is revealed. "none" plays nothing.
-    reveal-sound: "ENTITY_PLAYER_LEVELUP 1.0 1.2"
-
-  # ----------------------------------------------------------
-  #  Feedback. Every key points at an entry of lang/messages_<code>.yml.
-  #  Placeholders: {player} {box} {companion} {amount} {chance}
-  # ----------------------------------------------------------
-  feedback:
-    # Line sent to the player who opened the box. Applies to a SINGLE open.
-    message-key: "messages.box-opened"
-    # Line announced to the whole server. A bulk open only announces when
-    # boxes.bulk.broadcast is on in config.yml, and this box cannot be bulk
-    # opened anyway, because its animation is on.
-    broadcast-key: "messages.box-broadcast"
-    # Line announced to the whole server when an open FAILS its chance roll.
-    fail-broadcast-key: "messages.box-fail-broadcast"
-
-  # Seconds a player must wait between two opens of THIS box. 0 disables the
-  # cooldown entirely and costs nothing at runtime. A refused open never starts
-  # it; a FAILED open does, because the box was consumed all the same.
-  cooldown-seconds: 3
 ```
 
 ## guis/
@@ -1462,18 +1315,19 @@ Where it does **not** work, and why:
 
 `[rgb]`, `[small]` and `[center]` are PREFIX tags: SnLib reads them at the start of a finished
 line and nowhere else. That is why a `{group-color}` carrying `[rgb]` has to be first on its line,
-and it used to bite display names too - a box in `boxes.yml` or a companion in `companions/<id>.yml` whose
-`display-name` began with `[rgb]` drew its gradient on the ITEM but printed the literal tag in
-chat, because a name spliced into a message as `{box}` or `{companion}` lands in the middle of the line:
+and it used to bite display names too - an egg in `eggs.yml` or a companion in `companions/<id>.yml` whose
+`display-name` began with `[rgb]` drew its gradient where it was the whole line but printed the
+literal tag in chat, because a name spliced into a message as `{egg}` or `{companion}` lands in the
+middle of the line:
 
 ```
-SnCompanions | The [rgb]Basic Companion Box failed to open (1% chance)...
+SnCompanions | You opened [rgb]Basic Egg and got Ember Fox x1.
 ```
 
 **1.8.1 fixes this.** Both files have their display-name prefix tags applied when the file is
-read, so the name looks the same on the item and in every message that names it. Nothing in your
-files changes: `boxes.yml` and `companions/` are seed-only and untouched, and the item is still built
-from the raw yml, so a name is never expanded twice. `[center]` is the one tag dropped from the
+read, so the name looks the same wherever it is printed. Nothing in your
+files changes: `eggs.yml` and `companions/` are seed-only and untouched, and the value is stored
+already expanded, so a name is never expanded twice. `[center]` is the one tag dropped from the
 chat copy - centering a fragment that lives inside somebody else's line means nothing.
 
 {% hint style="info" %}
@@ -1553,12 +1407,13 @@ described under [companion-items](#a-companion-item-remembers-who-took-it-out):
 |---|---|---|
 | `messages.companion-item-not-yours` | a player redeeming a companion item stamped with another player's UUID | `{owner}` |
 
-**1.5.0 added two**, both sent to the player who RECEIVES something from an admin command:
+**1.5.0 added one**, sent to the player who RECEIVES something from an admin command:
 
 | Key | Sent by | Placeholders |
 |---|---|---|
 | `messages.companion-received` | `/companions admin give` | `{amount}` `{companion}` `{level}` |
-| `messages.box-received` | `/companions admin givebox`, `/companions admin giveallbox` | `{amount}` `{box}` `{chance}` |
 
-Blank either value to switch that notification off for everyone, or suppress it per command with
+Blank the value to switch that notification off for everyone, or suppress it per command with
 the `-s` flag (see [Commands](commands.md#silent-flags)). Offline players are never messaged.
+`/companions admin openegg` does not use it: what its target reads is the egg's own reward line,
+announced by the egg engine exactly as it would be for a bought egg.

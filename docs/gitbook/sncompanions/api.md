@@ -59,7 +59,7 @@ Cancellable events fire before the action. Cancelling aborts it.
 |-------|-----------|---------------|
 | `CompanionEquipEvent` | A player equips a stored companion from the companion menu | The companion stays in storage |
 | `CompanionUnequipEvent` | A player sends an equipped companion back to storage | The companion keeps its slot and its buffs |
-| `CompanionBoxOpenEvent` | A player opens one or more companion boxes, before the roll | Every box is handed back |
+| `CompanionEggOpenEvent` | A player opens one or more companion eggs, after the gates and before anything is charged or granted | Nothing is charged and nothing is granted |
 | `CompanionFuseEvent` | A player commits a fusion, before anything is charged | Nothing is charged and no companion is destroyed |
 | `CompanionGroupDeleteEvent` | A player mass-deletes a group from the bulk delete menu | Every companion in the group stays |
 
@@ -72,16 +72,19 @@ Notification events fire after the fact. They cannot be cancelled.
 
 | Event | Fired when | Payload |
 |-------|-----------|---------|
-| `CompanionBoxRewardEvent` | A box open resolved to a set of companions | Which companions were won, and how many boxes opened |
+| `CompanionEggRewardEvent` | An egg open finished and its companions are persisted | `eggId`, the `companionsWon` map, `eggsOpened` and `charged` |
 | `CompanionLevelUpEvent` | An equipped companion gained at least one level | The companion after the level up, and how many levels it gained |
 | `CompanionFusedEvent` | A fusion consumed its parents | Whether it succeeded, and the companion it produced |
 
 {% hint style="info" %}
-Since 1.4.0 a companion box carries a success chance and can fail to open, consuming the box and
-granting nothing. A failed open fires **no** event: `CompanionBoxRewardEvent` only ever fires when
-there was a reward, and `CompanionBoxOpenEvent` has already fired by then (it runs before the roll,
-so it sees the attempt whether or not it succeeds). A dedicated fail event may be added in a
-later version; adding one would be a MINOR `API_VERSION` bump, never a breaking change.
+`CompanionEggRewardEvent` fires only when the open actually produced something, and it fires
+**after** the companion rows are persisted, so every companion it names is already queryable through
+the facade when your listener runs. Its `companionsWon` map reports what was CREATED, not what the
+table decided, so an open that only partly landed reports the smaller number. A refused open (storage
+full, the master switch off, a cancelled `CompanionEggOpenEvent`) fires nothing at all.
+
+`charged` is `false` on both events for an open that costs the player nothing, which is what
+`/companions admin openegg` does today.
 {% endhint %}
 
 {% hint style="info" %}
@@ -166,6 +169,9 @@ cycle. `1.2.0` deleted `getTraits()`, the `TraitView` record, `CompanionView`'s 
 `getBoostGrades()`, `getCurrencyBalance()`, the `BoostGradeView` and `RollChangeView` records, the
 `CompanionRollEvent` and `CompanionRolledEvent` events, and `CompanionView`'s three boost id
 components when the boosts, the roll infrastructure and the internal currencies were removed.
+`1.4.0` deleted the `CompanionBoxOpenEvent` and `CompanionBoxRewardEvent` events when companion
+boxes were replaced by companion eggs, and added `CompanionEggOpenEvent` and
+`CompanionEggRewardEvent` in their place.
 
 `API_VERSION` is deliberately held at `1.0.0` across those removals rather than claiming a stability
 this contract does not have yet, so **the version does not tell you whether surface went away**.

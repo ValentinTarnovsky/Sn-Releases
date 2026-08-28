@@ -9,7 +9,7 @@ tasks and unequipped companions cost nothing.
 
 A companion is more than a cosmetic. It levels up from a configurable experience source and
 grants its owner damage, resistance and speed
-buffs that scale with its level. Players collect companions from weighted companion boxes, fuse
+buffs that scale with its level. Players collect companions from weighted companion eggs, fuse
 duplicates into stronger ones, and manage everything from configurable menus.
 
 ## Features
@@ -21,8 +21,9 @@ duplicates into stronger ones, and manage everything from configurable menus.
 - Damage, resistance and speed buffs, each with a global cap and a per-world gate.
 - Fusion: combine duplicates into a stronger companion that inherits levels, with
   a server-wide announcement you can switch on per companion.
-- Companion boxes with weighted tables, a per-box success chance stamped on the item, bulk opening,
-  cooldowns and a full refund on a failed save.
+- Companion eggs with weighted tables, price tiers in Vault or an EdTools currency, a hatch
+  animation and per-egg cooldowns. An egg is a purchase, not an item: the table rolls the moment it
+  is opened and the companions land straight in the owner's storage.
 - Companion items: shift + right click a stored companion, or press Q over it, to take it out as a physical
   head carrying its whole state, and let anyone right click it back into their own storage. That
   is how players trade companions. Since 1.17.0 the head also remembers who took it out, and only that

@@ -1,6 +1,6 @@
 # Permissions
 
-The three player nodes default to `true`, so everyone can use the plugin out of the box.
+The three player nodes default to `true`, so everyone can use the plugin straight away.
 Every admin node defaults to `op`. The two numeric capacity nodes have no default and must be
 granted per rank.
 
@@ -36,8 +36,7 @@ granted per rank.
 | `sncompanions.admin.clear` | op | Allows `/companions admin clear` |
 | `sncompanions.admin.reset` | op | Allows `/companions admin reset` |
 | `sncompanions.admin.give` | op | Allows `/companions admin give` |
-| `sncompanions.admin.givebox` | op | Allows `/companions admin givebox` |
-| `sncompanions.admin.giveallbox` | op | Allows `/companions admin giveallbox` |
+| `sncompanions.admin.openegg` | op | Allows `/companions admin openegg` |
 | `sncompanions.admin.slots` | op | Allows `/companions admin slots` |
 | `sncompanions.admin.storage` | op | Allows `/companions admin storage` |
 

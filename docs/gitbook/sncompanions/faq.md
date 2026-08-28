@@ -4,11 +4,8 @@
 
 Download the newer `sncompanions-v*` release and replace the jar. `config.yml`, the language files
 and the menu layouts auto-merge on restart, so new keys appear while your values and comments
-stay. Your `companions/` folder and your `boxes.yml` file are
+stay. Your `companions/` folder and your `eggs.yml` file are
 never overwritten.
-
-Updating **to 1.4.0** also moves your `boxes/` folder into a single `boxes.yml` automatically -
-see the question about `boxes-migrated/` below.
 
 ### A player unequipped the companion in slot 2 and the others moved. Is that a bug?
 
@@ -24,12 +21,12 @@ Give the group a `color:` in `config.yml` and use `{group-color}` in the menu te
 key: until you add one, `{group-color}` reuses the colour codes that group's `display` already
 starts with.
 
-### My box has `[rgb]` in its display-name and chat shows the tag instead of the gradient.
+### My egg has `[rgb]` in its display-name and chat shows the tag instead of the gradient.
 
-Fixed in 1.8.1. `[rgb]` is a prefix tag: SnLib reads it at the START of a finished line, and a
-box or companion name spliced into a message as `{box}` or `{companion}` sits in the middle of one, so the
-tag was left as text (`The [rgb]Basic Companion Box failed to open...`) while the ITEM, whose name IS
-the whole line, rendered fine. Both `boxes.yml` and `companions/<id>.yml` now have their display-name
+Fixed in 1.8.1. `[rgb]` is a prefix tag: SnLib reads it at the START of a finished line, and an
+egg or companion name spliced into a message as `{egg}` or `{companion}` sits in the middle of one, so the
+tag was left as text (`The [rgb]Basic Egg gave you...`) while a line whose name IS
+the whole line rendered fine. Both `eggs.yml` and `companions/<id>.yml` now have their display-name
 tags applied when the file is read. Nothing to change on your side - those files are seed-only
 and are not touched.
 
@@ -47,12 +44,12 @@ or both, in any order:
 
 ```
 /companions admin give Bob ember_fox 3 5 -s -sf
-/companions admin givebox Bob basic 10 -s
+/companions admin openegg Bob basic_egg 10 -s
 /companions admin clear Bob all -sf
 ```
 
 `-sf` only hides confirmations of things that WORKED. If the command is refused - a full storage,
-a companion that does not exist, an unknown box - or if a query fails, you are told regardless. Silence
+a companion that does not exist, an unknown egg - or if a query fails, you are told regardless. Silence
 under `-sf` therefore means "it worked", never "something went wrong and you missed it".
 
 Put the flags at the END of the line. Anything typed after the first flag is ignored, so
@@ -60,11 +57,12 @@ Put the flags at the END of the line. Anything typed after the first flag is ign
 
 ### My players never used to be told when I gave them a companion. Did that change?
 
-Yes, in 1.5.0. `/companions admin give`, `/companions admin givebox` and `/companions admin giveallbox` now send the
-receiver a line of their own - `messages.companion-received` and `messages.box-received`, both new keys
-in `lang/messages_<code>.yml`. They are merged into your existing lang file automatically on the
-first boot after the update, so you can restyle or blank them like any other message, and you can
-suppress them per command with `-s`. Offline players are never messaged.
+Yes, in 1.5.0. `/companions admin give` sends the receiver a line of their own,
+`messages.companion-received`, a key merged into your existing lang file automatically on the first
+boot after the update, so you can restyle or blank it like any other message and suppress it with
+`-s`. Offline players are never messaged. `/companions admin openegg` is different on purpose: what
+the player reads is the egg's own reward line, announced by the egg engine exactly as it would be
+for a bought egg, so `-s` does not touch it.
 
 ### My companions changed shape after updating to 1.6.0. What happened?
 
@@ -157,7 +155,7 @@ or when the player has no free inventory slot. A companion is never dropped on t
 click work.
 
 The head is not placeable, so clicking a block with it can never place it and destroy the companion on
-it, and `boxes.blocked-blocks` applies to the redeem click too - clicking a chest opens the chest.
+it, and `companion-items.blocked-blocks` makes the redeem click step aside - clicking a chest opens the chest.
 
 Both triggers run the same action with the same refusals. `companion-items.enabled: false` switches the
 whole feature off, both triggers at once, and leaves the heads already in circulation redeemable.
@@ -338,57 +336,16 @@ because the player genuinely receives nothing there. That is configuration, not 
 Yes, unless the viewer ran `/companions hide` or the world gates rendering off. Each viewer's own
 preference is respected, so one player hiding companions never affects anyone else's view.
 
-### My boxes/ folder was renamed to boxes-migrated/. Where did my boxes go?
-
-Into `boxes.yml`, which is where every box lives from 1.4.0 on: one top-level key per box,
-named after the file it came from. The migration runs once, on the first boot after updating,
-and it never deletes anything - `boxes-migrated/` is your original folder, kept exactly as it
-was, including the per-box comments that a YAML reader cannot carry onto a key.
-
-Every box id is preserved, so the box items already in players' inventories and shulkers keep
-opening. The one exception is a file name containing a dot (`my.box.yml`), which cannot be a
-yml key: it becomes `my_box` and the console says so loudly, because that box's item id changes
-and the copies already handed out stop opening.
-
-Once you are happy with `boxes.yml` you can delete `boxes-migrated/` yourself. Nothing reads it.
-
-### My migrated boxes never fail to open. Where is the success chance?
-
-`boxes.yml` is seed-only, so an update never adds keys to it - which is exactly what protects
-the boxes you wrote. That means a migrated box has no `chance` block, and a box without one
-always opens: identical to how it behaved before 1.4.0. Add the band by hand to any box you
-want to turn into a gamble:
-
-```yaml
-rare:
-  chance:
-    min: 60
-    max: 90
-```
-
-Add `{chance}` to that box's lore too if you want the odds shown on the item.
-
-### A player opened a box and got nothing. Are the companions lost?
-
-If the box **failed its success roll**, that is working as designed: the box is consumed, the
-player is told which percentage it was rolling against, and nothing is granted. Only boxes with
-a `chance` band below 100 can do this, and the percentage is written on the item itself.
-
-Otherwise, no, nothing is lost. If the database write fails, the boxes are handed straight back
-and the player is told, so nothing is consumed. If storage filled up between the click and the
-grant, the open lands partially on purpose and reports how many companions did not fit. Free storage
-and open the rest.
-
 ### A player has more companions stored than their capacity allows. How?
 
-They opened boxes faster than the companions could be written. Before 1.8.2 the capacity check ran the
+They opened faster than the companions could be written. Before 1.8.2 the capacity check ran the
 instant you clicked, while the companions themselves were saved a few ticks later, so a second click
-that arrived in between still saw the old count and was let in again. Shift-clicking six or seven
-stacks in a row could leave a storage of 54 holding 107 companions.
+that arrived in between still saw the old count and was let in again. Six or seven opens in a row
+could leave a storage of 54 holding 107 companions.
 
 Update to 1.8.2. Each open now holds the places it was granted for as long as its companions are in
-flight, so a simultaneous open sees them as already taken: the excess is trimmed on the click
-that does not fit, and the boxes it would have opened are returned. Nothing to configure.
+flight, so a simultaneous open sees them as already taken: the one that does not fit is refused
+outright and costs nothing. Nothing to configure.
 
 Storages that are already over capacity stay as they are - the update stops the overfill, it does
 not delete anyone's companions. Nothing new enters until the player is back under their limit, which is
@@ -437,7 +394,7 @@ shipped `guis/main.yml` layout can draw; anything past it would be bought and ne
 
 Raise the key if you widened the menu layout, or set it to `0` to remove the ceiling entirely.
 `storage.max-capacity` is the same knob for storage and ships at `0`, so storage grants are
-unlimited out of the box.
+unlimited by default.
 
 Two things it does not do: it does not cap `sncompanions.slots.<n>` permission grants, so a rank can
 still grant more than a command can; and it never lowers a row by itself. Lowering the key on a
@@ -456,8 +413,8 @@ usage line; editing or deleting an entry never changes how a command is typed.
 ### Can I add my own companions?
 
 Yes. Copy a file in `companions/` and rename it: the file name is the companion id. The folder is yours
-after the first boot, so nothing you add or delete there is ever undone by an update. Boxes
-work the same way, except they are keys inside `boxes.yml` rather than separate files: copy a
+after the first boot, so nothing you add or delete there is ever undone by an update. Eggs
+work the same way, except they are keys inside `eggs.yml` rather than separate files: copy a
 whole top-level block and rename the key.
 
 ### Do I need EdTools?

@@ -57,23 +57,19 @@ On a clean install the plugin writes its own files into `plugins/SnCompanions/`:
 
 | File | Purpose |
 |------|---------|
-| `config.yml` | Every tunable: formation, animation, buffs, fusion, boxes and more |
+| `config.yml` | Every tunable: formation, animation, buffs, fusion, eggs and more |
 | `lang/messages_en.yml` | Every user facing message, in English |
 | `lang/messages_es.yml` | The same messages, in Spanish |
 | `guis/*.yml` | The menu layouts |
 | `companions/*.yml` | One file per companion type, three examples seeded |
-| `boxes.yml` | Every companion box, one top-level key each, two examples seeded |
+| `eggs.yml` | Every companion egg, one top-level key each, one example seeded |
 
-The `companions/` folder and the `boxes.yml` file are seeded
+The `companions/` folder and the `eggs.yml` file are seeded
 exactly once, on a true fresh install. After that they belong to you. A companion file you delete
-stays deleted and is never restored on the next boot, and `boxes.yml` carries a
+stays deleted and is never restored on the next boot, and `eggs.yml` carries a
 `# sn:extensible-root` header so a key you delete stays deleted too. `config.yml`, the language
 files and the menu layouts are managed instead: new keys are merged in on boot while your
 values and comments are preserved.
-
-Upgrading from a version older than 1.4.0? Your `boxes/` folder is folded into `boxes.yml`
-automatically on the first boot and kept as `boxes-migrated/`. Nothing is deleted and the box
-items already handed out keep working.
 
 {% hint style="success" %}
 Once the server starts cleanly, run `/companions admin give <player> ember_fox` to hand out the
