@@ -60,15 +60,14 @@ On a clean install the plugin writes its own files into `plugins/SnCompanions/`:
 | `config.yml` | Every tunable: formation, animation, buffs, fusion, boxes and more |
 | `lang/messages_en.yml` | Every user facing message, in English |
 | `lang/messages_es.yml` | The same messages, in Spanish |
-| `guis/*.yml` | The seven menu layouts |
-| `traits.yml` | Trait definitions and their roll weights |
+| `guis/*.yml` | The menu layouts |
 | `boost-grades.yml` | The boost grade ladder |
 | `companions/*.yml` | One file per companion type, three examples seeded |
 | `boxes.yml` | Every companion box, one top-level key each, two examples seeded |
 
-The `companions/` folder and the `traits.yml`, `boost-grades.yml` and `boxes.yml` files are seeded
+The `companions/` folder and the `boost-grades.yml` and `boxes.yml` files are seeded
 exactly once, on a true fresh install. After that they belong to you. A companion file you delete
-stays deleted and is never restored on the next boot, and the three keyed files carry a
+stays deleted and is never restored on the next boot, and the two keyed files carry a
 `# sn:extensible-root` header so a key you delete stays deleted too. `config.yml`, the language
 files and the menu layouts are managed instead: new keys are merged in on boot while your
 values and comments are preserved.

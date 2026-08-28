@@ -4,28 +4,28 @@
 
 Download the newer `sncompanions-v*` release and replace the jar. `config.yml`, the language files
 and the menu layouts auto-merge on restart, so new keys appear while your values and comments
-stay. Your `companions/` folder and your `traits.yml`, `boost-grades.yml` and `boxes.yml` files are
+stay. Your `companions/` folder and your `boost-grades.yml` and `boxes.yml` files are
 never overwritten.
 
 Updating **to 1.4.0** also moves your `boxes/` folder into a single `boxes.yml` automatically -
 see the question about `boxes-migrated/` below.
 
-### Can players skip the trait and boost roulette animation?
+### Can players skip the boost roulette animation?
 
 Since **1.12.0** they do better than skip it: they switch it off once, on the button at slot 8
-of the traits and boosts menus, and the choice is saved on their own row so it holds across
+of the boosts menu, and the choice is saved on their own row so it holds across
 relogs and restarts. `Roll Animation: Off` shows the result at once, with the same reveal sound,
 the same chat line and the same redraw. It can never change what came out, because the roll is
 decided and saved before the first frame would have been drawn.
 
 The click-to-skip 1.3.0 put on the spinning cell is retired - the setting replaced it. Both
-templates (`anim-on`, `anim-off`) merge into your `guis/boosts.yml` and `guis/traits.yml` on the
+templates (`anim-on`, `anim-off`) merge into your `guis/boosts.yml` on the
 first boot after the update. See [The roll animation switch](configuration.md#the-roll-animation-switch)
 for what happens to the old `click-actions` block on your `spinning` template.
 
-The switch covers the two roulettes only: a companion box keeps its own `animation:` block in
-`boxes.yml`, and a roulette you turned off with `traits.roll.enabled: false` or
-`boosts.roll.enabled: false` stays off for everyone regardless.
+The switch covers the boost roulette only: a companion box keeps its own `animation:` block in
+`boxes.yml`, and a roulette you turned off with `boosts.roll.enabled: false` stays off for
+everyone regardless.
 
 ### Can I style the three boost roll buttons separately? And where does the roulette spin?
 
@@ -73,8 +73,8 @@ edited starts working on the next boot: only the COMMENT above the key changed i
 file, your value is kept.
 
 The same release binds `{group-color}` on the boosts menu's three stat cells and four roll
-buttons. It still does not exist on `menus.grade-row`, `menus.group-separator` or the
-`menus.trait-effect-*` lines, which describe a ladder rung or a trait rather than a companion.
+buttons. It still does not exist on `menus.grade-row` or `menus.group-separator`, which
+describe a ladder rung rather than a companion.
 
 ### My box has `[rgb]` in its display-name and chat shows the tag instead of the gradient.
 
@@ -200,7 +200,7 @@ one line for every winning pair.
 Since 1.7.0, by turning the companion into an item. In the main menu, **shift + right click** a companion in
 the storage grid - or, since 1.11.0, press **Q** over it, the drop key, Ctrl+Q included: it
 leaves the storage and becomes a player head in the player's inventory,
-wearing that companion's own texture and carrying its whole state - companion type, level, experience, trait
+wearing that companion's own texture and carrying its whole state - companion type, level, experience
 and the three boost grades. A **right click** with that head puts the companion into the clicker's
 storage, with everything it had. Hand it over, drop it, put it in a chest, or sell it on a shop
 plugin: the head is an ordinary item.
@@ -308,7 +308,7 @@ hologram:
 ```
 
 You can use every placeholder a companion cell of any menu uses - `{companion}`, `{level}`, `{level-cap}`,
-`{exp}`, `{exp-next}`, `{percent}`, `{group}`, `{group-color}`, `{trait}`, `{buff}`,
+`{exp}`, `{exp-next}`, `{percent}`, `{group}`, `{group-color}`, `{buff}`,
 `{buff-value}` - plus `{owner}`. PlaceholderAPI tokens work too and resolve against the companion's
 OWNER, not against whoever is reading, because one label is shown to everyone who can see the companion.
 
@@ -572,31 +572,6 @@ The `edtools` band of `config.yml` does arrive on its own, because that file is 
 
 Set `edtools.enabled: false` and run `/companions reload`. The boosters already granted are removed
 immediately; you do not need to restart. Turning it back on and reloading writes them again.
-
-### Can a TRAIT boost an EdTools currency?
-
-Yes, since **1.16.0**. Give the trait an `effects.edtools` block in `traits.yml` and list flat
-percentage points per currency id, or under one of `enchants` / `enchant` / `global-enchants` /
-`encantamientos` for the global enchant multiplier:
-
-```yaml
-lucrative:
-  weight: 10.0
-  effects:
-    edtools:
-      essence: 15.0
-```
-
-The difference from a companion's own `edtools-boosts` is what makes it useful: **the companion does not need
-to declare anything**. Any equipped companion carrying the trait pays those points, so the trait upgrades
-the whole collection instead of one companion family. They are also FLAT - no level scaling, no widening
-by boost grades, and no clamping by a companion entry's `max:` - and they join the same per-currency
-total, so the one-decimal rule in the answer above still decides what actually lands. Two equipped
-companions carrying the trait pay it twice.
-
-`traits.yml` is seeded once and never merged again, so on an existing server you add the key by
-hand; a fresh install gets a commented example inside the `studious` entry. Full rules in
-[Configuration](configuration.md#a-trait-that-boosts-an-edtools-currency).
 
 ### Can a companion boost one specific enchant?
 

@@ -5,7 +5,7 @@ are managed by SnLib: new keys are auto-merged on boot, and your values and comm
 preserved. Set `update-configs: false` to freeze them, in which case SnLib only warns about
 missing keys instead of inserting them.
 
-`traits.yml`, `boost-grades.yml`, `boxes.yml` and the `companions/` folder are seeded once, on a
+`boost-grades.yml`, `boxes.yml` and the `companions/` folder are seeded once, on a
 fresh install, and never written to again. A companion file you delete stays deleted, and a file you
 add is picked up on the next reload; one file is one companion, and the file name is its id. Boxes
 work the same way but live as keys inside `boxes.yml` rather than as separate files - if you are
@@ -263,7 +263,7 @@ models:
 #  How the numbers work, because it surprises people:
 #   - A companion declares its boost in PERCENT, exactly like its buff: 10.0 is +10%.
 #     Every equipped companion's percentages for the same currency are SUMMED, and the
-#     companion's BUFF boost grade and its trait widen them the same way they widen
+#     companion's BUFF boost grade widens them the same way it widens
 #     its buff.
 #   - EdTools is then handed a fraction (0.5 is "+50%", 1.0 is "double"),
 #     ROUNDED TO ONE DECIMAL. That is a hard rule of this integration and it
@@ -297,10 +297,10 @@ edtools:
 #  A companion file may declare its own "hologram:" block (enabled, lines,
 #  height-offset); a companion that declares none uses default-lines below.
 #  Placeholders: every companion placeholder of the menus ({companion} {level} {level-cap}
-#  {exp} {exp-next} {percent} {group} {group-color} {trait} {buff} {buff-value}
+#  {exp} {exp-next} {percent} {group} {group-color} {buff} {buff-value}
 #  {owner}). PlaceholderAPI tokens resolve against the OWNER.
 #  The text is only rewritten when something on the companion changes - a level up, a
-#  trait or boost roll, an admin edit - never on the animation tick.
+#  boost roll, an admin edit - never on the animation tick.
 # ------------------------------------------------------------
 holograms:
   # Master switch. Off spawns nothing at all.
@@ -410,7 +410,7 @@ experience:
 #  and what each level adds. The engine then computes, per buff:
 #
 #    base       = initial + (level - 1) x per-level
-#    companion buff   = base x (1 + buff boost% + trait buff%)
+#    companion buff   = base x (1 + buff boost%)
 #    player     = the sum of every equipped companion
 #    effect     = that sum capped by the "cap" below
 #
@@ -466,45 +466,14 @@ buffs:
     affect-flying: false
 
 # ------------------------------------------------------------
-#  Traits. ONE global table in traits.yml: any trait can land on any companion, and a
-#  companion carries exactly one at a time. Rolling again replaces it and always
-#  spends the ticket, because the roll normalizes over the table and can never
-#  come up empty. The numbers in traits.yml are WEIGHTS, not percentages.
-#  A trait grants up to three things at once: percentage points of companion
-#  experience, flat levels on the companion's cap, and percentage points on ONE named
-#  buff - which only pays out on a companion that actually grants that buff.
-# ------------------------------------------------------------
-traits:
-  # Master switch of the trait system. Off refuses every trait roll and makes
-  # every trait worth 0; nothing is cleared, so switching it back on restores
-  # every companion's trait exactly as it was.
-  enabled: true
-
-  # The roulette the traits menu plays before it reveals what was rolled. Same
-  # four knobs, same names and same limits as a box's "animation:" block: both
-  # run on the ONE shared spinner, so a number typed here and the same number
-  # typed under a box's key in boxes.yml behave identically.
-  roll:
-    # Play the roulette at all. Off reveals the trait immediately.
-    enabled: true
-    # Ticks one spin lasts, clamped to 4-600.
-    duration-ticks: 30
-    # Ticks between two frames of the spin, minimum 2; lower spins faster.
-    step-ticks: 2
-    # Sound played on every frame of the spin. "none" plays nothing.
-    step-sound: "UI_BUTTON_CLICK 0.6 1.6"
-    # Sound played once the rolled trait is revealed. "none" plays nothing.
-    reveal-sound: "ENTITY_PLAYER_LEVELUP 1.0 1.4"
-
-# ------------------------------------------------------------
 #  Boosts. ONE global grade ladder in boost-grades.yml, shared by the three
-#  stats every companion carries. Same rule as the traits: the numbers there are
+#  stats every companion carries. The numbers there are
 #  WEIGHTS, the roll always produces a grade and the dice is always spent.
 #  A grade is worth a value inside its own min/max range, picked once per companion
 #  and stable for that companion's whole life, and either end may be negative.
-#    experience -> exp x (1 + experience grade% + trait exp%)
-#    level      -> floor(companion level cap x (1 + level grade%)) + trait levels
-#    buff       -> companion buff base x (1 + buff grade% + trait buff%)
+#    experience -> exp x (1 + experience grade%)
+#    level      -> floor(companion level cap x (1 + level grade%))
+#    buff       -> companion buff base x (1 + buff grade%)
 #  Rolling all three stats at once costs a normal dice; rolling one chosen stat
 #  costs a special dice.
 # ------------------------------------------------------------
@@ -544,25 +513,22 @@ fusion:
 
   # Which parent the result takes each preserved field from.
   #   BEST   - per FIELD, whichever parent holds the better value: the higher
-  #            level, the higher experience, the rarer trait and the better
+  #            level, the higher experience and the better
   #            grade of each boost stat. The result may take its level from one
-  #            parent and its trait from the other.
+  #            parent and a grade from the other.
   #   FIRST  - everything comes from the companion in the left input slot.
   #   SECOND - everything comes from the companion in the right input slot.
   keep-from: BEST
 
   # What survives a fusion at all. A field switched off here is not taken from
   # either parent: the result carries what a brand new companion carries, which is
-  # level 1, no experience, no trait and no boost grades.
+  # level 1, no experience and no boost grades.
   keep:
     # Carry over a level. It is capped by the TARGET companion's own max-level, since
     # every companion declares its own ceiling.
     level: true
     # Carry over the experience banked toward the next level.
     exp: true
-    # Carry over a trait. Under BEST the result keeps a trait when EITHER
-    # parent had one, and the rarer of the two when both did.
-    trait: true
     # Carry over the experience boost grade.
     boost-experience: true
     # Carry over the level boost grade.
@@ -716,7 +682,7 @@ boxes:
 #  Companion items. A stored companion can be taken out of the storage as a physical head
 #  (shift + right click on it in the main menu, or Q) and redeemed back with a
 #  right click, which is how companions change hands. The item carries the
-#  companion's whole state - level, experience, trait and the three boost grades - so
+#  companion's whole state - level, experience and the three boost grades - so
 #  a companion that comes back is the companion that left. Since 1.17.0 it also remembers
 #  WHO took it out, and a player who is not that owner is refused; heads
 #  extracted before 1.17.0 remember nobody and anyone may redeem them.
@@ -742,7 +708,7 @@ companion-items:
   # cannot be set here; the name and lore below are yours.
   # Every companion placeholder the menus use works here:
   #   {companion} {companion-lore} {group} {group-color} {level} {level-cap} {exp}
-  #   {exp-next} {percent} {bar} {trait} {buff} {buff-value} {boosts} {owner}
+  #   {exp-next} {percent} {bar} {buff} {buff-value} {boosts} {owner}
   # {companion-lore} and {boosts} are multi-line and expand to one lore line each.
   # {owner} is the player the companion was taken out by. A companion item also REMEMBERS
   # them: since 1.17.0 only that player can redeem it, and anyone else is
@@ -756,7 +722,6 @@ companion-items:
       - "&8Group: &r{group-color}{group}"
       - "&7Level &f{level}&7/&f{level-cap}"
       - "&7Exp &f{exp}&7/&f{exp-next} &8({percent}%)"
-      - "&7Trait: &r{trait}"
       - "&7Owner&8: &f{owner}"
       - "{boosts}"
       - ""
@@ -972,193 +937,6 @@ on the next boot and their labels straighten up with no file editing. Set it to 
 want the old look back.
 {% endhint %}
 
-## traits.yml
-
-```yaml
-# ============================================================
-#  SnCompanions - traits
-#  ONE global table for the whole server: any trait here can land on any companion,
-#  and a companion carries exactly one at a time. Rolling again replaces it.
-#  Seeded once and never merged again: this file is yours. Every top-level key
-#  below is a trait id. Add, rename and delete freely; a trait id still stored
-#  on a companion whose entry is gone is never cleared, it renders marked as unknown
-#  and is worth 0 until the entry comes back.
-#  The "weight" numbers are WEIGHTS, not percentages: the roll normalizes over
-#  the whole table, always produces a trait and always spends the ticket. They
-#  do not have to add up to 100.
-# sn:extensible-root
-# ============================================================
-
-# The default pack is deliberately small: five common traits and one rare one.
-# Copy an entry to add your own.
-
-studious:
-  # Name shown in the trait index and on the companion.
-  display-name: "&aStudious"
-  # Lore shown under the name in the trait index.
-  lore:
-    - "&7Learns faster than the rest."
-  # Slot of the trait index menu this entry renders at. Remove the key to let
-  # the menu place it in the next free slot.
-  slot: 11
-  # Material of the index icon.
-  icon: EXPERIENCE_BOTTLE
-  # Draws the index icon as a player head instead of the material above. Accepts
-  # a raw base64 payload, a basehead-/texture- prefixed value or an http skin
-  # URL; an unreadable value falls back to the material with one warning.
-  # head-texture: ""
-  # Roll weight relative to every other entry. 0 retires the trait: companions that
-  # already carry it keep it, it simply stops being rolled.
-  weight: 30.0
-  effects:
-    # Percentage points added to the experience the companion gains. Negative allowed.
-    exp-percent: 15.0
-    # Flat levels added to the companion's level cap.
-    level-bonus: 0
-    buff:
-      # Buff this trait pushes: DAMAGE, RESISTANCE or SPEED. Leave it empty for
-      # a trait that touches no buff. A trait only pays out on a companion that grants
-      # that same buff.
-      type: ""
-      # Percentage points added to the buff named above.
-      percent: 0.0
-    # Optional. FLAT percentage points added to an EdTools currency booster while
-    # a companion carrying this trait is EQUIPPED. One child per currency id, or one of
-    # enchants / enchant / global-enchants / encantamientos for the GLOBAL
-    # enchant multiplier.
-    # Unlike a companion's own edtools-boosts block, these do NOT scale with the companion's
-    # level and are not widened by its boost grades, and the companion does not need an
-    # edtools-boosts block of its own to pay them - any equipped companion carrying the
-    # trait does. They are not bounded by an entry's "max" either: that ceiling
-    # belongs to the entry that declared it.
-    # Remember the one-decimal rule of the integration: the total of every
-    # equipped companion is handed to EdTools with a single decimal, so the granted
-    # boost moves in steps of 10% and a total under 5 points grants nothing.
-    # edtools:
-    #   essence: 15.0
-    #   enchants: 10.0
-
-veteran:
-  display-name: "&eVeteran"
-  lore:
-    - "&7Has room to grow past its limit."
-  slot: 13
-  icon: GOLDEN_APPLE
-  weight: 20.0
-  effects:
-    exp-percent: 0.0
-    level-bonus: 5
-    buff:
-      type: ""
-      percent: 0.0
-
-swift:
-  display-name: "&bSwift"
-  lore:
-    - "&7Only helps a companion that grants Speed."
-  slot: 15
-  icon: FEATHER
-  weight: 25.0
-  effects:
-    exp-percent: 0.0
-    level-bonus: 0
-    buff:
-      type: SPEED
-      percent: 10.0
-
-fierce:
-  display-name: "&cFierce"
-  lore:
-    - "&7Only helps a companion that grants Damage."
-  slot: 20
-  icon: IRON_SWORD
-  weight: 25.0
-  effects:
-    exp-percent: 0.0
-    level-bonus: 0
-    buff:
-      type: DAMAGE
-      percent: 10.0
-
-stalwart:
-  display-name: "&9Stalwart"
-  lore:
-    - "&7Only helps a companion that grants Resistance."
-  slot: 22
-  icon: SHIELD
-  weight: 25.0
-  effects:
-    exp-percent: 0.0
-    level-bonus: 0
-    buff:
-      type: RESISTANCE
-      percent: 10.0
-
-prodigy:
-  display-name: "&6&lProdigy"
-  lore:
-    - "&7Rare. Learns fast and grows tall."
-  slot: 24
-  icon: NETHER_STAR
-  weight: 5.0
-  effects:
-    exp-percent: 25.0
-    level-bonus: 3
-    buff:
-      type: ""
-      percent: 0.0
-```
-
-### A trait that boosts an EdTools currency
-
-**Added in 1.16.0.** Beside its three original effects, a trait can carry an `effects.edtools`
-block: FLAT percentage points added to one or more EdTools boosters while a companion carrying the
-trait is EQUIPPED. One child per currency id, or one of `enchants` / `enchant` /
-`global-enchants` / `encantamientos` for the GLOBAL enchant multiplier. The key is optional and
-absent from every shipped entry; `traits.yml` is seeded once and never merged again, so on an
-existing server you add it by hand.
-
-```yaml
-lucrative:
-  display-name: "&6Lucrative"
-  weight: 10.0
-  effects:
-    exp-percent: 0.0
-    level-bonus: 0
-    buff:
-      type: ""
-      percent: 0.0
-    edtools:
-      essence: 15.0
-      enchants: 10.0
-```
-
-Four rules decide what that is actually worth, and they are what makes this effect different
-from a companion's own [`edtools-boosts`](#companions) block:
-
-| Rule | What it means |
-|---|---|
-| **The companion needs nothing of its own** | Any equipped companion carrying the trait pays these points, whether or not its `companions/<id>.yml` declares an `edtools-boosts` block. That is the point of the effect: it turns a trait into an economy upgrade for the whole collection rather than for one companion family. |
-| **Flat, always** | They do not scale with the companion's level and are not widened by its buff boost grade or by the trait's own buff percentage. `15.0` is `15.0` on a level 1 companion and on a level 1000 one, exactly like `exp-percent`. |
-| **Never clamped by `max:`** | A companion entry's optional `max:` ceiling bounds the contribution of the entry that declared it. A trait's points are not that entry's, so a companion capped at 10 carrying a trait worth 50 contributes 60. |
-| **The one-decimal rule still applies** | The points join the same per-currency total every equipped companion feeds, and that total is handed to EdTools with a single decimal. The granted boost therefore moves in steps of 10%, and a total under 5 points grants nothing at all. |
-
-Every equipped companion carrying the trait pays it, so two of them are worth double, and a trait's
-points and a companion's own entry for the same currency simply add up. Currency ids are not checked
-when the file is read - EdTools may still be starting - so an id it does not serve produces one
-console warning per id per load and is applied anyway, in case the currency registers later.
-
-Switching `traits.enabled` off in `config.yml` takes the points away with everything else a
-trait grants and clears the boosters on the next sync; nothing is deleted, and switching it back
-on restores them. Without EdTools installed, or with `edtools.enabled: false`, the block is
-simply inert.
-
-The trait index shows one line per currency a trait boosts, so a trait whose ONLY effect is a
-currency no longer reads as "no effect". Those lines come from the two language keys
-`menus.trait-effect-edtools` (which takes `{currency}` and `{percent}`) and
-`menus.trait-effect-edtools-enchant` (which takes `{percent}` only, since the global enchant
-multiplier has no currency id worth printing).
-
 ## boost-grades.yml
 
 ```yaml
@@ -1178,9 +956,9 @@ multiplier has no currency id worth printing).
 #  stable for that companion's whole life. Both ends may be NEGATIVE: a penalty grade
 #  is content, not a mistake.
 #  What each stat does with the percentage:
-#    experience -> exp x (1 + experience grade% + trait exp%)
-#    level      -> floor(companion level cap x (1 + level grade%)) + trait levels
-#    buff       -> companion buff base x (1 + buff grade% + trait buff%)
+#    experience -> exp x (1 + experience grade%)
+#    level      -> floor(companion level cap x (1 + level grade%))
+#    buff       -> companion buff base x (1 + buff grade%)
 # sn:extensible-root
 # ============================================================
 
@@ -1266,7 +1044,7 @@ edtools-boosts:
 
 Three things about where the ceiling sits, because they are what make it useful:
 
-- It applies to the value **this companion** produced *after* its buff boost grade and its trait have
+- It applies to the value **this companion** produced *after* its buff boost grade has
   widened it, not to the raw `initial + per-level` figure. A companion the grades pushed to 45 with
   `max: 30` contributes 30.
 - It applies **before** the equipped companions are summed, so it caps one companion and never the player's
@@ -1285,17 +1063,14 @@ companion is described - the menus, an extracted companion item, a hologram line
 the companion's EFFECT: a companion that declares a vanilla `buff:` shows it exactly as before, and a companion
 whose buff grants nothing resolves them from its `edtools-boosts` block instead. `{buff}` becomes
 the boosted currencies joined in file order and `{buff-value}` the live value at the companion's current
-level, with the grade and trait widening and the per-entry `max:` already applied - the same
+level, with the grade widening and the per-entry `max:` already applied - the same
 number, from the same formula, that the booster sum uses. A companion boosting several currencies at
-different values shows the highest one; a trait's flat `effects.edtools` points are not included,
-because they are the trait's effect and the trait's own lines already show them.
+different values shows the highest one.
 
 Currency display names come from the language file: one `messages.edtools-currency-<id>` entry per
 currency you want renamed (e.g. `edtools-currency-money: "&6Money"`), with
 `menus.edtools-buff-separator` as the separator between two names. Only `enchant` ships named -
-every other id is invented on your server - and an id without an entry shows as the raw id. The
-trait index's currency lines resolve through the same entries, so one currency can never carry two
-names.
+every other id is invented on your server - and an id without an entry shows as the raw id.
 
 Here is the seeded `companions/ember_fox.yml` in full, as a working reference:
 
@@ -1356,7 +1131,7 @@ hologram:
   # holograms.height-offset.
   # height-offset: 0.9
 
-# This companion's own level cap, before trait and boost bonuses.
+# This companion's own level cap, before boost bonuses.
 max-level: 50
 
 # ------------------------------------------------------------
@@ -1404,7 +1179,7 @@ buff:
 #  EdTools boosters. Optional, and left commented out on purpose: uncomment it
 #  only on a server that runs EdTools. Only equipped companions grant these, the
 #  values of every equipped companion are summed per currency, and the companion's buff
-#  boost grade and its trait widen them exactly as they widen the buff above.
+#  boost grade widens them exactly as it widens the buff above.
 #
 #  Each child key is an EdTools currency id, or one of "enchants", "enchant",
 #  "global-enchants", "encantamientos" for the GLOBAL enchant multiplier. There
@@ -1429,7 +1204,7 @@ buff:
 #     # Percent added by each level above 1.
 #     per-level: 1.0
 #     # Optional ceiling, in percentage points, applied to the value THIS companion
-#     # produced once its boost grade and trait have already widened it, before
+#     # produced once its boost grade has already widened it, before
 #     # the totals of your equipped companions are summed. Absent or 0 = no ceiling.
 #     # Use it when a per-level ramp would run away at a high level cap.
 #     max: 30.0
@@ -1759,14 +1534,12 @@ rare:
 
 ## guis/
 
-Seven menu layouts, all managed and all re-skinnable without touching code.
+Five menu layouts, all managed and all re-skinnable without touching code.
 
 | File | Menu |
 |------|------|
 | `main.yml` | Companion storage, the screen bare `/companions` opens |
 | `selector.yml` | Companion picker used when a screen needs one companion chosen |
-| `traits.yml` | Trait rolling for one companion |
-| `traits_index.yml` | Read-only catalogue of every trait and its odds |
 | `boosts.yml` | Boost rolling for one companion |
 | `fusion.yml` | Fusion, including the Fuse All bulk path |
 | `bulk_delete.yml` | Bulk deletion by group |
@@ -1779,8 +1552,8 @@ runtime, and `/companions admin unequip` always recovers a companion that ended 
 
 ### close-actions
 
-All seven files carry the same top-level key, and it is what makes the companion a player picked in
-Boosts or Traits last exactly one visit to the menus:
+All five files carry the same top-level key, and it is what makes the companion a player picked in
+Boosts last exactly one visit to the menus:
 
 ```yaml
 # Runs on the natural close of this menu (ESC). Navigating to another SnCompanions
@@ -1790,13 +1563,13 @@ close-actions:
 ```
 
 `[companions-forget-selection]` only clears the pick when no SnCompanions menu is open any more, so walking
-Boosts to the selector and back, or Traits to the trait index and back, keeps it. Remove the key
+Boosts to the selector and back keeps it. Remove the key
 from a file if you want a pick made there to survive closing that screen.
 
 ### The roll animation switch
 
-Since **1.12.0** each player decides whether their own trait and boost roulettes play, on a
-button `boosts.yml` and `traits.yml` both draw at **slot 8**. Two templates, one bound per
+Since **1.12.0** each player decides whether their own boost roulette plays, on a
+button `boosts.yml` draws at **slot 8**. Two templates, one bound per
 render depending on what that player chose:
 
 ```yaml
@@ -1806,7 +1579,7 @@ render depending on what that player chose:
     glow: true
     display-name: "&e&lRoll Animation: &aOn"
     lore:
-      - "&7Your trait and boost rolls play a short"
+      - "&7Your boost rolls play a short"
       - "&7roulette before showing what they rolled."
     click-actions:
       - "[companions-toggle-roll-anim]"
@@ -1817,7 +1590,7 @@ render depending on what that player chose:
     slots: [8]
     display-name: "&e&lRoll Animation: &cOff"
     lore:
-      - "&7Your trait and boost rolls show what they"
+      - "&7Your boost rolls show what they"
       - "&7rolled at once, with no roulette."
     click-actions:
       - "[companions-toggle-roll-anim]"
@@ -1830,9 +1603,9 @@ off the result appears at once with the same reveal sound, the same message and 
 the spin would have produced at its end - it can never change what came out, because the roll is
 decided and saved before the first frame would have been drawn.
 
-It covers the two roulettes only. A companion box keeps its own `animation:` block in `boxes.yml`, which
+It covers the boost roulette only. A companion box keeps its own `animation:` block in `boxes.yml`, which
 is your setting rather than the player's, and a roulette you switched off entirely with
-`traits.roll.enabled: false` or `boosts.roll.enabled: false` stays off and silent for everyone no
+`boosts.roll.enabled: false` stays off and silent for everyone no
 matter what a player picks.
 
 Both templates place themselves with `slots: [8]` instead of a letter of the `layout:` mask, on
@@ -1842,7 +1615,7 @@ slot if you want the two states in different cells.
 
 {% hint style="info" %}
 **Upgrading from 1.11.0 or earlier.** `anim-on` and `anim-off` are new keys, so SnLib inserts
-both into your `boosts.yml` and `traits.yml` on the next boot, comments included, and the button
+both into your `boosts.yml` on the next boot, comments included, and the button
 starts working.
 
 The click-to-skip that 1.3.0 put on the `spinning` template is **retired** in the same release.
@@ -1887,9 +1660,7 @@ slots 39-41 is styled and worded on its own. Their `click-actions` name their st
 **Upgrading from 1.20.0 or earlier.** The four new templates merge into your `guis/boosts.yml` on
 the next boot, comments included. Your old `templates.spinning` and `templates.roll-stat` stay in
 the file - a managed merge never deletes - but nothing reads them any more: delete them whenever
-you like, and if you had restyled `roll-stat`, copy your style into the three new templates. The
-traits menu is untouched - it has no stat cells, so its roulette keeps playing on the
-selected-companion cell.
+you like, and if you had restyled `roll-stat`, copy your style into the three new templates.
 {% endhint %}
 
 ### Colouring a companion by its group
@@ -1905,7 +1676,7 @@ Every template that draws a companion binds `{group-color}`, the colour its grou
       - "&8Group: &r{group-color}{group}"
 ```
 
-It is available in `main.yml`, `selector.yml`, `fusion.yml`, `boosts.yml`, `traits.yml` and
+It is available in `main.yml`, `selector.yml`, `fusion.yml`, `boosts.yml` and
 `bulk_delete.yml`. The value is inserted before SnLib's text pipeline runs, so a legacy code, a
 hex code and the `[rgb]` gradient tag all work. `[rgb]` is a PREFIX tag: it only applies when
 `{group-color}` is the first thing on the line.
@@ -1924,7 +1695,6 @@ Where it does **not** work, and why:
 |---|---|
 | `menus.grade-row` | describes a ladder rung, not a companion: there is no group in scope |
 | `menus.group-separator` | joins group names on the information clock; no single companion |
-| `menus.trait-effect-exp` / `-level` / `-buff` / `-edtools` / `-edtools-enchant` | describe a trait in the index, not a companion |
 | the `lore:` of a `companions/<id>.yml` file | that lore is itself the value of `{companion-lore}`, and a placeholder value is never re-scanned for further placeholders. No plugin placeholder resolves there, only PlaceholderAPI tokens. Put the colour on the menu line that carries `{companion-lore}` |
 
 ### Prefix tags in a display name
@@ -2021,14 +1791,6 @@ described under [companion-items](#a-companion-item-remembers-who-took-it-out):
 | Key | Sent to | Placeholders |
 |---|---|---|
 | `messages.companion-item-not-yours` | a player redeeming a companion item stamped with another player's UUID | `{owner}` |
-
-**1.16.0 adds two**, both lore lines of the trait index rather than messages, described under
-[traits.yml](#a-trait-that-boosts-an-edtools-currency):
-
-| Key | Shown for | Placeholders |
-|---|---|---|
-| `menus.trait-effect-edtools` | a trait boosting one EdTools currency | `{currency}` `{percent}` |
-| `menus.trait-effect-edtools-enchant` | a trait boosting the global enchant multiplier | `{percent}` |
 
 **1.12.0 adds two**, both sent to the player who clicks the roll animation switch described
 under [guis/](#the-roll-animation-switch). Neither takes a placeholder:

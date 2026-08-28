@@ -39,14 +39,13 @@ instance id shown by `/companions admin list`, not the companion type id.
 | `/companions admin setlevel <player> <instance> <level>` | `sncompanions.admin.setlevel` | Sets the level of one companion |
 | `/companions admin setexp <player> <instance> <exp>` | `sncompanions.admin.setexp` | Sets the experience of one companion |
 | `/companions admin settype <player> <instance> <companion>` | `sncompanions.admin.settype` | Turns one companion into another companion |
-| `/companions admin settrait <player> <instance> <trait>` | `sncompanions.admin.settrait` | Sets or clears the trait of one companion |
 | `/companions admin setboost <player> <instance> <stat> <grade>` | `sncompanions.admin.setboost` | Sets or clears one boost grade of one companion |
 | `/companions admin setowner <player> <instance> <target>` | `sncompanions.admin.setowner` | Moves one companion to another player |
 | `/companions admin equip <player> <instance>` | `sncompanions.admin.equip` | Equips one companion of a player |
 | `/companions admin unequip <player> <instance>` | `sncompanions.admin.unequip` | Sends one companion of a player back to storage |
 | `/companions admin removecompanion <player> <instance>` | `sncompanions.admin.removecompanion` | Deletes one companion of a player |
 
-Pass `none` as the `<trait>` or `<grade>` to clear it instead of setting it. The three boost
+Pass `none` as the `<grade>` to clear it instead of setting it. The three boost
 stats are `experience`, `level` and `buff`.
 
 ### Bulk actions

@@ -29,7 +29,6 @@ granted per rank.
 | `sncompanions.admin.setlevel` | op | Allows `/companions admin setlevel` |
 | `sncompanions.admin.setexp` | op | Allows `/companions admin setexp` |
 | `sncompanions.admin.settype` | op | Allows `/companions admin settype` |
-| `sncompanions.admin.settrait` | op | Allows `/companions admin settrait` |
 | `sncompanions.admin.setboost` | op | Allows `/companions admin setboost` |
 | `sncompanions.admin.setowner` | op | Allows `/companions admin setowner` |
 | `sncompanions.admin.equip` | op | Allows `/companions admin equip` |
