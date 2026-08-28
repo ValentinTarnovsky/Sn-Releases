@@ -795,177 +795,6 @@ whether or not the item advertises an owner.
 1.17.0 it is an ordinary companion placeholder and works in `companion-items.item.lore` and in the companion cells of
 `guis/main.yml` and `guis/selector.yml` too.
 
-### Scrolls
-
-**Added in 1.18.0.** A new managed band declares three consumable ITEMS, handed out with
-`/companions admin givescroll <player> <scroll> [amount] [levels]`. They are not balances: a scroll sits
-in an inventory, drops, and can be traded or sold like any other item, and nothing about it lives
-in the database.
-
-| Scroll | Applied to | Effect | Usable since |
-|---|---|---|---|
-| `ownership` | a companion ITEM in your own inventory | re-stamps that head as yours | 1.18.0 |
-| `level` | a companion cell of the main menu | raises its level by the number stamped on the stack | **1.19.0** |
-| `rarity` | a companion cell of the main menu | turns it into the companion its `upgrades-to` names | **1.19.0** |
-
-{% hint style="info" %}
-All three scrolls do something as of **1.19.0**; before it only the ownership one did. Scrolls
-handed out earlier work exactly as they would have: the number a level scroll is worth is stamped
-on the stack it was given on, so lowering `default-levels` later never devalues one already in
-circulation.
-{% endhint %}
-
-**A scroll is never right clicked.** All three are used by DROPPING one onto its target, which is
-why none of them registers a right-click action: a scroll that consumed itself on a right click
-would be eaten in mid-air the first time a player clicked with one in hand.
-
-#### Using a level or a rarity scroll
-
-Open the companions menu, pick the scroll up onto your cursor **out of your own inventory**, and left or
-right click a companion cell: an equipped slot marker along the top row, or a stored companion in the grid.
-The scroll is applied to that companion and one copy is consumed.
-
-That is what the new `player-inventory: open` key in `guis/main.yml` is for - see
-[Menus](#menus-guis) below. Your own inventory stays usable while the main menu is up, which is the
-only way to get a scroll onto your cursor with the menu open. Every click on the menu's own cells
-is still cancelled, so nothing rendered in the menu can be taken out of it.
-
-**The level scroll** raises the companion by the number stamped on that stack and stops at the companion's own
-level cap - the one its trait and its level boost grade widen, not the plain `max-level` of its
-file. A companion already at that cap is refused and keeps the scroll; a companion below it that the scroll
-would carry past it is raised to the cap and the scroll IS spent, so a companion can always finish its
-climb. The message reports the levels really gained rather than the number on the item.
-
-**The rarity scroll** turns the companion into whatever its `companions/<id>.yml` names under `upgrades-to`,
-keeping its level, experience, trait, boosts and obtained date. The upgraded companion always lands in
-**storage**, even when it was equipped - a new companion brings its own incompatibility and unique-group
-rules, so re-equipping is a decision you make - and the plugin says so when it happens.
-
-Both refuse, and consume nothing, when:
-
-| Situation | Message |
-|---|---|
-| the companion's `companions/<id>.yml` is gone | `messages.companion-unknown` |
-| the scroll is switched off, or the companion is outside its lists | `messages.scroll-not-applicable` |
-| level: the companion is already at its cap | `messages.scroll-level-capped` |
-| rarity: the companion declares no `upgrades-to` | `messages.scroll-no-upgrade` |
-| rarity: the `upgrades-to` target has no file any more | `messages.scroll-target-missing` |
-| an OWNERSHIP scroll is dropped on a menu cell | `messages.scroll-wrong-surface` |
-
-Dropping a scroll on an empty equip slot or an empty grid cell does nothing at all and costs
-nothing, and neither does clicking a cell while holding something that is not a scroll.
-
-**The ownership scroll is the way out of the 1.17.0 owner lock.** Since 1.17.0 a companion head remembers
-who took it out and only that player can redeem it, so handing a freshly extracted head over no
-longer hands the companion over. Pick an ownership scroll up onto your cursor, left or right click a companion
-head sitting in **your own** inventory, and the head becomes yours: the owner tags are rewritten,
-the `{owner}` line of its lore is repainted with your name, and one scroll is consumed. Nothing is
-written to the database, because a companion item's owner lives in the item's own tags until it is
-redeemed.
-
-It refuses, and consumes nothing, when:
-
-| Situation | Message |
-|---|---|
-| the head already names you | `messages.scroll-owner-already` |
-| the slot holds more than one head | `messages.scroll-owner-stacked` |
-| the companion is outside that scroll's lists | `messages.scroll-not-applicable` |
-| the companion's `companions/<id>.yml` is gone | `messages.companion-item-unknown` |
-| `companion-items.enabled` is off | `messages.companion-items-disabled` |
-| creative, and `companion-items.allow-creative` is off | `messages.scroll-creative` |
-
-A stack holds ONE set of item tags, which is why a stacked head is refused: a single scroll would
-otherwise re-stamp every copy in it. Split the stack first.
-
-Dropping a scroll onto anything that is **not** a companion item does nothing at all - the click is the
-ordinary inventory swap it looks like, and the scroll is not consumed. A level or rarity scroll
-dropped onto a companion item is likewise inert: those two act on a companion in the MENU, not on an item.
-
-Since 1.19.0 the ownership scroll also works with the companions menu open, because the menu no longer
-freezes your own inventory. It is the same gesture in the same place, and it needed no change of
-its own.
-
-| Key | Default | Meaning |
-|---|---|---|
-| `scrolls.<type>.enabled` | `true` | Master switch of one scroll. Off refuses the give command and makes every copy already in circulation inert; nothing is taken away from anybody |
-| `scrolls.level.default-levels` | `1` | Levels one level scroll is worth when `givescroll` omits `[levels]` |
-| `scrolls.<type>.item` | see below | The golden item spec, the same one `boxes.yml` and `companion-items` use. `{levels}` exists only on the level scroll |
-| `scrolls.<type>.whitelist` | `[]` | Companion ids this scroll may be used on. An EMPTY list means every companion |
-| `scrolls.<type>.blacklist` | `[]` | Companion ids it may NOT be used on, applied AFTER the whitelist |
-
-Neither list is checked when the file loads, the same rule the EdTools currency ids follow: an id
-naming no companion simply never matches, which is the same outcome as a typo minus a false alarm on
-every boot.
-
-{% hint style="info" %}
-`config.yml` is **managed**, so the whole `scrolls:` band is merged into an existing install on the
-first boot, comments and all, and your existing values are untouched.
-{% endhint %}
-
-```yaml
-# ------------------------------------------------------------
-#  Scrolls. Three consumable items handed out with
-#  /companions admin givescroll <player> <scroll> [amount] [levels].
-# ------------------------------------------------------------
-scrolls:
-
-  level:
-    # Master switch of this scroll. Off refuses the give command and makes
-    # every copy already in circulation inert; nothing is taken away.
-    enabled: true
-    # Levels one scroll is worth when the give command omits [levels].
-    default-levels: 1
-    # Look of the item. {levels} is resolved when the scroll is handed out and
-    # stamped onto the stack, so the lore and the effect can never disagree.
-    item:
-      material: BOOK
-      display-name: "&fScroll &a&lLEVEL"
-      lore:
-        - "&8Companion consumable"
-        - ""
-        - "&7Drag and drop this scroll onto"
-        - "&7a companion in your companions menu to raise"
-        - "&7its level by &f+{levels}&7."
-        - ""
-        - "&aDrag onto a companion"
-    # Companion ids this scroll may be used on. An EMPTY list means every companion.
-    whitelist: []
-    # Companion ids this scroll may NOT be used on, applied after the whitelist.
-    blacklist: []
-
-  ownership:
-    enabled: true
-    item:
-      material: BOOK
-      display-name: "&fScroll &e&lOWNERSHIP"
-      lore:
-        - "&8Companion consumable"
-        - ""
-        - "&7Drag and drop this scroll onto"
-        - "&7a companion item in your inventory to"
-        - "&7claim its ownership."
-        - ""
-        - "&eDrag onto a companion item"
-    whitelist: []
-    blacklist: []
-
-  rarity:
-    enabled: true
-    item:
-      material: BOOK
-      display-name: "&fScroll &d&lRARITY"
-      lore:
-        - "&8Companion consumable"
-        - ""
-        - "&7Drag and drop this scroll onto"
-        - "&7a companion in your companions menu to upgrade"
-        - "&7it to the next rarity."
-        - ""
-        - "&dDrag onto a companion"
-    whitelist: []
-    blacklist: []
-```
-
 ```yaml
 # ------------------------------------------------------------
 #  Worlds. TWO separate lists, on purpose: where companions are DRAWN and where their
@@ -1406,8 +1235,7 @@ One file per companion type, named after its id. Three examples are seeded on a 
 `ember_fox.yml`, `gale_sprite.yml` and `stone_golem.yml`. A companion file declares the display
 name, the group it belongs to, the head or BetterModel it renders as, its level cap and
 experience curve, the buffs it grants per level, since 1.8.0 the hologram drawn above it,
-since 1.13.0 the optional `edtools-boosts` block and, since 1.18.0, the optional `upgrades-to`
-target. Copy one of the examples to add your own.
+and since 1.13.0 the optional `edtools-boosts` block. Copy one of the examples to add your own.
 
 The `hologram:` block is optional and, because this folder is seeded once and never merged
 again, it is never added to the companion files you already have. That is what
@@ -1468,35 +1296,6 @@ currency you want renamed (e.g. `edtools-currency-money: "&6Money"`), with
 every other id is invented on your server - and an id without an entry shows as the raw id. The
 trait index's currency lines resolve through the same entries, so one currency can never carry two
 names.
-
-### The rarity ladder: `upgrades-to`
-
-**Added in 1.18.0.** A companion file may name the companion a RARITY scroll turns it into:
-
-```yaml
-# companions/ember_fox.yml
-upgrades-to: stone_golem
-```
-
-Leave the key out and the rarity scroll refuses on that companion - a companion at the top of its ladder
-declares no target.
-
-It is **not** the same ladder as `fusion.into`. A fusion eats two companions and can fail; an upgrade
-eats one scroll and cannot. A companion may declare either, both, or neither, and the two may point at
-different companions.
-
-The target is not checked when the file loads - it may name a companion whose file arrives an hour later
-- so a typo surfaces when the scroll is used rather than as a warning on every boot.
-
-{% hint style="warning" %}
-`companions/` is **seed-only**: it is seeded once and never merged again, so `upgrades-to` does **not**
-arrive on the companion files you already have. Add it by hand. Only a fresh install receives the
-commented example that ships in `companions/ember_fox.yml`. Since **1.19.0** the rarity scroll reads it,
-so a companion with no `upgrades-to` is a companion no rarity scroll can be used on.
-{% endhint %}
-
-A companion whose `upgrades-to` names ITSELF is refused the same way a companion that declares nothing is:
-there is nowhere for it to go.
 
 Here is the seeded `companions/ember_fox.yml` in full, as a working reference:
 
@@ -1656,15 +1455,6 @@ fusion:
   # Announce a successful fusion of two of THIS companion to the whole server. Leave the
   # key out to follow config.yml fusion.broadcast.
   broadcast: false
-
-# Companion a RARITY scroll turns this one into. Leave the key out and the scroll
-# refuses on this companion: a companion at the top of its ladder declares no target.
-# NOT the same ladder as fusion.into above - a fusion eats two companions and can
-# fail, an upgrade eats one scroll and cannot - so a companion may declare either,
-# both, or neither.
-# This folder is seeded once and never merged again, so an existing install
-# adds the key by hand; only a fresh install receives this example.
-# upgrades-to: stone_golem
 
 # Companion ids that cannot be equipped alongside this one.
 incompatible:
@@ -1985,49 +1775,6 @@ Seven menu layouts, all managed and all re-skinnable without touching code.
 A menu file defines a fixed number of cells. If you raise a player's equip slots above the
 cell count of `main.yml`, the extra companions cannot be shown. The plugin warns about this at
 runtime, and `/companions admin unequip` always recovers a companion that ended up out of reach.
-{% endhint %}
-
-### `main.yml` is a drop target: `player-inventory` and `input`
-
-**Added in 1.19.0**, and the reason the level and rarity scrolls can be used at all. Three keys
-arrive in your `main.yml` on the next boot, and together they are the whole feature:
-
-```yaml
-# Your own inventory stays USABLE while this menu is open, which is what lets
-# you pick a scroll up and drop it onto one of your companions.
-player-inventory: open
-
-items:
-  # Never rendered: the storage grid's own bind owns every "p" cell. It exists
-  # for ONE key - input: true - which is what makes those cells accept a scroll.
-  storage-drop-target:
-    material: GRAY_STAINED_GLASS_PANE
-    key: p
-    input: true
-    display-name: "&8Companion Storage"
-
-templates:
-  slot-filled:
-    input: true          # the equipped row accepts a scroll too
-```
-
-`player-inventory: open` governs the BOTTOM half of the window. Plain clicks, number keys, drops
-and drags inside your own inventory are left alone; every click on the MENU's cells is still
-cancelled, and so is the double-click gather, so no rendered stack can reach your cursor. Set it
-back to `locked` for the pre-1.19.0 behaviour, in which the bottom half is frozen - the level and
-rarity scrolls then stop working, because a cursor that can never hold anything cannot drop one.
-
-`input: true` is per CELL and decides which cells receive an item. `slot-filled` carries it so an
-equipped companion can be a target; `slot-free` deliberately does not, so a scroll aimed at an empty slot
-is left on your cursor. A click with an EMPTY cursor still runs the cell's normal actions, which is
-why right click still unequips.
-
-{% hint style="warning" %}
-Do not delete `storage-drop-target`. It never renders - the paged bind owns those cells and paints
-over it - so removing it changes nothing you can see, and silently stops both scrolls from working
-on a stored companion. The storage grid is paged, and a paged bind cannot declare its own cells as input,
-so declaring an item on the grid's layout letter is the only way to say it. The next boot merges
-the entry back.
 {% endhint %}
 
 ### close-actions

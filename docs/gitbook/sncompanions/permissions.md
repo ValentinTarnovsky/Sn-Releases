@@ -40,7 +40,6 @@ granted per rank.
 | `sncompanions.admin.give` | op | Allows `/companions admin give` |
 | `sncompanions.admin.givebox` | op | Allows `/companions admin givebox` |
 | `sncompanions.admin.giveallbox` | op | Allows `/companions admin giveallbox` |
-| `sncompanions.admin.givescroll` | op | Allows `/companions admin givescroll` |
 | `sncompanions.admin.slots` | op | Allows `/companions admin slots` |
 | `sncompanions.admin.storage` | op | Allows `/companions admin storage` |
 | `sncompanions.admin.currency` | op | Allows `/companions admin currency` |

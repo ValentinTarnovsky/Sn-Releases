@@ -28,13 +28,6 @@ duplicates into stronger ones, and manage everything from seven configurable men
   head carrying its whole state, and let anyone right click it back into their own storage. That
   is how players trade companions. Since 1.17.0 the head also remembers who took it out, and only that
   player can redeem it.
-- Scrolls (1.18.0): three consumable items an admin hands out with `/companions admin givescroll`, each
-  with its own look and its own list of companions it accepts. The OWNERSHIP scroll drops onto a companion item
-  in your own inventory and makes that head yours, which is the way out of the 1.17.0 owner lock.
-  Since 1.19.0 the LEVEL and RARITY scrolls are applied by holding one and clicking a companion in the
-  main menu - an equipped one or a stored one: the level scroll raises the companion by the number
-  stamped on the stack, the rarity scroll turns it into whatever its `upgrades-to` names, and both
-  are consumed one per use.
 - Holograms: configurable text above every companion, per companion type, drawn as packet entities that
   RIDE the companion, so the text and the companion can never move at different times.
 - Seven menus you can re-skin without touching code, with a per-player switch that decides

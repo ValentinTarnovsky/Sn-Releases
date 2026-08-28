@@ -67,7 +67,6 @@ The `<what>` argument of `clear` is `storage` (every companion that is not equip
 | `/companions admin give <player> <companion> [amount] [level]` | `sncompanions.admin.give` | Gives companions to a player |
 | `/companions admin givebox <player> <box> [amount] [chance]` | `sncompanions.admin.givebox` | Gives companion boxes to an online player. Never refused: a box is an item, and a full companion storage only blocks OPENING it |
 | `/companions admin giveallbox <box> [amount] [chance]` | `sncompanions.admin.giveallbox` | Gives companion boxes to every online player, all at one success chance |
-| `/companions admin givescroll <player> <scroll> [amount] [levels]` | `sncompanions.admin.givescroll` | Gives scrolls to an online player. Never refused: a scroll is an item |
 | `/companions admin slots <mode> <player> <amount>` | `sncompanions.admin.slots` | Adds or sets the equip slots a player bought; they add on top of `max(base, permission)`, with the total capped at `slots.max-count` |
 | `/companions admin storage <mode> <player> <amount>` | `sncompanions.admin.storage` | Adds or sets the storage a player bought; it adds on top of `max(base, permission)`, with the total capped at `storage.max-capacity` |
 | `/companions admin currency <currency> <mode> <player> <amount>` | `sncompanions.admin.currency` | Changes one of a player's three balances |
@@ -75,13 +74,6 @@ The `<what>` argument of `clear` is `storage` (every companion that is not equip
 The `<mode>` argument is `give` or `set` for slots and storage, and `give`, `take` or `set`
 for a currency. Capacity cannot be taken: lowering a purchase is a `set`. The three currencies
 are `trait-ticket`, `dice-normal` and `dice-special`.
-
-The three scrolls are `level`, `ownership` and `rarity`. `[levels]` is what ONE level scroll is
-worth: it is stamped onto the stack when it is handed out, so scrolls of different sizes circulate
-side by side and lowering `scrolls.level.default-levels` later never devalues one already given.
-Omit it and the configured default is used; the other two scrolls ignore it. A scroll whose
-`enabled` is `false` is refused even when the token is spelled correctly. See
-[Configuration](configuration.md#scrolls).
 
 ## Silent flags
 
@@ -104,17 +96,16 @@ unknown box) or a failed query always reaches the admin who ran the command - an
 fails in silence is the worst possible outcome.
 {% endhint %}
 
-`-s` silences the message the RECEIVER gets. Five commands send one: `give`
-(`messages.companion-received`), `givebox` and `giveallbox` (`messages.box-received`), `givescroll`
-(`messages.scroll-received` / `messages.scroll-received-level`) and `currency`
+`-s` silences the message the RECEIVER gets. Four commands send one: `give`
+(`messages.companion-received`), `givebox` and `giveallbox` (`messages.box-received`) and `currency`
 (`messages.currency-received`). The other seventeen have never messaged their target, so `-s` is
 accepted there and simply has nothing to silence. An offline receiver is never messaged either way.
 
 {% hint style="warning" %}
 Put the flags **last**. Everything after the first flag is treated as part of the flag tail, so
 `/companions admin give Bob ember_fox -s 5` grants one companion, not five - the `5` is read as trailing noise.
-Only the six commands with an optional argument (`list`, `clear`, `give`, `givebox`,
-`giveallbox`, `givescroll`) are sensitive to the order; the rest have nothing to confuse.
+Only the five commands with an optional argument (`list`, `clear`, `give`, `givebox`,
+`giveallbox`) are sensitive to the order; the rest have nothing to confuse.
 {% endhint %}
 
 ### Tab completion

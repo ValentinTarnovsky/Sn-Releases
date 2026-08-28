@@ -253,115 +253,23 @@ creates belongs to whoever redeemed it - so a player who redeems a head and late
 companion out again is stamped as its owner in their turn.
 
 {% hint style="warning" %}
-**This deliberately narrowed item trading, and 1.18.0 is the way back out.** Up to 1.16.0 handing
+**This deliberately narrowed item trading.** Up to 1.16.0 handing
 over the head handed over the companion, and that stopped being true for a head taken out on 1.17.0 or
-later: the receiver held an item they could not redeem. Since **1.18.0** the OWNERSHIP scroll
-transfers it - the receiver drops one onto the head and it becomes theirs. Give the scroll a price
-and head-for-head trading works again, on your terms. A companion also still changes hands through
-`/companions admin`, and heads extracted before 1.17.0 were never locked at all.
+later: the receiver holds an item they cannot redeem. The only way to move a locked companion to
+another owner is `/companions admin setowner <player> <instance> <target>`, which is an admin action
+by design - a lock a player could lift themselves would not be a lock. Heads extracted before
+1.17.0 were never locked at all.
 {% endhint %}
 
 ### How does somebody claim a companion item that is not theirs?
 
-With an **ownership scroll**, added in 1.18.0. Hand one out with
-`/companions admin givescroll <player> ownership [amount]`, then have the player pick it up onto their
-cursor and left or right click the companion head **in their own inventory**. The head becomes theirs:
-its owner tags are rewritten, its `{owner}` lore line is repainted with their name, and one scroll
-is consumed. Nothing is written to the database - a companion item's owner lives in the item's own tags
-until it is redeemed.
+They do not - a player cannot lift the lock themselves. An admin moves the companion with
+`/companions admin setowner <player> <instance> <target>`, which transfers the companion to another
+player outright. There is no player-facing path, on purpose: a lock the holder of the item could
+open would not be a lock.
 
-It refuses, and consumes nothing, when the head already names them, when the slot holds more than
-one head (a stack carries ONE set of tags, so a single scroll would re-stamp every copy - split it
-first), when the companion is outside that scroll's `whitelist` / `blacklist`, when the companion's
-`companions/<id>.yml` is gone, when `companion-items.enabled` is off, or in creative while
-`companion-items.allow-creative` is off.
-
-Dropping the scroll on anything that is not a companion item does nothing at all and costs nothing: the
-click is the ordinary inventory swap it looks like.
-
-### How do I use a level or a rarity scroll?
-
-Since **1.19.0**: open the companions menu with `/companions`, pick the scroll up onto your cursor out of your
-own inventory, and left or right click a companion - an equipped slot marker along the top row, or a
-stored companion in the grid. It is applied to that companion and one scroll is consumed. In 1.18.0 those two
-were defined, given and stamped but nothing spent them; scrolls handed out back then work exactly
-as they would have.
-
-A level scroll raises the companion by the number stamped on that stack. A rarity scroll turns it into
-whatever its `companions/<id>.yml` names under `upgrades-to`, keeping its level, experience, trait and
-boosts. Neither is ever right clicked, and neither works on a companion ITEM in your inventory - that is
-the ownership scroll's surface, and dropping the wrong one there says so instead of eating it.
-
-### Why can I move my own items now while the companions menu is open?
-
-Because that is the only way to pick a scroll up. `guis/main.yml` gained `player-inventory: open`
-in 1.19.0, so the bottom half of the window behaves normally while the menu is up. Every click on
-the menu's own cells is still cancelled, and so is the double-click gather, so nothing rendered in
-the menu can be pulled out of it. Two things got better for free: the ownership scroll now works
-with the menu open, and splitting a stack in your own inventory works again.
-
-Set `player-inventory: locked` in `guis/main.yml` to get the old frozen behaviour back. The level
-and rarity scrolls stop working with it, because a cursor that can never hold anything cannot drop
-one on a companion.
-
-### My companion is at max level and the level scroll refuses. Is that right?
-
-Yes, and it keeps the scroll. The ceiling it checks is the companion's OWN cap - the companion's `max-level`
-widened by its trait and by its level boost grade - so the same companion can accept a scroll after a
-trait roll that it refused before one.
-
-A scroll that would carry the companion PAST the cap is not refused: the companion goes to the cap and the
-scroll is spent, so the last levels of a climb are reachable. The message tells you the levels
-really gained rather than the number printed on the item.
-
-### The rarity scroll worked but my companion left its slot. Where did it go?
-
-To your storage, and the plugin says so. An upgrade rewrites the companion as a new one, and a new companion
-brings its own incompatibility and unique-group rules, so putting it straight back into the slot
-would be the plugin taking a decision the equip path owns. Equip it again from the grid. It kept
-its level, experience, trait, boosts and obtained date.
-
-### The rarity scroll says the companion does not upgrade into anything.
-
-That companion's `companions/<id>.yml` declares no `upgrades-to`, which is how a companion at the top of its ladder
-is written. Add the key to that file by hand - `companions/` is seed-only, so nothing merges into it -
-and reload. A companion whose `upgrades-to` names a file that no longer exists, or that names the companion
-itself, is refused the same way. Nothing is consumed in any of those cases.
-
-### Can I stop a scroll being used on certain companions?
-
-Yes, per scroll, in the `scrolls` band of `config.yml`:
-
-```yaml
-scrolls:
-  ownership:
-    whitelist: []                 # EMPTY means every companion
-    blacklist:
-      - stone_golem
-```
-
-The whitelist runs **first** - an empty one means every companion - and the blacklist after it, so an id
-in both is refused. Neither list is checked when the file loads: an id that names no companion simply
-never matches, which is the same outcome as a typo minus a false alarm on every boot.
-
-To switch a whole scroll off instead, set `scrolls.<type>.enabled: false`. The give command then
-refuses it, and every copy already in circulation goes inert - nothing is taken away from anybody,
-and switching it back on restores them.
-
-### I already run SnCompanions. Do I get the scrolls band automatically?
-
-Yes. `config.yml` is **managed**, so the whole `scrolls:` band is merged into your file on the
-first boot after updating, comments and all, with your existing values untouched. The same goes for
-the 13 new `lang/messages_*.yml` keys of 1.18.0 and the 7 more of 1.19.0.
-
-`guis/main.yml` is managed too, so 1.19.0's three keys arrive on their own: `player-inventory`, the
-`storage-drop-target` item and `input: true` on `slot-filled`. Leave `storage-drop-target` alone -
-it never renders, and it is the only thing that makes the storage grid accept a scroll.
-
-The one thing that does **not** arrive on its own is `upgrades-to` in your companion files: `companions/` is
-seed-only, seeded once and never merged again, so you add that key to your own `companions/<id>.yml`
-files by hand. Only a fresh install receives the commented example. Until you do, the rarity scroll
-has nothing to turn those companions into and refuses without consuming.
+A head that carries no owner tag at all - anything extracted before 1.17.0 - was never locked, and
+stays redeemable by whoever holds it.
 
 ### I updated but the companion cells do not mention shift + right click or Q. Is it working?
 
