@@ -529,6 +529,42 @@ No. Disabling or enabling EdTools unregisters or registers the break listener on
 or starts the drain with it. The same is true if you install EdTools after SnCompanions has already
 started.
 
+### Can players skip the egg animation?
+
+Yes, each player decides for themselves. The eggs menu has a switch in slot 36 - `Animation: On` /
+`Animation: Off` - and clicking it flips their own preference and saves it, so it survives a relog
+and a restart. With it off, opening an egg gives exactly the same companions and the summary goes
+straight to chat with no Dragon Egg drawn at all.
+
+That is the PLAYER's switch. Yours is `animation.enabled` in the `animation:` block of an egg in
+`eggs.yml`: set it to `false` and nobody sees that egg hatch whatever they chose. The two are
+independent, and the server's wins.
+
+The eggs menu closes itself when a show starts, since the animation happens in the world and the
+shop would cover it. With the animation off it stays open, and the summary arrives with the balance
+already redrawn.
+
+The show itself costs nothing to skip. The companions are granted and written to the database
+before the first frame is drawn, so quitting, crashing or changing world in the middle loses the
+animation and nothing else - and a player who buys a second egg while the first is still hatching
+is refused with `messages.egg-animating` before a coin moves, rather than being given two eggs on
+top of each other.
+
+### Does anything happen to my database when I update to 1.8.0?
+
+One column is added to `sncompanions_players`, automatically, on the first boot: `egg_animation`,
+which is where each player's animation switch is stored. Every existing player keeps the animation
+ON, which is the default the column ships with, so nobody's setup changes.
+
+There is nothing to run by hand. The plugin asks the driver whether the column is already there
+before trying to add it, and swallows the "duplicate column" answer underneath in case the driver's
+metadata lags, so the boot after the first one runs one catalogue read and no statement at all.
+Both SQLite and MySQL are covered. If the column genuinely cannot be added the plugin disables
+itself rather than running with a table it cannot read - the same rule the initial table creation
+already follows.
+
+Take your usual backup before any update, as always. Nothing else about the schema changed.
+
 ### How do I add a second egg?
 
 Write a second top-level key in `eggs.yml` and reload. There is nothing else to do: `guis/eggs.yml`

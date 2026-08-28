@@ -1162,7 +1162,7 @@ other button of that screen.
 | `price.currency` | `vault` for the server economy, or `edtools:<id>` for one of your EdTools currencies. Anything else is refused with a console warning and charged as `vault`. See [What an egg costs](#what-an-egg-costs) |
 | `opens` | The buttons of the egg menu: a LIST, one entry per bundle, each with its own `amount` and its own explicit `price`. There is no unit price multiplied by an amount - an owner who wants "10 for the price of 9" writes that number. An amount with no button of its own costs the FIRST button's price in proportion. An egg with no `opens` cannot be bought and stays admin-only |
 | `drops` | The weighted table, one entry per companion id, each with an `amount` and a `weight`. The numbers are WEIGHTS, not percentages: they are normalized over whatever the table holds, so 60/30/10 and 6/3/1 behave identically. A row naming a companion with no `companions/<id>.yml` file is dropped when the egg loads, with one console warning, and the remaining weights renormalize on their own |
-| `animation` | The hatch show. `enabled` switches it off entirely; `shake-ticks` is clamped to 4-600 and `reveal-ticks` to 0-600, and the three sound keys take `"SOUND_ID [volume] [pitch]"` or `none` |
+| `animation` | The hatch show of THIS egg. `enabled` switches it off for everybody; `shake-ticks` is clamped to 4-600 and `reveal-ticks` to 0-600, and the three sound keys take `"SOUND_ID [volume] [pitch]"` or `none`. The pitch of `step-sound` is ignored - it climbs from 0.8 to 2.0 across the shake. Each player can also switch the show off for themselves; see [The egg animation switch](#the-egg-animation-switch) |
 | `feedback.message-key` | Lang key sent to the opener of ONE egg that produced ONE companion. Anything larger sends `messages.egg-opened-bulk` instead, which summarizes the whole open. Empty sends nothing |
 | `feedback.broadcast-key` | Lang key announced to the whole server, once per DISTINCT companion won. Empty announces nothing |
 | `cooldown-seconds` | Wait enforced between two PAID opens of this egg. `0` disables it entirely and costs nothing at runtime. It is armed only after the money really moved, so a refused purchase never starts one. An admin open ignores it: it costs nobody anything |
@@ -1296,20 +1296,45 @@ basic_egg:
 
   # ----------------------------------------------------------
   #  The hatch animation. It delays only the FEEDBACK.
+  #  A Dragon Egg appears about 1.5 blocks in front of the opener, at their
+  #  feet, shakes faster and faster, breaks in a burst of its own block
+  #  particles and reveals the companion they won, rising out of the wreckage
+  #  with its name above it. Nothing about it is a real entity and nothing
+  #  about it can be walked into: it is drawn with packets and only the players
+  #  who may already see that owner's companions ever see or hear it.
+  #  The companions are granted and SAVED before the first frame, so a player
+  #  who quits, changes world or crashes mid-hatch loses the show and nothing
+  #  else. Buying a second egg while one is still hatching is refused before
+  #  anything is charged (messages.egg-animating); an admin "openegg" is never
+  #  refused - it lands and reports in chat.
+  #  Each player can switch the show off for themselves from the button in slot
+  #  36 of the eggs menu. That choice is saved in the database (the
+  #  egg_animation column of sncompanions_players, added automatically on the
+  #  first boot of 1.8.0) and survives a relog and a restart. With it off, the
+  #  eggs give exactly the same companions and the summary goes straight to
+  #  chat.
   # ----------------------------------------------------------
   animation:
-    # Play the hatch show instead of naming the companion instantly.
+    # Play the hatch show instead of naming the companion instantly. This is the
+    # SERVER's switch: off here, nobody sees the show whatever they chose.
     enabled: true
     # Ticks the egg shakes before it breaks. 20 ticks is one second.
     # Clamped to 4-600.
     shake-ticks: 60
     # Ticks between the break and the companion being named. 0 reveals in the
-    # same frame the egg breaks. Clamped to 0-600.
+    # same frame the egg breaks. Clamped to 0-600. The revealed head rises one
+    # block over the first HALF of this, then holds still.
     reveal-ticks: 40
     # Sound played on each shake frame, as "SOUND_ID [volume] [pitch]".
     # "none" plays nothing.
+    # The PITCH written here is ignored: the whole point of the shake is that it
+    # climbs, so the plugin plays this sound from pitch 0.8 on the first frame
+    # to 2.0 on the last. The id and the volume are used as written. Frames get
+    # closer together as the shake goes on, from one every 10 ticks to one every
+    # 2, so a longer shake-ticks is a longer build-up, not a slower one.
     step-sound: "BLOCK_NOTE_BLOCK_HAT 1.0 1.2"
-    # Sound played when the egg cracks open. "none" plays nothing.
+    # Sound played when the egg cracks open, together with the block particles.
+    # "none" plays nothing.
     break-sound: "ENTITY_ENDER_DRAGON_GROWL 0.6 1.4"
     # Sound played when the companion is revealed. "none" plays nothing.
     reveal-sound: "ENTITY_PLAYER_LEVELUP 1.0 1.4"
@@ -1377,7 +1402,7 @@ regions:
 |---|---|
 | 4 (`i`) | `egg-info`: the egg on screen and the money it is priced in |
 | 11, 13, 15, 21, 23 (`p`) | the `pool` region: one companion this egg can give per cell |
-| 36 | reserved for the hatch animation switch, which arrives in the next version |
+| 36 | `anim-on` / `anim-off`: the viewer's own hatch animation switch. It names slot 36 itself, which is why the mask leaves that cell blank |
 | 38, 39, 41, 42 (`o`) | the `opens` region: one price button per `opens:` entry of the egg |
 | 40 (`<`) | `back`, which returns to `main.yml` |
 
@@ -1393,7 +1418,7 @@ The templates the plugin binds:
 | `egg-info` | `{egg}` `{currency}` |
 | `pool-entry` | `{id}` `{companion}` `{companion-lore}` `{icon}` `{texture}` `{group}` `{group-color}` `{chance}` `{amount}` |
 | `open-button`, `open-button-locked` | `{egg}` `{index}` `{amount}` `{price}` `{currency}` |
-| `anim-on`, `anim-off` | none yet - declared for the next version, and not drawn until then |
+| `anim-on`, `anim-off` | none - exactly ONE of the two is drawn per open, whichever matches the viewer's saved preference |
 
 `{chance}` is the row's weight **normalized over the whole table**, in percentage points with one
 decimal, never the raw weight you wrote: 60/30/10 and 6/3/1 both read 60.0/30.0/10.0. A row dropped
@@ -1413,6 +1438,74 @@ and the refund are all re-taken when the button is pressed.
 managed, so the merge adds the new `eggs-button` entry but keeps YOUR `layout:`, which has no
 letter for it. Put an `e` where you want it - the shipped mask uses slot 45, the first cell of the
 bottom row, as `"e  < > Fd"`. `/companions eggs` works either way.
+{% endhint %}
+
+### The egg animation switch
+
+Slot 36 of `guis/eggs.yml` is the player's own switch for the [hatch
+show](#eggsyml). It is the one button on this screen that has nothing to do with the egg in front
+of it: it is a preference of the VIEWER, saved on their row, and it applies to every egg they ever
+open.
+
+```yaml
+  anim-on:
+    material: ITEM_FRAME
+    slots: [36]
+    glow: true
+    display-name: "&a&lAnimation: &aOn"
+    lore:
+      - "&7Whether a hatch show plays when you open"
+      - "&7one of your companion eggs."
+      - ""
+      - "&2[CLICK TO TURN THE ANIMATION OFF]"
+    click-actions:
+      - "[companions-toggle-egg-anim]"
+      - "[sound] UI_BUTTON_CLICK"
+
+  # The same switch while the show is off.
+  anim-off:
+    material: ITEM_FRAME
+    slots: [36]
+    display-name: "&a&lAnimation: &cOff"
+    lore:
+      - "&7Whether a hatch show plays when you open"
+      - "&7one of your companion eggs."
+      - ""
+      - "&2[CLICK TO TURN THE ANIMATION ON]"
+    click-actions:
+      - "[companions-toggle-egg-anim]"
+      - "[sound] UI_BUTTON_CLICK"
+```
+
+Both templates declare `slots: [36]` rather than a `layout:` letter, which is why the shipped mask
+has a blank there and why moving the switch means editing those two `slots:` lines, not the mask.
+The plugin draws exactly **one** of them per open - `anim-on` when the show is on for that player,
+`anim-off` when it is off - so restyling one and forgetting the other shows through immediately.
+
+`[companions-toggle-egg-anim]` takes no argument. It flips the viewer's preference, tells them which
+way it went (`messages.egg-animation-on` / `messages.egg-animation-off`) and redraws the screen. The
+choice is **saved**: it lives in the `egg_animation` column of the `sncompanions_players` table and
+survives a relog and a restart. A player who has never touched it watches the show.
+
+{% hint style="info" %}
+**The two switches are independent, and the server's wins.** `animation.enabled` in `eggs.yml` is
+the owner's per-egg switch; the button is each player's switch for all eggs. With `enabled: false`
+nobody sees that egg hatch, whatever the button says - and the button is still drawn, because it is
+about the player rather than about the egg on screen.
+{% endhint %}
+
+With the show off, an egg gives exactly the same companions: only the presentation changes, and the
+summary goes straight to chat with no egg drawn at all.
+
+{% hint style="info" %}
+**The menu closes when the show starts.** The animation happens in the world, and the shop is a
+54-slot inventory sitting on top of it. It closes only when a show actually begins - a player with
+the animation off keeps the menu open and gets their summary with the balance already redrawn.
+
+Two more cases end the show before it starts, on purpose: a player who cannot see their own
+companions at all (the visibility toggle, or a world outside `worlds.render`) gets the summary at
+once rather than several seconds of nothing, and `holograms.enabled: false` reveals the companion
+with no name plate, because that switch means the same thing here as it does above a companion.
 {% endhint %}
 
 ### Colouring a companion by its group
@@ -1529,6 +1622,20 @@ back to English when the named file is missing. To add a language, copy `message
 
 New keys are merged into your existing file on boot, with your values and your comments left
 alone, so an update never overwrites a line you restyled.
+
+**1.8.0 adds five**, all of them about the [hatch show](#the-egg-animation-switch):
+
+| Key | Sent when | Placeholders |
+|---|---|---|
+| `messages.egg-animation-on` | the player turned the show on from the slot-36 button | none |
+| `messages.egg-animation-off` | the player turned it off from the same button | none |
+| `messages.egg-animating` | the player tried to BUY an egg while their previous one is still hatching. Refused before anything is charged; a free `/companions admin openegg` is never refused for this | none |
+| `menus.egg-reveal` | not sent - it is the floating LINE drawn above the companion the show reveals | `{companion}` |
+| `menus.egg-reveal-bulk` | the same line when the open produced more than one companion | `{companion}` `{more}` |
+
+The last two are labels rather than messages: they are drawn above the revealed companion for the
+length of `reveal-ticks`, carry no prefix and are best kept short. `{more}` is how many OTHER
+companions the same open produced; the full list still reaches chat when the show ends.
 
 **1.6.0 adds one**, sent by the [eggs menu](#the-eggs-menu):
 

@@ -183,7 +183,10 @@ signature changed. `1.6.0` removed nothing and added nothing either: the eggs sh
 the same engine, so `CompanionEggOpenEvent` and `CompanionEggRewardEvent` now also fire for a
 purchase made from a menu, with the same fields they always had. `1.7.0` removed nothing and added
 nothing either: the new `formation.shape: LINE` moves where the companions are DRAWN, which no part
-of this contract exposes.
+of this contract exposes. `1.8.0` removed nothing and added nothing either: the Dragon Egg hatch
+show only delays the FEEDBACK of an open that already happened, so `CompanionEggOpenEvent` and
+`CompanionEggRewardEvent` fire at exactly the same points, with the same fields, whether or not the
+player watches the animation.
 
 `API_VERSION` is deliberately held at `1.0.0` across those removals rather than claiming a stability
 this contract does not have yet, so **the version does not tell you whether surface went away**.

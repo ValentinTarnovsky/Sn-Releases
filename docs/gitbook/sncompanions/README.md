@@ -22,13 +22,17 @@ duplicates into stronger ones, and manage everything from configurable menus.
 - Fusion: combine duplicates into a stronger companion that inherits levels, with
   a server-wide announcement you can switch on per companion.
 - Companion eggs with weighted tables, price tiers charged in Vault or in one of your EdTools
-  currencies, a hatch animation and per-egg cooldowns. An egg is a purchase, not an item: the table
+  currencies, a Dragon Egg hatch show and per-egg cooldowns. An egg is a purchase, not an item: the table
   rolls the moment it is opened and the companions land straight in the owner's storage. A missing
   economy refuses the purchase instead of giving the egg away, and a purchase whose companions
   cannot be saved is refunded in full.
 - An in-game eggs shop, `/companions eggs [egg]` or the egg button of the storage menu: every
   companion the egg can give with its live odds, and one button per price tier. One menu file
   serves every egg you declare.
+- A hatch show on every open: a Dragon Egg appears in front of the buyer, shakes faster and
+  faster, breaks and reveals the companion they won. Drawn with packets like the companions
+  themselves, so nothing is spawned and nothing can be walked into - and any player who would
+  rather not watch it switches it off for themselves from the eggs menu.
 - Companion items: shift + right click a stored companion, or press Q over it, to take it out as a physical
   head carrying its whole state, and let anyone right click it back into their own storage. That
   is how players trade companions. Since 1.17.0 the head also remembers who took it out, and only that
