@@ -14,6 +14,12 @@ The command whitelist is on out of the box. `blockcommands.yml` ships with a pop
 
 Either add your groups to `blockcommands.yml`, or set `command-blocker.enabled: false` in `config.yml`.
 
+### The console printed `ConcurrentModificationException` after `/snchat reload`.
+
+Update to 2.1.1. Before it, every reload rebuilt the command whitelist's placeholder commands on the same tick Paper was serializing the command tree out to players, and Paper's tree-sending pool holds no lock against that. Nothing crashed and nothing was lost, but any player whose send failed kept their old tab completion until they relogged.
+
+From 2.1.1 that rebuild runs only when the whitelist, or the set of plugins owning those commands, actually changed - and a tick later, clear of the sends. The race itself belongs to Paper and other plugins can still trigger it, but SnChat no longer does.
+
 ### My staff stopped receiving violation alerts after updating to 2.1.0.
 
 That is the change, not a bug. Alerts used to be on for every `snchat.notify` holder and the command existed to silence them; they are now opt-in. The permission decides who is **eligible**, and each staff member turns their own on with `/snchat alerts`.
