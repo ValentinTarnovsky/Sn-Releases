@@ -1,6 +1,6 @@
 # Commands
 
-The root command is `/coinflip`. `/cf` is an alias, and the alias list is configurable under `command.aliases` in `config.yml`, re-read on `/coinflip reload`.
+The root command is `/coinflip`, with `/cf` as its built-in alias. Add further aliases under `command.aliases` in `config.yml`: they are registered on `/coinflip reload`, with no restart, and unregistered again when you remove them. `/cf` itself is declared in the jar's `plugin.yml`, so deleting it from that list does not remove it.
 
 | Command | Permission | Description |
 |---------|------------|-------------|
@@ -15,6 +15,18 @@ The root command is `/coinflip`. `/cf` is an alias, and the alias list is config
 {% hint style="info" %}
 `<currency>` is the currency **id**, which is the map key in `config.yml`, not the display name. Tab completion offers every registered id, so a currency that was skipped at startup is also absent from the completion list.
 {% endhint %}
+
+### Writing the amount
+
+`<amount>` accepts abbreviated wagers from **2.4.0** on: `1k`, `1.5m`, `2B`. The suffixes are `k`, `m`, `b`, `t`, `qa` and `qi`, case-insensitive. Comma grouping (`1,000`) and the European decimal comma (`1,5k`) are understood too.
+
+The wager is always a whole number, so `1.5k` is 1500 and is accepted, while a bare `1.5` is refused rather than quietly rounded.
+
+{% hint style="warning" %}
+`10.000` is refused. A lone dot is read as a decimal point, so that input would otherwise become a wager of **ten**, not ten thousand. Write `10000` or `10k`.
+{% endhint %}
+
+`bet.suggested-amounts` may use the abbreviated forms as well.
 
 ## Creating and joining
 

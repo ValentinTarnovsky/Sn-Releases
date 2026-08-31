@@ -13,7 +13,7 @@ SnCoinFlip ships `config.yml`, two language files under `lang/` and three menu l
 | `debug.enabled` | `false` | Runtime debug output. Also toggleable live with `/coinflip debug`. |
 | `debug.level` | `DEBUG` | `OFF`, `INFO`, `DEBUG` or `TRACE`. |
 | `debug.categories` | `[]` | Category filter, empty lets everything through. Emitted categories: `coinflip`, `economy`, `currency`, `commands`, `stats`. |
-| `command.aliases` | `[cf]` | Aliases of `/coinflip`, re-read on reload. |
+| `command.aliases` | `[cf]` | Extra aliases of `/coinflip`, re-read on reload. Anything you add is registered live and removed again when you take it out. `cf` is also declared in `plugin.yml`, so removing it here does **not** remove `/cf`. |
 
 ### Database
 
@@ -92,7 +92,7 @@ Setting both `vault: true` and `edtoolapi: true` on one currency is a mistake. V
 |-----|---------|-------------|
 | `bet.min` | `100` | Smallest wager, inclusive. |
 | `bet.max` | `1000000000` | Largest wager, inclusive. |
-| `bet.suggested-amounts` | `[100, 1000, 10000, 100000, 1000000]` | Tab completion suggestions only. Any amount inside the bounds is accepted. |
+| `bet.suggested-amounts` | `[100, 1000, 10000, 100000, 1000000]` | Tab completion suggestions only. Any amount inside the bounds is accepted. May use the abbreviated forms (`1k`, `1.5m`) from 2.4.0 on. |
 
 {% hint style="info" %}
 The suggestions are not filtered against `bet.min` and `bet.max`. If you raise the minimum above 100, the default suggestion list still offers 100 and the command then refuses it. Edit both together.
