@@ -48,7 +48,10 @@ command:
 #  consumers of edible/smeltable/ammo materials cannot all be guarded.
 # ------------------------------------------------------------
 key-items:
-  # true  -> keys of the same lootbox stack up to the vanilla max.
+  # true  -> keys of the same lootbox stack up to the vanilla max. Keys a
+  #          player already holds are re-rendered from the current lootbox
+  #          definition on join and before every grant, so keys given before
+  #          a reward edit (or while this was false) stack with new ones.
   # false -> keys from DIFFERENT grants never stack: each give/giveall/editor
   #          grant carries its own unique tag. The keys of one grant still
   #          stack with each other.
@@ -94,6 +97,10 @@ auto-lore:
 # ------------------------------------------------------------
 fast-open:
   enabled: true
+  # Largest key stack that can be fast-opened. Sneak + right-click on a
+  # stack holding more keys than this is denied (the keys are kept): split
+  # the stack or open it without sneaking. 0 or below removes the limit.
+  max-stack-amount: 1
 
 # ------------------------------------------------------------
 #  Session. GUI timeout behaviour.

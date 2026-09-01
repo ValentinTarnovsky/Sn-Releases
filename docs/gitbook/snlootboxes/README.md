@@ -9,7 +9,9 @@ Configurable lootbox system with animated GUI opening. You define lootboxes as Y
 - Weighted reward pools with per-reward enable toggles, NBT item rewards and console-command rewards.
 - Full in-game editor: create, rename, duplicate and delete lootboxes, and capture rewards from your inventory.
 - Per-lootbox aesthetics: 3-stop gradient names, bullet character, key glow and custom model data.
-- Fast-open by shift + right-click, per-lootbox personal or global announcements, and a per-IP giveall cap.
+- Keys of the same lootbox always stack: held keys are re-rendered from the current definition on join and before every grant.
+- Fast-open by shift + right-click, denied above a configurable stack size so a full stack cannot be burst-opened.
+- Per-lootbox personal or global announcements, and a per-IP giveall cap.
 
 ## Optional integrations
 
