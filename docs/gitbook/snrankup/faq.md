@@ -30,11 +30,19 @@ after `/rankup reload`: a rank with no `order` or no `display` is reported by ke
 
 ### How do I make every claimed rank look the same in the ladder?
 
-Write `material` (and `glow`, if you want it) on that state's template in `guis/rankup-list.yml` -
-`rank-claimed`, `rank-ready`, `rank-next` or `rank-locked` - and every tile of that state uses it.
-A rank that must stay different declares its own under `menu-item.states.<state>` in `rankup.yml`,
-which beats the template. Before 2.1.0 those two fields were read and then ignored on a template,
-so if the file looks configured and nothing changes, check the plugin version first.
+Write `material` (and `glow`, `custom-model-data` or `item-model`, if you want them) on that
+state's template in `guis/rankup-list.yml` - `rank-claimed`, `rank-ready`, `rank-next` or
+`rank-locked` - and every tile of that state uses it. A rank that must stay different declares its
+own under `menu-item.states.<state>` in `rankup.yml`, which beats the template. Before 2.1.0
+`material` and `glow` were read and then ignored on a template, so if the file looks configured
+and nothing changes, check the plugin version first.
+
+### Why does `custom-model-data` on a rank do nothing?
+
+Two causes. Before 2.2.0 the field was not read at all: the file loads, nothing is reported, and
+the tile shows the plain material - update the plugin. From 2.2.0 on, the remaining cause is a
+quoted value: `custom-model-data: '1645'` is text, and the load logs a warning naming the rank.
+Write it as a bare number, `custom-model-data: 1645`, and reload.
 
 ### How do I make a rank cost money?
 

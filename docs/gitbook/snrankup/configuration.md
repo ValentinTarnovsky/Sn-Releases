@@ -234,15 +234,31 @@ action as reward lines.
 | Field | What it is |
 |---|---|
 | `material` | Bukkit material, or `basehead-<base64>` for a custom head texture |
+| `custom-model-data` | Your resource pack's model number, written as a bare number (`1645`, never `'1645'`) |
+| `item-model` | The 1.21.2+ item model key, for example `mypack:rank_paper`. Skipped with one warning on older servers |
 | `display-name` | The item title |
 | `lore` | Your own lines for this rank |
 | `glow` | true or false |
 | `states` | Optional per state override used by the paginated menu |
 
+```yaml
+    menu-item:
+      material: PAPER
+      custom-model-data: 1645
+      display-name: '&#8354f2&lRank #5'
+```
+
 `states` takes `claimed`, `ready`, `next` and `locked`, each accepting the same fields. Anything you
 leave out of a state keeps what `menu-item` declares. Use it for the one rank that has to look
-different in one state; to dress a whole state the same way on every rank, write `material` or
-`glow` once on that state's template in `guis/rankup-list.yml` instead.
+different in one state; to dress a whole state the same way on every rank, write `material`,
+`custom-model-data`, `item-model` or `glow` once on that state's template in
+`guis/rankup-list.yml` instead.
+
+{% hint style="warning" %}
+A quoted `custom-model-data` (`'1645'`) is text, not a number. The plugin reports it in the console
+at load, names the rank, and leaves the model out rather than reading it as 0 - which is a real
+model id to a resource pack.
+{% endhint %}
 
 ## guis/
 
@@ -265,15 +281,17 @@ your next rank and you can afford it; `next` means it is your next rank and you 
 {% endhint %}
 
 {% hint style="info" %}
-A state template takes four appearance fields. `display-name` replaces the rank item's name and
-`lore` appends after its own lore, while `material` (`basehead-<base64>` included) and `glow`
-dress every tile of that state at once - one line instead of the same field repeated on every
-rank. Leave a field out and each rank keeps what its own `menu-item` says. Anything else you
-write on a template is ignored, because the rank's item already carries it.
+A state template takes six appearance fields. `display-name` replaces the rank item's name and
+`lore` appends after its own lore, while `material` (`basehead-<base64>` included),
+`custom-model-data`, `item-model` and `glow` each dress every tile of that state at once - one
+line instead of the same field repeated on every rank. Leave a field out and each rank keeps what
+its own `menu-item` says for it. Anything else you write on a template is ignored, because the
+rank's item already carries it.
 
-One rank that has to look different in a single state still wins: `material` or `glow` under that
-rank's `menu-item.states.<state>` in `rankup.yml` beats the template. An unknown material on a
-template is reported once in the console and leaves that state showing each rank's own item.
+One rank that has to look different in a single state still wins: any of those four fields under
+that rank's `menu-item.states.<state>` in `rankup.yml` beats the template for that field. An
+unknown material or a quoted `custom-model-data` on a template is reported once in the console
+and leaves that state showing each rank's own value.
 {% endhint %}
 
 {% hint style="info" %}
