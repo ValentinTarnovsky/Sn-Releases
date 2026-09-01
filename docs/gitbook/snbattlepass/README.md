@@ -19,8 +19,8 @@ The pass is permanent. There is no season to reset, and nothing expires undernea
 - **SnCrates**: unlocks the crate key challenge type. Without it, set `enabled: false` on those pool entries so they cannot roll.
 - **SnGens**: unlocks the generator upgrade and repair challenge types. Without it, disable those pool entries.
 - **SnEnvoys**: unlocks the envoy claim challenge type. Without it, disable those pool entries.
-- **RivalPets**: a pet's buff boosts farming XP while it is active. Without it, farming XP is unboosted and nothing else changes.
-- **SnPets**: equipped pets whose id starts with the configured prefix boost farming XP by their summed, per pet capped boost. It is added to RivalPets rather than replacing it: with both installed the two multipliers multiply. Without it, farming XP is unboosted and nothing else changes.
+- **RivalPets**: a pet's buff boosts farming XP while it is active, and opening its boxes counts toward the pet box challenge type. Without it, farming XP is unboosted and nothing else changes.
+- **SnPets**: opening its pet boxes counts toward the pet box challenge type, read from the SnPets API, and equipped pets whose id starts with the configured prefix boost farming XP by their summed, per pet capped boost. The XP boost is added to RivalPets rather than replacing it: with both installed the two multipliers multiply. Without it, SnPets boxes advance nothing and farming XP is unboosted.
 - **PlaceholderAPI**: exposes progress, tier, XP, pass, playtime and per slot challenge state to other plugins, and lets menu text use placeholders. Without it, those lines render blank and the rest of the plugin works normally.
 
 ## Links

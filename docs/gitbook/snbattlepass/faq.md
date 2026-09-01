@@ -25,7 +25,10 @@ The configured placeholder did not expand to a number. Check that PlaceholderAPI
 Yes. Delete its letter from the menu's `layout:` grid. A key the layout does not use is hidden, and because the layout is a list value rather than a key, the auto-merge never restores it.
 
 ### One of my challenge types never progresses. Why?
-Its source plugin is probably not installed, or the tool or crate id in the pool entry does not match. Challenge types map to SnCrates, SnGens, SnEnvoys and EdTools, and an id is a plain string that cannot be validated at load. Set `enabled: false` on pool entries whose source plugin is missing.
+Its source plugin is probably not installed, or the tool or crate id in the pool entry does not match. Challenge types map to SnCrates, SnGens, SnEnvoys, SnPets and EdTools, and an id is a plain string that cannot be validated at load. Set `enabled: false` on pool entries whose source plugin is missing.
+
+### Which pet box openings count?
+SnPets boxes are counted through the SnPets API, and only when a box really opens: an attempt SnPets refuses - a cooldown still running, storage full, a failed success roll - hands the boxes back and adds no progress, and a shift-click stack credits the boxes that fitted. RivalPets boxes are still counted from the right-click on the box item. Both plugins can be installed at once; they never count the same opening.
 
 ### What happens if I lower the challenge slot count?
 Challenges already running in the removed slots freeze: they stop earning and stop paying. Their deadline keeps counting in real time, so raising the count back either resumes them or expires them on the next sweep.

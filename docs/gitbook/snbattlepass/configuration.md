@@ -258,7 +258,7 @@ notifications:
 #                    0 keeps the entry out of random rolls while /battlepass
 #                    givechallenge can still hand it out.
 #    filter          "all" counts every signal of that type, or name one id: a
-#                    crate, an EdTools tool, a pet box, an offhand box, a
+#                    crate, an EdTools tool, a SnPets box, an offhand box, a
 #                    generator or a SnEnvoys reward. Ids are matched ignoring
 #                    case. A typo shows up as a challenge that never advances,
 #                    so turn debug on to print the id a source really reports.
