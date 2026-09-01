@@ -29,11 +29,29 @@ Read the console. Every load failure names the voucher id. Common causes: no `it
 
 That is `bulk.aggregate-by-category`, which ships **on**. A bulk claim also consumes vouchers of other ids in the same category folder when they declare the exact same reward list, and pays the summed total in one command. No value is lost.
 
+It never crosses the two claim shapes: an `amount` click only sweeps up `amount` siblings, and a `multi-claim` click only sweeps up `multi-claim` siblings.
+
 Set `bulk.aggregate-by-category: false` in `config.yml` to consume only the clicked voucher's own id.
 
 ## A stack of 64 vouchers only ran the command once
 
-That is the point. A voucher with an `amount:` consolidates the stack into **one** execution carrying the summed `{amount}`, instead of 64 separate commands. Without an `amount:`, each right-click consumes exactly one.
+That is the point. A voucher with an `amount:` consolidates the stack into **one** execution carrying the summed `{amount}`, instead of 64 separate commands.
+
+## My crate has no `amount:` and players have to click it 200 times
+
+Set `multi-claim: true` on that voucher file. One right-click then consumes the whole stack and rolls the rewards once **per voucher**, so a `RANDOM` crate gives 200 independent prizes instead of 200 copies of one.
+
+`amount:` cannot do this, and that is not an oversight: `amount` works by multiplying a value into a single command, and a crate has no value to multiply. The cap is `bulk.multi-limit` in `config.yml` (ships at 128), and `bulk.commands-per-tick` spreads the rewards over a few ticks so the click does not stall the server. See [Configuration](configuration.md).
+
+Do not set both `amount:` and `multi-claim:` on one file - `amount` wins and the console tells you.
+
+## A big crate claim delivered its rewards over a second or so instead of instantly
+
+That is `bulk.commands-per-tick` doing its job. A 128-crate claim is 128 separate reward commands, each one another plugin doing inventory and database work; running them in a single tick freezes the server at the exact moment the player is watching. They are spread over the following ticks instead. Raise the key to deliver faster, or set it to `0` to run everything in one tick.
+
+The budget is per claim, so a player mass-claiming never delays anybody else's ordinary claim.
+
+Anything still queued when the server stops is dispatched during shutdown rather than dropped - those vouchers were already consumed. A player who logs out while their own overflow is still draining can miss the tail of it, so do not set the key so low that a claim takes many seconds to deliver.
 
 ## Can a player claim from the offhand, or from a shulker?
 

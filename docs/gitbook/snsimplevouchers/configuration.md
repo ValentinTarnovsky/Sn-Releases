@@ -43,6 +43,7 @@ item:
 mode: WEIGHTED                   # LIST (default), WEIGHTED, RANDOM
 amount: 5
 auto-claim: false
+multi-claim: false               # mass claim for vouchers with no amount
 
 commands:
   - command: "eco give {player} {amount}"
@@ -88,7 +89,36 @@ With an `amount:`, a main-hand right-click consolidates every matching voucher i
 
 `{amount}` is the **sum** over everything the click consumed. Decimals work and are handled as exact decimals, not floating point. An amount too wide to write out (more than 64 characters) is refused at load.
 
-Without an `amount:`, a right-click consumes exactly one voucher.
+Without an `amount:`, a right-click consumes exactly one voucher - unless the voucher sets `multi-claim`.
+
+### `multi-claim` - mass claim for crates
+
+`amount` can bulk-claim because it is a **multiplier**: 64 vouchers worth 100 each pay the same as one command carrying 6400. A crate has nothing to multiply. `pets admin givebox {player} Box_Basica 1` is not worth 64 times more written once, and a `RANDOM` crate has to draw a separate prize per copy or one click hands out 64 copies of the same thing.
+
+So a crate cannot use `amount`, and without this key a player holding 200 of them right-clicks 200 times.
+
+`multi-claim: true` makes **one** main-hand right-click consume the whole stack and roll the rewards **once per voucher consumed**. 200 vouchers, 200 independent draws, one click. Shift is not required.
+
+```yaml
+mode: RANDOM
+multi-claim: true
+commands:
+  - "pets admin givebox {player} Box_Basica 1 -sf"
+  - "gens addmax {player} 1"
+  - "booster give {player} money 0.5 10m"
+```
+
+| Detail | Behaviour |
+|---|---|
+| Cap | `bulk.multi-limit` in `config.yml`, ships at **128**. Vouchers above the cap stay in the inventory for the next click. The same cap bounds `/voucher give` and `/voucher giveall` on an auto-claim crate |
+| `{amount}` in the commands | Always `1` - each execution is worth one voucher |
+| `{amount}` in the message | The number of vouchers the click consumed |
+| Tick cost | The rewards do **not** all fire in one tick. `bulk.commands-per-tick` spreads the overflow over the following ticks |
+| Aggregation | `bulk.aggregate-by-category` applies, and only ever matches other `multi-claim` vouchers with an identical reward list. A folder holding both crates and `amount` vouchers keeps the two apart |
+| With `amount` | Contradictory. `amount` wins, and the console says so at load. Use one or the other |
+| With `auto-claim` | `/voucher give <player> <id> 10` becomes 10 draws instead of one, matching what claiming 10 items does. Clamped to `bulk.multi-limit`; the sender's message reports the number actually handed over |
+
+Claim messages for this shape are `messages.claim.multi` and `messages.claim.multi-category`, separate from the `bulk` pair because a crate has no summed amount to report.
 
 ### `auto-claim`
 
@@ -102,7 +132,9 @@ Without an `amount:`, a right-click consumes exactly one voucher.
 
 ```yaml
 bulk:
-  limit: 0                       # cap per click, 0 = unlimited
+  limit: 0                       # cap per click for 'amount' vouchers, 0 = unlimited
+  multi-limit: 128               # cap per click for 'multi-claim' vouchers
+  commands-per-tick: 20          # dispatch budget per tick, 0 = no spreading
   aggregate-by-category: true
 
 give:
@@ -115,6 +147,28 @@ sounds:
   claim: ENTITY_PLAYER_LEVELUP
   gui-click: UI_BUTTON_CLICK
 ```
+
+### `bulk.multi-limit`
+
+Ships at **128**. Caps how many vouchers one click consumes on a `multi-claim` voucher. Unlike `bulk.limit`, this is not the number of items folded into a single execution - it is the number of **executions** one click queues, so it is the knob that decides what a mass claim costs your server. Raise it for 256-crate claims, lower it if a click is doing too much at once.
+
+On a `mode: LIST` crate every roll runs the whole command list, so the real command count is this number times the length of that list. Keep the cap lower for those.
+
+It also bounds `/voucher give` and `/voucher giveall` on an auto-claim crate, so no command argument can queue an unbounded number of rewards.
+
+`0` means unlimited. A full inventory is 2304 vouchers.
+
+### `bulk.commands-per-tick`
+
+Ships at **20**. The dispatch budget **per claim**, per tick. Everything up to this many reward commands runs immediately inside the click; the overflow of a big `multi-claim` is spread over the following ticks, so 128 crate rewards never land in a single tick. At 20/tick that worst case is under half a second and the player just watches the prizes arrive.
+
+It is per claim, not server-wide: one player mass-claiming crates never puts anybody else's ordinary claim behind their queue.
+
+Only a `multi-claim` can ever exceed this - every other claim dispatches at most one command per reward entry - so on a server without one this key changes nothing. `0` turns the spreading off.
+
+A queued reward is dispatched by player **name**, so a player who logs out while their own overflow is still draining can miss the tail of it. Do not set this so low that a claim takes many seconds to deliver.
+
+Anything still queued when the server stops is dispatched during shutdown rather than dropped: those vouchers were consumed already.
 
 ### `bulk.aggregate-by-category`
 
@@ -190,7 +244,9 @@ Which claim message fires:
 | Key | When |
 |---|---|
 | `messages.claim.single` | One voucher consumed |
-| `messages.claim.bulk` | Several of the **same** id |
-| `messages.claim.bulk-category` | Several **different** ids from one folder |
+| `messages.claim.bulk` | Several of the **same** id, consolidated by `amount` |
+| `messages.claim.bulk-category` | Several **different** ids from one folder, consolidated by `amount` |
+| `messages.claim.multi` | Several of the **same** id on a `multi-claim` voucher |
+| `messages.claim.multi-category` | Several **different** ids from one folder on a `multi-claim` voucher |
 
 Do not write `{prefix}` in any value: the prefix is prepended automatically.
