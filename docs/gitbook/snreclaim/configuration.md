@@ -12,7 +12,7 @@ claimed it can claim again.
 # sn:extensible
 ranks:
   vip:
-    display-name: "&aVIP"        # shown wherever {rango} appears; defaults to the key
+    display-name: "&aVIP"        # shown wherever {rango} appears; defaults to the key; PAPI works
     group: "vip"                 # the Vault group matched; defaults to the key
     run-as: console              # console or player; defaults to redeem.run-as
     message:                     # private message, sent only to the redeeming player
@@ -25,7 +25,9 @@ ranks:
 ```
 
 - `{player}` is replaced with the player's name in commands and messages.
-- `{rango}` is the rank's `display-name`.
+- `{rango}` is the rank's `display-name`. The display name may itself be a PlaceholderAPI
+  token - `display-name: '%snrankperks_prefix%'` - and it resolves against the **redeeming
+  player**, in the public broadcast and in the private message alike.
 - Messages support `&` colours, `&#RRGGBB` HEX and PlaceholderAPI. **No prefix is added** -
   the layout is entirely yours.
 - A leading `/` on a command is optional.
