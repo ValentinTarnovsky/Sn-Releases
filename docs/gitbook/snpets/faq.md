@@ -742,3 +742,11 @@ Give the pet a `buff-display:` block (1.23.0): a `name` for `{buff}` and an `ini
 plugin uses. SnPets shows it and never applies it, and only a pet with no `buff:` and no
 `edtools-boosts:` reads it. `pets/` is seeded once, so add the block to your existing files by
 hand; `ember_fox.yml` ships the commented example. See `pets/` under Configuration.
+
+### Tab completion of `/pets admin give` stops offering pets after the hundredth. Typing the name works.
+
+Update SnLib to **1.34.1** or later. The pet ids are suggested by SnLib, which until 1.34.1
+cut the option list at 100 *before* matching what you typed, so with more than 100 pet files
+every id past the hundredth (alphabetically) was unreachable from tab even by its own first
+letters - typing it in full still worked, because parsing reads the whole set. SnPets itself needs
+no change; the fix is in the SnLib jar.
