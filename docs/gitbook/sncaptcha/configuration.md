@@ -179,10 +179,15 @@ sanctions:
       - "ban %player% Confirmed macro use (5+ captchas failed)"
 
 # ------------------------------------------------------------
-#  Alerts. Staff notifications, sent to holders of sncaptcha.notify.
+#  Alerts. Staff notifications, sent to holders of sncaptcha.notify who
+#  switched them on with /captcha alerts. They are OFF by default for
+#  everybody: the permission entitles a staff member to the alerts, the
+#  command is what asks for them, and the answer is remembered per player.
 # ------------------------------------------------------------
 alerts:
-  # Send the alerts in game.
+  # Send the alerts in game. This is the SERVER-WIDE switch and it sits above
+  # the per-player one: with it off, /captcha alerts delivers nothing to
+  # anybody. The alerts.log sink below ignores the per-player toggle entirely.
   in-game: true
   # Append the alerts to alerts.log in the plugin folder. The file is
   # append-only and the plugin never truncates or rotates it, so its size is
@@ -406,8 +411,11 @@ messages:
     no-active: "&7You have no active captcha right now."
 
   # ----------------------------------------------------------
-  #  Staff alerts, sent to holders of sncaptcha.notify and written to
-  #  alerts.log. Each one is gated by its alerts.events toggle in config.yml.
+  #  Staff alerts, sent to holders of sncaptcha.notify who switched them ON
+  #  with /captcha alerts, and written to alerts.log. Each one is gated by its
+  #  alerts.events toggle in config.yml. The alerts are OFF by default for
+  #  everybody: the permission entitles you to them, the command asks for them.
+  #  The alerts.log sink is server-wide and ignores the per-player toggle.
   # ----------------------------------------------------------
   alerts:
     # NOTE on PlaceholderAPI in this block: these lines are sent to every staff
@@ -474,6 +482,18 @@ messages:
     no-data: "&7No captcha data stored for &f{player} &7yet."
     # The database read behind /captcha info or /captcha status failed.
     load-failed: "&cCould not read the captcha database. See the console for details."
+    # /captcha alerts switched the staff alerts ON for whoever ran it. The alerts
+    # start OFF for everybody, permission holders included: the node only entitles
+    # you to ask for them. The preference is remembered across relogs and restarts.
+    alerts-enabled: "&aCaptcha alerts enabled. You will now see them in chat."
+    # /captcha alerts switched them off again.
+    alerts-disabled: "&7Captcha alerts disabled. You will no longer see them in chat."
+    # /captcha alerts applied the change for this session but could not store it, so
+    # it is lost on the next relog. Sent AFTER the line above, which is still true.
+    alerts-save-failed: "&cYour alert preference could not be saved and will be lost when you rejoin. See the console."
+    # /captcha alerts from the console, which has no per-player preference to flip and
+    # receives no alerts in chat either way. The alerts.log file is unaffected.
+    alerts-players-only: "&cOnly a player can toggle the captcha alerts."
 
 # ============================================================
 #  Multi-line chat views. Rendered with sn.lang().getList / get, so they are

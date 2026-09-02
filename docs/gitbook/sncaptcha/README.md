@@ -12,7 +12,7 @@ The challenge is a menu of four number heads. The player runs `/captcha` and cli
 - **The challenge cannot be answered in chat**, by design: a proxy-level mute would stop a chat answer from ever reaching your server. Inventory clicks and commands are the only channels.
 - **The heads carry no readable data.** No name, no lore, no hidden tags. Which digit sits in which cell and which skin is drawn are both re-randomized on every open, so a generic auto-clicker has nothing in the menu to read.
 - **A configurable sanction ladder** by failure count, with an optional decay so an old failure is forgiven.
-- **Staff alerts** in game and to a log file, for a captcha sent, unanswered, failed or solved.
+- **Staff alerts** in game and to a log file, for a captcha sent, unanswered, failed or solved. In game they are opt in per staff member, off by default, toggled with `/captcha alerts`.
 - **It refuses to challenge anybody when it cannot present a solvable board**, and says why in the console. A broken menu file or an unreadable head texture never turns into a punishment.
 
 ## Optional integrations

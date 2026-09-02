@@ -12,8 +12,12 @@ Every node defaults to `op`. There is deliberately no basic-access node and no w
 | `sncaptcha.admin.reload` | op | Use `/captcha reload`. |
 | `sncaptcha.admin.debug` | op | Use `/captcha debug`. |
 | `sncaptcha.admin.update` | op | Receive the update notice in chat when a newer version is published. |
-| `sncaptcha.notify` | op | Receive the staff alerts: captcha sent, unanswered, failed, solved. Grantable on its own to a moderator rank. |
+| `sncaptcha.notify` | op | Entitles the holder to the staff alerts (captcha sent, unanswered, failed, solved) and to `/captcha alerts`, which is what switches them on. Grantable on its own to a moderator rank. |
 | `sncaptcha.bypass` | op | Total exemption. No farming time is tracked and no captcha is ever sent. |
+
+{% hint style="warning" %}
+`sncaptcha.notify` on its own delivers nothing. The alerts are off by default for everybody, holders included: the node says a staff member **may** receive them, and `/captcha alerts` is how they ask. Granting the node to a rank and stopping there is the one mistake worth knowing about.
+{% endhint %}
 
 {% hint style="info" %}
 `sncaptcha.bypass` is cached rather than checked on every block break, because the break listener runs off the main thread. The cache is filled when a player joins and refreshed for everyone online on `/captcha reload`, so granting or revoking it for a player who is already connected takes effect on the next reload or their next login, not instantly.

@@ -24,8 +24,11 @@ Because a mute applied at the proxy stops a chat message from ever reaching your
 ### A player says the board was blank or the heads all looked the same.
 Check the console for a warning about `heads.yml`. A texture value that was truncated when pasted, or one pointing somewhere other than `textures.minecraft.net`, renders as a blank head. The plugin validates every value at startup and refuses to send any captcha at all while fewer than four digits have a usable texture, so this should be reported rather than silent.
 
+### My staff stopped seeing the alerts after updating.
+That is the change, not a fault. The alerts are now opt in and off by default for everybody: `sncaptcha.notify` entitles a staff member to them, and each of them runs `/captcha alerts` once to switch them on. The choice is remembered per player.
+
 ### Staff chat is too noisy.
-Turn off `alerts.events.on-emit` and `alerts.events.on-resolved`. Those two fire once per captcha each and are the high-volume pair; `on-mid-timer` and `on-timeout-fail` are the ones that report a player who is not answering.
+First, each staff member can simply run `/captcha alerts` to switch their own off. Server-wide, turn off `alerts.events.on-emit` and `alerts.events.on-resolved`: those two fire once per captcha each and are the high-volume pair, while `on-mid-timer` and `on-timeout-fail` are the ones that report a player who is not answering.
 
 ### Does `alerts.log` get cleaned up?
 No. The file is append-only and the plugin never truncates or rotates it, so its size is yours to manage.
