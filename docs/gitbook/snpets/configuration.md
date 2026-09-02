@@ -410,6 +410,10 @@ experience:
 #  and what each level adds. The engine then computes, per buff:
 #
 #    base       = initial + (level - 1) x per-level
+#
+#  A pet is created at level 0, one step BELOW the anchor, so a brand new pet is
+#  worth initial - per-level. Write initial equal to per-level and the ramp
+#  reads exactly level x per-level, worth nothing at level 0.
 #    pet buff   = base x (1 + buff boost% + trait buff%)
 #    player     = the sum of every equipped pet
 #    effect     = that sum capped by the "cap" below
@@ -553,7 +557,7 @@ fusion:
 
   # What survives a fusion at all. A field switched off here is not taken from
   # either parent: the result carries what a brand new pet carries, which is
-  # level 1, no experience, no trait and no boost grades.
+  # level 0, no experience, no trait and no boost grades.
   keep:
     # Carry over a level. It is capped by the TARGET pet's own max-level, since
     # every pet declares its own ceiling.
@@ -1470,6 +1474,67 @@ every other id is invented on your server - and an id without an entry shows as 
 trait index's currency lines resolve through the same entries, so one currency can never carry two
 names.
 
+### A pet is created at level 0
+
+Changed in 1.24.0. Every path that mints a pet now starts it unlevelled: opening a box, a fusion
+result, and `/pets admin give` when no `[level]` token is given. All three used to hand out a pet
+that was already a level in, so the first level was given rather than earned.
+
+Nothing about a level that already exists changed. **Every pet on your server keeps the level it
+has**, and a level is worth exactly what it was worth in 1.23.0: the buff ramp, the
+`edtools-boosts` ramp and the `buff-display` ramp are all still
+`initial + (level - 1) x per-level`, untouched. The release moves where a pet starts, never what a
+level is worth.
+
+Because the ramp is untouched it simply extends one step down, so a pet at level 0 is worth
+`initial - per-level`:
+
+| Written in the pet file | Worth at level 0 | Worth at level 1 |
+|---|---|---|
+| `initial: 2.0`, `per-level: 0.1` | 1.9 | 2.0 |
+| `initial: 0.4`, `per-level: 0.4` | 0.0 | 0.4 |
+| `initial: 0.1`, `per-level: 1.0` | -0.9 | 0.1 |
+
+Write `initial` equal to `per-level` and the ramp reads exactly `level x per-level` at every level
+including 0, where the pet is worth nothing until it earns its first one. That is the shape a
+foreign plugin's own formula is mirrored in - see `buff-display` below - and it still agrees at
+every level. A pet whose `per-level` exceeds its `initial` contributes a negative value at level 0,
+which is the same designed state a negative boost grade already produces; the player's total is
+floored at zero either way.
+
+#### `experience.base` is the cost of leaving the FIRST level
+
+`base` used to be documented as the experience needed to reach level 2. It is now the cost of
+leaving the first level, and **level 0 and level 1 share that one requirement**; every level above
+still adds `per-level` to it, exactly as before. A pet's lifetime therefore gains one extra rung of
+`base`.
+
+That is deliberate, and it is the only way the new starting level can be left at all. A plain
+downward extension of the curve would ask for `base - per-level` to leave level 0, and a
+requirement of `0` is the sentinel that means "this pet does not progress at all". The shipped
+`ember_fox.yml` declares `base: 500` with `per-level: 500`, so the extension would land on exactly
+`0` and every fresh copy of that pet would sit at level 0 forever with nothing in its file to
+blame. Any curve whose `per-level` reaches its `base` has that same shape, so the curve position is
+clamped at 1.
+
+Three smaller consequences:
+
+- A pet **item** no longer mints a free level. The level stamped on an extracted head is floored at
+  0 rather than 1 when it is read back, so a brand new pet taken out and redeemed comes back the
+  pet that left. The old floor of 1 would have handed it back a level up.
+- `/pets admin setlevel <player> <instance> 0` is accepted, so an admin can put a pet back to
+  fresh, and the `[level]` of `/pets admin give` accepts `0` and defaults to it.
+- A fusion result that inherits no level (`fusion.keep.level: false`) is created at level 0.
+
+A pet's effective level cap still cannot fall below 1. That floor is now the promise that at least
+one level exists to climb, rather than the level a pet starts at.
+
+{% hint style="info" %}
+**No key was added, removed or renamed.** Only comment text changed, in `config.yml` and in the
+three shipped pet files, and a comment on a key you already have never merges - so an existing
+server sees no configuration edit at all, and there is nothing here for you to change.
+{% endhint %}
+
 ### A pet whose effect lives in another plugin: `buff-display` (1.23.0)
 
 Some pets exist for a plugin that is not this one. SnBattlePass, for example, reads a player's
@@ -1501,7 +1566,9 @@ its trait - SnPets does not apply this boost, so it cannot know whether the plug
 it. And it is not validated against anything: write the same numbers the other plugin uses (for
 SnBattlePass, its `integrations.sn-pets.percent-per-level` as both `initial` and `per-level`, and
 its per-rarity ceiling as `max`), so the figure a player reads here is the figure they are paid
-there. Same seeded-once caveat as every other block of this folder: the commented example ships in
+there. Writing `initial` equal to `per-level` is also what keeps the ramp agreeing at level 0,
+where a pet created since 1.24.0 starts: it reads `level x per-level`, which is `0.0` on a pet that
+has not earned a level yet. Same seeded-once caveat as every other block of this folder: the commented example ships in
 `ember_fox.yml` for a new install, and you add the block to the pet files you already have by hand.
 
 ### The rarity ladder: `upgrades-to`
@@ -1599,7 +1666,9 @@ max-level: 50
 #  Experience.
 # ------------------------------------------------------------
 experience:
-  # Experience needed to reach level 2.
+  # Experience needed to leave the first level. A pet is created at level 0 and
+  # level 0 and level 1 share this one requirement; every level above adds
+  # per-level to it.
   base: 500
   # Added to that requirement by each further level.
   per-level: 500

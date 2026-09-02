@@ -611,6 +611,44 @@ after the first boot, so nothing you add or delete there is ever undone by an up
 work the same way, except they are keys inside `boxes.yml` rather than separate files: copy a
 whole top-level block and rename the key.
 
+### A pet from a box arrives at level 0. Is that right?
+
+Yes, since **1.24.0**. A pet is created unlevelled and earns its first level like every level
+after it: opening a box, a fusion result and `/pets admin give` with no `[level]` token all
+produce a level-0 pet.
+
+Nothing that already exists moved. Every pet on your server kept the level it had, and a level is
+worth exactly what it was worth on 1.23.0 - the buff ramp, the `edtools-boosts` ramp and the
+`buff-display` ramp are all still `initial + (level - 1) x per-level` and were not touched. What
+moved is where a pet starts, so a pet at level 0 is worth `initial - per-level`: one written with
+`initial` equal to `per-level` is worth nothing until it earns its first level, and one whose
+`initial` is larger still grants something at 0. No configuration key changed, so there is nothing
+for you to edit - see
+[A pet is created at level 0](configuration.md#a-pet-is-created-at-level-0).
+
+Two things follow from it that can look like their own bugs. A pet ITEM no longer mints a free
+level: take a brand new pet out as a head, redeem it, and it comes back at level 0, because the
+level tag on the head is floored at 0 rather than 1 when it is read back. The old floor would have
+handed it back a level up. And `/pets admin setlevel <player> <instance> 0` is accepted now, which
+is how you put a pet back to fresh.
+
+### Why do level 0 and level 1 cost the same experience?
+
+Because `experience.base` in a `pets/<id>.yml` is the cost of leaving the FIRST level, and both of
+them are it. Every level above still adds `per-level` exactly as before, so the only change to a
+curve is one extra rung of `base` over a pet's lifetime.
+
+It is deliberate, not an oversight. Extending the curve one step down instead would ask for
+`base - per-level` to leave level 0, and a requirement of `0` is the sentinel that means "this pet
+does not progress at all". The shipped `ember_fox.yml` declares `base: 500` with `per-level: 500`,
+so that extension lands on exactly 0 and every fresh copy of that pet would sit at level 0 forever
+with nothing in its file to blame. Any curve whose `per-level` reaches its `base` has the same
+shape, so the curve position is clamped at 1.
+
+The comment above `base` in the three shipped pet files was reworded to say this. `pets/` is seeded
+once and never merged again, so your own pet files keep whatever comment they have and behave
+identically - the wording is the only thing a fresh install gets that you do not.
+
 ### Do I need EdTools?
 
 No. It is optional, exactly like BetterModel. Without it no pet grants a booster, no pet can use the

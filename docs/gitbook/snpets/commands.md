@@ -49,6 +49,9 @@ instance id shown by `/pets admin list`, not the pet type id.
 Pass `none` as the `<trait>` or `<grade>` to clear it instead of setting it. The three boost
 stats are `experience`, `level` and `buff`.
 
+Since 1.24.0 `setlevel` accepts `0`, which is the level a pet is created at, so a pet can be put
+back to fresh. See [A pet is created at level 0](configuration.md#a-pet-is-created-at-level-0).
+
 ### Bulk actions
 
 | Command | Permission | Description |
@@ -76,11 +79,19 @@ The `<mode>` argument is `give` or `set` for slots and storage, and `give`, `tak
 for a currency. Capacity cannot be taken: lowering a purchase is a `set`. The three currencies
 are `trait-ticket`, `dice-normal` and `dice-special`.
 
+The `[level]` of `give` is the level the granted pets start at. Since 1.24.0 both its floor and its
+default are `0`, the level a pet is created at, so an admin who names no level hands out a pet
+identical to one just found in a box rather than one that is already a level ahead of it. It has no
+ceiling: a level past the pet's own cap is clamped when it is applied.
+
 The three scrolls are `level`, `ownership` and `rarity`. `[levels]` is what ONE level scroll is
 worth: it is stamped onto the stack when it is handed out, so scrolls of different sizes circulate
 side by side and lowering `scrolls.level.default-levels` later never devalues one already given.
-Omit it and the configured default is used; the other two scrolls ignore it. A scroll whose
-`enabled` is `false` is refused even when the token is spelled correctly. See
+Omit it and the configured default is used; the other two scrolls ignore it. Its floor is `1` and
+stays there: `[levels]` is a COUNT of levels a scroll is worth, not a position on the ladder, and a
+scroll worth 0 levels would be an item that silently does nothing when it is used. The two
+arguments shared one definition until 1.24.0, which split them the moment a level was allowed to be
+`0`. A scroll whose `enabled` is `false` is refused even when the token is spelled correctly. See
 [Configuration](configuration.md#scrolls).
 
 ## Silent flags

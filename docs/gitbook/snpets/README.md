@@ -17,7 +17,8 @@ duplicates into stronger ones, and manage everything from seven configurable men
 - Packet arc formation, circle or oval, with configurable radius, back radius, arc width,
   height and bob.
 - Levels and experience per pet type, with per-type level caps and a choice of six experience
-  sources: vanilla XP, blocks, EdTools omnitool breaks, mobs, damage dealt or playtime.
+  sources: vanilla XP, blocks, EdTools omnitool breaks, mobs, damage dealt or playtime. Since
+  1.24.0 a pet is created at level 0, so its first level is earned like every level after it.
 - Damage, resistance and speed buffs, each with a global cap and a per-world gate.
 - Rollable traits and graded stat boosts, bought with trait tickets and dice.
 - Fusion: combine duplicates into a stronger pet that inherits levels, traits and boosts, with

@@ -51,6 +51,10 @@ Slot numbers start at 1. An empty slot answers the configured "none" word for th
 `0` for a number, so a scoreboard row never renders blank. An unknown slot or field leaves the
 token untouched instead of pretending it means something.
 
+Since 1.24.0 a pet is created at level 0, so a `0` from `%snpets_equipped_<n>_level%` no longer
+means the slot must be empty: it is also what an unlevelled pet reads. The name placeholder is what
+tells the two apart.
+
 Since 1.3.0 the occupied slots are always `1..n` with no gap: taking a pet out of the middle
 slides the rest down, so the free slots are the last ones. A scoreboard listing slots 1 to 3
 therefore fills from the top and never shows an empty row between two pets.
