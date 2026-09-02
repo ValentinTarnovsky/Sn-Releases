@@ -734,3 +734,11 @@ per player. On a server without EdTools the listener is never registered and the
 No. Disabling or enabling EdTools unregisters or registers the break listener on its own, and stops
 or starts the drain with it. The same is true if you install EdTools after SnPets has already
 started.
+
+### My pet shows "Damage 0.0%" but its effect is in another plugin. How do I fix the menu?
+
+Give the pet a `buff-display:` block (1.23.0): a `name` for `{buff}` and an `initial` /
+`per-level` / optional `max` ramp for `{buff-value}`, written with the same numbers the other
+plugin uses. SnPets shows it and never applies it, and only a pet with no `buff:` and no
+`edtools-boosts:` reads it. `pets/` is seeded once, so add the block to your existing files by
+hand; `ember_fox.yml` ships the commented example. See `pets/` under Configuration.

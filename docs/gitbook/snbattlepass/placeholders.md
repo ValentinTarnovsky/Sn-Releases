@@ -15,6 +15,12 @@ All placeholders require [PlaceholderAPI](https://www.spigotmc.org/resources/pla
 | `%battlepass_pass_id%` | The player's pass, as an id for comparisons |
 | `%battlepass_playtime%` | Tracked playtime, in raw form |
 | `%battlepass_playtime_formatted%` | Tracked playtime, formatted for display |
+| `%battlepass_boost%` | The passive farming-XP boost the player's pets grant right now, in percentage points at one decimal (`48.0` for x1.48, `0.4` for a level-1 pet, `0.0` with nothing equipped). Since 2.4.0 |
+| `%battlepass_boost_factor%` | The same boost as the raw multiplier (`1.48`, `1.004`, `1`). Since 2.4.0 |
+
+{% hint style="info" %}
+The two boost placeholders read the live pet integrations - the exact value the farming drain pays with - and are not tied to the player's pass data, so they answer from the first tick after a join. A player with no matching pet equipped is not an error: their boost is simply `0.0`.
+{% endhint %}
 
 ## Challenge slots
 

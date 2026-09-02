@@ -38,3 +38,10 @@ Stored levels above the new ceiling are clamped to it, and that clamp is written
 
 ### Which settings need a restart?
 The `database` block, `integrations.rival-pets.*` and `integrations.sn-pets.*`. Everything else applies on `/battlepass reload`.
+
+### How do I know a pet's farming boost is actually working?
+Since 2.4.0, look at `%battlepass_boost%` (or the `{boost}` line of the `xp-info` tile, if your menu prints it): it is the boost in percentage points the farming drain is paying with right now, `0.0` when nothing matching is equipped. Before 2.4.0 the only visible number was the per-tool XP rate, which a level-1 pet moves from `0.5` to `0.502` - not something anyone notices.
+
+Two things to check when it reads `0.0` with a pet equipped. The pet's id has to start with `integrations.sn-pets.pet-id-prefix` exactly, capital letters included. And the boot log has to say `SnPets detected: farming-XP boost active`: since 2.4.0 that line is printed only when the boost really is wired, and an enabled SnPets whose API service is not registered is refused with a warning instead - that means SnPets' own enable did not finish, so read its log and restart. A boost lookup that throws at runtime is reported once with the exception, and later failures go to `/battlepass debug`.
+
+Remember that a pet's boost is `level x percent-per-level` up to its rarity ceiling: a freshly obtained level-1 pet is worth `0.4`, and only levelling it - which happens while it is equipped and its owner farms - makes the number grow.

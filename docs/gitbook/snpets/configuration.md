@@ -1406,8 +1406,9 @@ One file per pet type, named after its id. Three examples are seeded on a fresh 
 `ember_fox.yml`, `gale_sprite.yml` and `stone_golem.yml`. A pet file declares the display
 name, the group it belongs to, the head or BetterModel it renders as, its level cap and
 experience curve, the buffs it grants per level, since 1.8.0 the hologram drawn above it,
-since 1.13.0 the optional `edtools-boosts` block and, since 1.18.0, the optional `upgrades-to`
-target. Copy one of the examples to add your own.
+since 1.13.0 the optional `edtools-boosts` block, since 1.18.0 the optional `upgrades-to`
+target and, since 1.23.0, the optional `buff-display` block. Copy one of the examples to add your
+own.
 
 The `hologram:` block is optional and, because this folder is seeded once and never merged
 again, it is never added to the pet files you already have. That is what
@@ -1468,6 +1469,40 @@ currency you want renamed (e.g. `edtools-currency-money: "&6Money"`), with
 every other id is invented on your server - and an id without an entry shows as the raw id. The
 trait index's currency lines resolve through the same entries, so one currency can never carry two
 names.
+
+### A pet whose effect lives in another plugin: `buff-display` (1.23.0)
+
+Some pets exist for a plugin that is not this one. SnBattlePass, for example, reads a player's
+equipped pets through the SnPets API and boosts its own passive XP for every pet whose id starts
+with `Pase_` - a pet that declares no `buff:` and no `edtools-boosts:`, because SnPets has nothing
+to apply for it. Until 1.23.0 such a pet rendered as `Damage 0.0%` on every menu, item and
+hologram: true about what SnPets applies, and a lie about what the pet does.
+
+The optional `buff-display:` block is what the file SAYS the effect is:
+
+```yaml
+buff-display:
+  name: "&dBattle Pass XP"
+  initial: 0.4
+  per-level: 0.4
+  max: 48.0
+```
+
+`{buff}` becomes `name` and `{buff-value}` becomes `initial + (level - 1) x per-level`, capped by
+`max` (absent or `0` = no ceiling). **SnPets never applies it** - it only shows it - and it is the
+LAST fallback: a pet that declares a real `buff:` keeps showing that, a pet whose effect is its
+`edtools-boosts:` block keeps showing that, and only a pet with neither reads this block. No pet
+that showed something before 1.23.0 shows anything different now. The name is the switch: a block
+with a name and no numbers is a legitimate declaration ("counts for the pass", no figure), and a
+block with numbers and no name is ignored with a warning.
+
+Two things this ramp does NOT do, on purpose. It is not widened by the pet's buff boost grade or
+its trait - SnPets does not apply this boost, so it cannot know whether the plugin that does widens
+it. And it is not validated against anything: write the same numbers the other plugin uses (for
+SnBattlePass, its `integrations.sn-pets.percent-per-level` as both `initial` and `per-level`, and
+its per-rarity ceiling as `max`), so the figure a player reads here is the figure they are paid
+there. Same seeded-once caveat as every other block of this folder: the commented example ships in
+`ember_fox.yml` for a new install, and you add the block to the pet files you already have by hand.
 
 ### The rarity ladder: `upgrades-to`
 
