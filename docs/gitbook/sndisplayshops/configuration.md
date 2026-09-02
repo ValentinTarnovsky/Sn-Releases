@@ -206,13 +206,35 @@ integrations:
   superiorskyblock:
     delete-shops-on-island-disband: true
     delete-shops-on-membership-loss: true
+    deny-placement-on-foreign-islands: true
 ```
+
+The plugin detects SuperiorSkyblock by its API class, so the SnSuperiorSkyblock fork and upstream
+both work. Every toggle is read live, so `/dshop reload` switches it without a restart.
+
+`delete-shops-on-island-disband` removes every shop inside an island when that island is disbanded,
+whoever owns it. `delete-shops-on-membership-loss` removes a member's shops on an island when they
+leave it, are kicked from it or are banned from it, and clears the blocks they stood on. Both act
+only once the island plugin has actually made the change: a disband or a kick that another plugin
+cancels removes nothing.
 
 {% hint style="danger" %}
 Removing a shop this way DESTROYS its stock. Everything the shop held is deleted with it: not
 dropped, not returned, not logged, and the owner is not told. For a disband that is defensible,
 since the island is being wiped anyway. For membership loss the island survives, so an ex-member
 loses stock outright. Both are switches for exactly that reason.
+{% endhint %}
+
+`deny-placement-on-foreign-islands` refuses a shop placed on an island the placer is not a member
+of. The island's owner and its members may place; visitors and coops may not, whatever building
+rights the island grants them. Blocks outside every island, and the spawn island, are never
+refused. The player sees `messages.shop-place-foreign-island` and keeps the item.
+
+{% hint style="info" %}
+Membership is the test, not the island's build privilege, on purpose. A shop placed under a coop or
+visitor grant would stand on an island where its owner never loses membership, so neither delete
+toggle above could ever remove it. If SuperiorSkyblock cannot answer, the placement is allowed and a
+warning names the cause: a broken API must not stop every shop placement on the server.
 {% endhint %}
 
 ## Trade log

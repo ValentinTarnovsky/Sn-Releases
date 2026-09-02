@@ -69,7 +69,9 @@ which changes nothing, since a shop is identified by its tag and never by its ma
 ## How many shops can a player own?
 
 `limits.max-shops-per-player` in `config.yml`, server-wide. `-1` is unlimited, `0` forbids creation.
-There is no per-rank permission for it.
+A rank holding `sndisplayshops.limit.<n>` owns `<n>` instead: the highest node a player holds wins,
+and `sndisplayshops.limit.unlimited` beats every number. See
+[Permissions](permissions.md#how-many-shops-a-player-may-own).
 
 ## Trading says the shop's currency no longer exists
 
@@ -132,6 +134,22 @@ That is `integrations.superiorskyblock.delete-shops-on-island-disband`, and it d
 not dropped, not returned, not logged. The same applies to `delete-shops-on-membership-loss`, where
 the island survives and an ex-member loses their stock outright. Turn either off if your players
 expect to keep what their shops held.
+
+## A player left an island and their shops are still there
+
+Both island toggles act only once SuperiorSkyblock has actually made the change, and only for a
+change that fires its event: `/is leave`, a kick, a ban and a disband all do. A member removed by a
+path that fires no event, such as an admin purge, leaves their shops in place. Check
+`delete-shops-on-membership-loss` is on and look at `/dshop debug` output, which names every shop
+the teardown considered and why it kept or removed it.
+
+## Players are placing shops on other people's islands
+
+`integrations.superiorskyblock.deny-placement-on-foreign-islands` refuses that, and it ships on.
+Only the island's owner and its members may place there; visitors and coops are refused even where
+the island lets them build. Outside every island, and at spawn, nothing changes. If it is on and a
+placement still went through, look for a WARNING in the console: when SuperiorSkyblock cannot
+answer, the plugin allows the placement rather than blocking every shop on the server.
 
 ## Can I use MySQL?
 

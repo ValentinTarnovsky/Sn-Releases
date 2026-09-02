@@ -29,7 +29,8 @@ the block, and right-clicking it is the whole interface.
 - **A trade log.** Every completed purchase and sale, one line each, in a dated file under
   `logs/` - who traded, at which shop, what, how many, for how much and in which currency.
 - **Island aware.** With SuperiorSkyblock installed, shops on an island can be removed with it when
-  the island disbands or when their owner loses membership. Both are switches, and both are off
+  the island disbands or when their owner loses membership, and a shop cannot be placed on an
+  island its placer is not a member of. All three are switches, and the two that delete are off
   limits to guesswork: see the warnings in `config.yml`.
 - **Everything is configurable.** Every line the plugin says, every number it uses and both menu
   layouts live in YAML, and your edits survive an update.
@@ -41,8 +42,8 @@ the block, and right-clicking it is the whole interface.
 - **DecentHolograms**: takes over the floating text. Without it the plugin uses its own display
   entity and nothing is lost.
 - **EdTools**: back a currency with the EdTools API instead of with commands.
-- **SuperiorSkyblock**: the two island toggles above. Detected by its API class, so both the fork
-  and upstream work.
+- **SuperiorSkyblock**: the three island toggles above. Detected by its API class, so both the
+  SnSuperiorSkyblock fork and upstream work.
 
 ## Links
 

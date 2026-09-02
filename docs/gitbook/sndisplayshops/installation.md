@@ -6,7 +6,7 @@
 |---|---|
 | Java | 21 or newer |
 | Server | Paper, both 1.20.x and 1.21.x |
-| Required | `SnLib.jar` (SnLib 1.24.1 or newer) |
+| Required | `SnLib.jar` (SnLib 1.28.0 or newer) |
 | Optional | PlaceholderAPI, DecentHolograms, EdTools, SuperiorSkyblock |
 | Database | SQLite (default, no setup) or MySQL |
 | License | Yes - SnDisplayShops is part of the licensed bundle |
