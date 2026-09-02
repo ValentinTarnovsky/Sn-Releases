@@ -44,6 +44,8 @@ Nobody, silently. Every transfer is a console command with the balance read back
 
 Yes. The three files under `guis/` own the layout mask, materials, names, lore and click actions, and the code reads the cells from the mask. Moving the sidebar or repositioning the 42 board cells works; the grid itself is always 7 columns by 6 rows.
 
+Run `/fourinline preview` while you work: it starts a real game with you in both seats, so you can see the board and play it with nobody else online. Edit a menu file, run `/fourinline reload`, and the board comes back painted from the new definition.
+
 ### The plugin will not enable and the console says `License: FAIL`
 
 Either the key in `plugins/.Sn-License/license.yml` is missing, wrong or expired, or the server cannot reach the license host, or the jar has been modified. The check runs on every startup, retries three times, then disables the plugin. Allow the host through your firewall and use the jar exactly as downloaded.

@@ -23,10 +23,15 @@ The root command is `/fourinline`, with the aliases listed in `command.aliases` 
 
 | Command | Permission | Description |
 |---------|-----------|-------------|
+| `/fourinline preview` | `snfourinline.admin.preview` | Start a solo game against yourself, to look at the menus |
 | `/fourinline reload` | `snfourinline.admin.reload` | Reload the configuration, the language file and the menus |
 | `/fourinline debug` | `snfourinline.admin.debug` | Toggle the runtime debug output |
 
 Amounts accept the usual shorthands (`500`, `2.5k`, `1m`). The smallest stake is `0.01`, and a stake may not be finer than the `decimals` of its currency.
+
+{% hint style="info" %}
+`/fourinline preview` starts a real game with you in both seats, so you can see and play the board with nobody else online. Use it while you edit `guis/board.yml`. The animation, the turn timer, the surrender button and the winning-line highlight all behave as usual, and it is your turn every time. A preview records no statistics, broadcasts no win and can never carry a bet. End it by winning it, drawing it, pressing Surrender, or letting the turn timer run out.
+{% endhint %}
 
 {% hint style="info" %}
 Both bet flows stake the same amount from each player and pay the winner twice the stake. `bet` charges both players when the invite is accepted; `betcreate` charges the creator immediately and the joiner when they join. A draw refunds both stakes. Surrender, turn timeout and disconnect all pay the opponent like a normal win.

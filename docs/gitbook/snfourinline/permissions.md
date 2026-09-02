@@ -12,3 +12,4 @@ Player nodes default to `true`; admin nodes default to op. The bare `/fourinline
 | `snfourinline.admin.reload` | op | `/fourinline reload` |
 | `snfourinline.admin.debug` | op | `/fourinline debug` |
 | `snfourinline.admin.update` | op | Receive the update notice in chat |
+| `snfourinline.admin.preview` | op | `/fourinline preview` |
