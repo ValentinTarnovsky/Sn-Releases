@@ -664,6 +664,10 @@ and the items each character maps to. Editing them is how you restyle the plugin
 Names and lore resolve colour codes, HEX, `[center]` and PlaceholderAPI **per viewer**, so
 `%player_name%` in a button's lore renders the name of whoever is looking.
 
+A window title can name what it shows: `{player}` on `key-balance.yml`, `{crate}` and `{crate-id}`
+on every preview layout (2.3.1) and on the animations, `{crate}` / `{reward}` / `{mode}` on the
+editor screens. A placeholder a menu does not seed renders as its own literal text.
+
 Add your own preview layout by copying `preview.yml` under a new name. Three places make it a
 first-class layout: list its file name under `editor.preview-layouts` in `config.yml` so the editor
 button can reach it, add a matching entry under `previews:` in the language file so the button shows
