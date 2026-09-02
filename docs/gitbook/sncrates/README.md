@@ -19,6 +19,12 @@ touching a file.
 - **Crate blocks.** Bind any block in the world to a crate from the editor. Right-click opens one,
   sneak + right-click mass-opens, left-click shows the preview. A bound block cannot be mined and
   survives explosions.
+- **Mass opens that do not freeze the server.** Sneak + right-click a block, or press Q in
+  `/crates`, to open a whole balance at once. The batch is spread over ticks, the menu stays open
+  while it drains, and one summary lists what came out, reward by reward.
+- **A fail chance, per crate.** A percentage of opens that spend the key and win nothing. The
+  animation lands on a configurable "nothing" item, the preview says so, the summary counts them,
+  and the crate editor sets it.
 - **Four animations, plus none.** A CS:GO-style scrolling roulette, a multi-row wheel, a grid of
   cards flipped one by one, and a quick flourish. `NONE` opens instantly with no menu. Every timing,
   sound and particle is configurable, globally and per crate.
@@ -37,8 +43,8 @@ touching a file.
   blocks and duplicates anything. Chat prompts handle the values that need typing.
 - **An append-only open log**, one readable line per open, for when you need to answer "what did
   they actually win".
-- **PlaceholderAPI output**: total opens, per-crate key balance, per-crate opens and the computed
-  chance of any reward.
+- **PlaceholderAPI output**: total opens, per-crate key balance, per-crate opens, the computed
+  chance of any reward and a crate's fail chance.
 - **A small developer API**: two Bukkit events, both notifications, that keep their real class names
   through obfuscation.
 

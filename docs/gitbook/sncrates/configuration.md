@@ -195,7 +195,8 @@ opening-log:
 
 One line per open, appended to `plugins/SnCrates/opening.log`, with the reward's **display name**,
 colour codes stripped, and every field sanitised of the `|` separator. A reward whose item carries
-no custom name falls back to the reward id.
+no custom name falls back to the reward id. A [failed](#fail) open writes its line too, with
+`status.failed` from the language file (`failed` by default) where the reward's name goes.
 
 {% hint style="warning" %}
 The file grows forever. Prune it by hand when it gets large.
@@ -209,6 +210,8 @@ access:
   blocked-worlds: []
   allow-mass-open: true
   mass-open-max: 64
+  mass-open-per-tick: 10
+  mass-open-cooldown-ticks: 10
 ```
 
 Both world lists gate the **physical crate block only**. `/crates open`, `/crates` and the key
@@ -219,12 +222,64 @@ denies, even for a world named in `allowed-worlds`.
 `allow-mass-open` decides whether a crate that declares nothing lets players open several at once:
 sneak + right-click a crate block, or press Q on a crate in `/crates`.
 
-`mass-open-max` caps one mass-open action.
+`mass-open-max` caps one mass-open action. Both `-1` and `0` mean **unlimited**: the whole balance
+goes in one action.
 
-{% hint style="warning" %}
-Both `-1` and `0` mean **unlimited**, which spends a player's entire key balance in a single tick on
-the main thread. A player with 4,000 keys and an unlimited cap will freeze the server while they
-open all of them. `64` is the shipped value for that reason.
+`mass-open-per-tick` is how many crates of that action are settled per server tick. The first batch
+runs in the click itself and the rest follow one tick apart, so a balance of 500 keys takes about
+2.5 seconds instead of running 500 rewards' worth of console commands in one tick. Every crate of the
+batch is still a complete open - roll, one key, delivery - so a batch that stops early (the player
+leaves, the crate is deleted, the server stops) has spent exactly the keys of the crates it opened
+and the rest are still in the balance.
+
+`mass-open-cooldown-ticks` is the wait between two mass-open actions of the same player, so a held Q
+on the `/crates` menu does not fire a batch on every click. `0` disables it. The refusal is silent
+unless `messages.open.mass-cooldown` in the language file says something.
+
+{% hint style="info" %}
+Before 2.3.0 an unlimited cap opened the whole balance in one tick. It no longer does; `64` stays
+the shipped cap because a summary of 4,000 opens is still not something a player wants to read.
+{% endhint %}
+
+### Fail
+
+```yaml
+fail:
+  chance: 0.0
+  item:
+    material: BARRIER
+    display-name: "&c&lNothing"
+    lore:
+      - "&7The key was spent and nothing came out."
+```
+
+`chance` is the percentage of opens that **fail**: the key is spent and nothing is won. `0` never
+fails, `100` always fails, decimals work (`2.5`). It is the value a crate that declares nothing
+inherits; a crate overrides it with `settings.fail-chance` in its file or from the crate panel in the
+editor.
+
+What a failed open does, and does not do:
+
+| Does | Does not |
+|---|---|
+| Spends the key | Deliver an item or run commands |
+| Runs the animation and lands on `fail.item` | Burn any reward limit |
+| Plays `effects.fail-sound` | Fire the particle burst or the broadcast |
+| Counts as an open (`%sncrates_opens_<crate>%`) | Write a history row |
+| Writes a line in `opening.log`, with `status.failed` where the reward's name goes | Fire `CrateRewardEvent` (`CrateOpenEvent` fires) |
+| Sends `messages.open.fail`, or counts towards the mass-open summary | |
+
+The fail is decided in the same roll as the winner, **after** the check that something is winnable:
+a crate whose every reward is on limit still refuses the open with the key unspent, whatever its
+fail chance.
+
+`item` uses the [item format](#the-item-format) of the crate files. The animation's strip shows it at
+the fail rate too, so the landing is a possibility the player watched scroll past.
+
+{% hint style="info" %}
+The reward chances in the preview are **not** reduced by the fail chance. They stay each reward's
+share of the opens that pay out, and the preview's info icon says `Fails N% of the time` beside them
+(`messages.preview.fail-tag`). `%sncrates_failchance_<crate>%` exposes the number.
 {% endhint %}
 
 ### Stats
@@ -289,6 +344,7 @@ readable. `tick-sound-interval-ticks` throttles the spin tick sound.
 effects:
   open-sound: "BLOCK_CHEST_OPEN"
   win-sound: "ENTITY_PLAYER_LEVELUP"
+  fail-sound: "ENTITY_VILLAGER_NO"
   complete-particle: "HAPPY_VILLAGER"
   complete-particle-count: 40
   rare-win-particle: "CRIT"
@@ -304,6 +360,9 @@ disables that effect.
 `tick-sound` is global only, never per crate, and only its **id** is read here: the volume comes
 from `tick-sound-volume` and the pitch is computed from the spin, so a volume or pitch written on
 that line is ignored.
+
+`fail-sound` is global only too. It replaces `win-sound` when the spin lands on a [fail](#fail), and
+no particle burst goes with it.
 
 {% hint style="warning" %}
 `HAPPY_VILLAGER` is the 1.20.5+ spelling. On 1.20.1 to 1.20.4 the constant is `VILLAGER_HAPPY` - put
@@ -414,12 +473,13 @@ All three are **remembered**. Editing a crate in game writes back the state each
 inherited key is not quietly frozen to whatever the global value was that day, and a blanked key
 does not turn itself back on.
 
-`settings:` accepts `allow-mass-open` and `mass-open-max`. `effects:` accepts `open-sound`,
-`win-sound`, `complete-particle`, `complete-particle-count` and `rare-win-particle`.
+`settings:` accepts `allow-mass-open`, `mass-open-max` and `fail-chance`. `effects:` accepts
+`open-sound`, `win-sound`, `complete-particle`, `complete-particle-count` and `rare-win-particle`.
 
 {% hint style="warning" %}
 `complete-particle-count: 0` means exactly zero particles, **not** "fall back to the global 40".
-Delete the key to inherit.
+Delete the key to inherit. `fail-chance: 0` is the same shape: it means this crate never fails,
+even when `fail.chance` says otherwise, and deleting the key is what inherits.
 {% endhint %}
 
 ### The item format
@@ -520,7 +580,7 @@ every settings and effects key.
 | Screen | What it does |
 |---|---|
 | Crate list | Create a crate, page through the existing ones |
-| Crate panel | Display name, animation, accepted keys, open permission, preview layout, key item, mass-open, the three per-crate effects, crate block, duplicate, delete |
+| Crate panel | Display name, animation, accepted keys, open permission, preview layout, key item, mass-open, fail chance, the five per-crate effects, crate block, duplicate, delete |
 | Reward list | Add a reward, reorder, mass creation, page through |
 | Reward panel | The item, weight, amount, per-player limit, global limit, limit window, win commands, can-be-won, announce, give-item, duplicate, delete |
 | Item capture | Copies the item from your main hand |
@@ -528,6 +588,11 @@ every settings and effects key.
 Values that need typing are asked in chat, and every prompt tells you how to get out of it: the
 cancel word (`cancel` by default) and how many seconds are left. Either way the editor screen
 reopens. Animation, accepted keys, preview layout and the on/off controls are clicks, not prompts.
+
+The **Fail Chance** control on the crate panel has two states: inherited, showing what `fail.chance`
+currently says, and a value of the crate's own. Left-click types a percentage in chat (`0` never
+fails, `100` always fails, decimals and a comma both work); shift-left-click goes back to inheriting.
+A typed value outside 0 to 100 is clamped, and the confirmation says what was stored.
 
 The reward panel's **Win Commands** icon lists the commands themselves, numbered, and marks in red
 any line that will not run as written:
@@ -623,7 +688,7 @@ Four blocks sit outside `messages:` because they are spliced **into** other line
 | Block | Holds |
 |---|---|
 | `snlib:` | SnLib's shared 11-key command contract. Ship it complete: SnLib merges neutral defaults for anything you omit, which leaks unbranded lines |
-| `status:` | The short state words: `on`, `off`, `enabled`, `disabled`, `none`, `unlimited` |
+| `status:` | The short state words: `on`, `off`, `enabled`, `disabled`, `none`, `unlimited`, `failed` |
 | `animations:`, `key-types:`, `previews:` | Display labels for the editor. The keys are what crate files use - do not rename them |
 | `format:` | The thousands separator and the list separator |
 

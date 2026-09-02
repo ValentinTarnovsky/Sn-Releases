@@ -57,6 +57,21 @@ and it is skipped before a slot is consumed, so the layout never develops a hole
 Pressing Q on a crate whose mass-open is off falls back to a single animated open rather than doing
 nothing.
 
+A mass open is spread over ticks (`access.mass-open-per-tick` in `config.yml`), so a large balance
+never runs every reward command in one tick. The menu **stays open** while the batch drains and the
+balance on the icon updates as it goes. When it ends, one summary lists what came out:
+
+```
+Crates | Opened 10x Example Key:
+   6x 16x Diamonds
+   3x Legendary Rank
+   1x failed - those keys were spent
+```
+
+The last line appears only when the crate has a [fail chance](configuration.md#fail). A second Q
+within `access.mass-open-cooldown-ticks` is ignored, silently unless you give
+`messages.open.mass-cooldown` a value.
+
 From the console, a bare `/crates` renders the help page.
 
 ## `/crates open <crate> [player]`

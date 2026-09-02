@@ -15,6 +15,7 @@ Without PlaceholderAPI installed the plugin works normally; the placeholders sim
 | `%sncrates_keys_<crateId>%` | The player's **virtual** key balance for that crate |
 | `%sncrates_opens_<crateId>%` | How many times the player has opened that crate |
 | `%sncrates_chance_<crateId>_<rewardId>%` | The computed chance of that reward, as shown in the preview |
+| `%sncrates_failchance_<crateId>%` | The percentage of opens of that crate that fail: spend the key and win nothing |
 
 `<crateId>` and `<rewardId>` are the raw ids - the top-level key of a crate file and the key under
 its `rewards:` block - not display names.
@@ -23,6 +24,7 @@ its `rewards:` block - not display names.
 %sncrates_keys_example%
 %sncrates_opens_vipcrate%
 %sncrates_chance_example_diamonds%
+%sncrates_failchance_example%
 ```
 
 ## What they report, exactly
@@ -35,6 +37,11 @@ which is correct: that crate has no balance.
 weights of the rewards that can currently be won, so a reward with `enabled: false` is excluded from
 the pool and does not dilute the others. A player's own filter does not change it - a deactivated
 reward is still rolled and still burns its limits, it is simply never handed to that player.
+
+**`failchance_<crateId>` is the crate's resolved fail chance**, `fail.chance` from `config.yml` or
+the crate's own `settings.fail-chance`, whichever applies. The reward chances are **not** reduced by
+it: they are each reward's share of the opens that pay out. A scoreboard wanting the absolute odds of
+one reward multiplies the two. `0` is a real answer here and means the crate never fails.
 
 **An unknown crate or reward id leaves the raw `%sncrates_...%` text on screen.** That is
 deliberate: it is how you find out you typed an id that does not exist. Resolving a typo to `0`

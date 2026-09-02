@@ -62,6 +62,11 @@ crate of a mass-open. It fires **after** the key is consumed and **before** the 
 It deliberately carries no reward, which is what keeps "opened" and "won" separate. Listen to
 `CrateRewardEvent` for the reward.
 
+It also fires for an open that **fails** (2.3.0): a crate may carry a
+[fail chance](configuration.md#fail), and when it comes up the key is spent and nothing is won. The
+key was consumed, so this event fires exactly as for any other open - and then no `CrateRewardEvent`
+follows. The difference between the two counts is the fails.
+
 ```java
 public class CrateOpenEvent extends org.bukkit.event.Event {
     public CrateOpenEvent(Player player, Crate crate, KeyType keyType,
@@ -88,6 +93,9 @@ public class CrateOpenEvent extends org.bukkit.event.Event {
 Fired exactly once per won reward, at the moment the win is committed: the animation settling, an
 early close or a disconnect mid-spin, an instant open, or each win of a mass-open. By the time it
 fires the reward has already been granted (the item handed over and/or the commands run).
+
+It never fires for a failed open, so `getReward()` is never `null`. A listener that needs every key
+spent, fails included, listens to `CrateOpenEvent`.
 
 ```java
 public class CrateRewardEvent extends org.bukkit.event.Event {
@@ -174,6 +182,8 @@ public final class CrateListener implements Listener {
   spend or a reward delivery; they are notifications.
 - **`CrateRewardEvent` is exactly once.** Closing the animation, disconnecting mid-spin or the plugin
   disabling mid-spin each deliver the reward once and fire the event once.
+- **A failed open fires `CrateOpenEvent` only.** There is no reward to carry, so `CrateRewardEvent`
+  stays silent for it; `getReward()` on that event is never `null`.
 - **`getSource()` may be `null`** on `CrateOpenEvent`: a virtual open, a menu open and a mass-open
   have no originating block.
 - **Main thread.** Both events are fired on the main thread.

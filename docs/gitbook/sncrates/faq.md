@@ -26,6 +26,9 @@ so "nothing" is almost always one of these:
   still burns its limits; it is simply never handed to them.
 - The reward's commands failed. A failing command is logged in the console and the rest still run.
 - Their inventory was full at the moment of delivery.
+- The crate has a [fail chance](configuration.md#fail) and it came up. The player was told so
+  (`messages.open.fail`), the spin landed on the "nothing" item, and `opening.log` says `failed`
+  where the reward's name would go.
 
 `opening.log` records one line per open with the reward's display name, which answers the question
 directly.
@@ -126,8 +129,26 @@ Also check you did not put colour codes in the command. Commands are never colou
 
 ### A player has 4,000 keys and mass-opening froze the server.
 
-`access.mass-open-max` was `-1` or `0`, both of which mean truly unlimited: the whole balance is
-opened in one tick on the main thread. Set it to a real number. `64` is the shipped value.
+On 2.3.0 and later it should not: a mass open is spread over ticks, `access.mass-open-per-tick`
+crates per tick (shipped `10`), so 4,000 keys take about twenty seconds of ordinary ticks rather
+than one enormous one. If the server still stutters, lower `mass-open-per-tick`; a reward whose
+commands are expensive is the usual reason.
+
+Before 2.3.0, `access.mass-open-max` at `-1` or `0` opened the whole balance in one tick. `64` is
+still the shipped cap, because a summary of 4,000 opens is not something a player wants to read
+either.
+
+### How do I make some opens fail?
+
+Set `fail.chance` in `config.yml` to a percentage, or give one crate its own with
+`settings.fail-chance` in its file or the **Fail Chance** button on its panel in the editor. A
+failed open spends the key, runs the animation and lands on `fail.item` with `effects.fail-sound`,
+tells the player, counts as an open and writes `failed` in `opening.log` - and delivers nothing,
+burns no limit and fires no `CrateRewardEvent`. The preview's info icon says how often the crate
+fails, and the mass-open summary counts the fails. See [Fail](configuration.md#fail).
+
+A crate whose every reward is on limit still refuses the open with the key unspent, whatever its
+fail chance: the fail is only rolled once something is winnable.
 
 ### Can players lose a reward by closing the animation?
 
