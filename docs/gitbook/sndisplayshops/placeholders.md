@@ -55,8 +55,15 @@ button charges. The shipped file uses it both ways on purpose.
 
 ### Owner menu (`guis/owner.yml`)
 
-`{item}` in the title, `{currency}`, `{mode}` and `{price}` on the control items, `{amount}` on the
-stock grid entries, and `{page}` / `{pages}` on the arrows and the page indicator.
+`{item}` in the title, `{currency}`, `{mode}`, `{price}` and `{stock}` on the control items,
+`{amount}` on the stock grid entries, and `{page}` / `{pages}` on the arrows and the page indicator.
+
+{% hint style="info" %}
+`{stock}` and `{amount}` are different numbers. `{stock}` is EVERYTHING the shop holds, every
+variant summed and written out in full (`1.500.000`) - the amount the withdraw button empties, so
+the shipped withdraw button shows it. `{amount}` is one grid cell's own variant, shortened
+(`1.2M`), because that one is read across many cells at a glance.
+{% endhint %}
 
 ## Consumed by SnDisplayShops
 
