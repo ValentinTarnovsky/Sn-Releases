@@ -267,8 +267,15 @@ nothing changes at all. One `GeneratorUpgradeEvent` fires per hop, and all of th
 any money moves. Cancelling any hop refuses the whole request with `CANCELLED` and charges
 nothing.
 
-You identify a generator by its location. Take it from `GeneratorView#location()` in any of
-the listings above.
+Those per-hop listeners run arbitrary code. SnGens looks the generator up again after the
+events and honours the withdrawal result. A listener that removes or changes the generator,
+or that drains the actor's balance, yields `BUSY`, `NOT_A_GENERATOR` or `NOT_ENOUGH_MONEY`
+with nothing changed and nothing charged.
+
+You identify a generator by its location. Any location inside the block matches, because
+decimals, yaw and pitch are ignored. So `player.getLocation()` of a standing player works as
+well as the `GeneratorView#location()` you get from the listings above. The same holds for
+`getGeneratorAt` and `isGenerator`.
 
 {% hint style="info" %}
 SnGens sends no chat message and plays no sound on this path. Render the result yourself.
@@ -360,11 +367,11 @@ would succeed right now. It is not a reservation.
 | `NOT_A_GENERATOR` | The chunk is loaded and no generator stands at that location |
 | `CORRUPTED` | The generator is corrupted. Repair it first |
 | `NO_ACCESS` | The actor is neither the owner nor an island mate of the owner |
-| `BUSY` | A bulk upgrade flush still owns this owner's scope. Retry later |
+| `BUSY` | A bulk upgrade flush owns this owner's scope, or the generator changed tier, got corrupted or was locked while the per-hop events ran. Retry later |
 | `MAX_TIER` | The generator has no next tier |
 | `INVALID_TARGET` | The target type is unknown, or it is not ahead of the current tier |
 | `REQUIREMENTS_FAILED` | An `upgrade-requirements` guard failed on the current or an intermediate tier |
-| `NOT_ENOUGH_MONEY` | The actor's balance is below the total cost |
+| `NOT_ENOUGH_MONEY` | The actor's balance is below the total cost, or the economy refused the withdrawal after every check passed. Nothing was changed |
 | `CANCELLED` | A listener cancelled one of the `GeneratorUpgradeEvent` steps |
 
 `failedRequirements` holds the configured failure messages, raw and with their colour codes.
