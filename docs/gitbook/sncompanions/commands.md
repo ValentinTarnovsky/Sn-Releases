@@ -45,6 +45,9 @@ instance id shown by `/companions admin list`, not the companion type id.
 | `/companions admin unequip <player> <instance>` | `sncompanions.admin.unequip` | Sends one companion of a player back to storage |
 | `/companions admin removecompanion <player> <instance>` | `sncompanions.admin.removecompanion` | Deletes one companion of a player |
 
+Since 1.10.0 `setlevel` accepts `0`, which is the level a companion is created at, so a companion
+can be put back to fresh. See
+[A companion is created at level 0](configuration.md#a-companion-is-created-at-level-0).
 
 ### Bulk actions
 
@@ -68,6 +71,12 @@ The `<what>` argument of `clear` is `storage` (every companion that is not equip
 
 The `<mode>` argument is `give` or `set`. Capacity cannot be taken: lowering a purchase is a
 `set`.
+
+The `[level]` of `give` is the level the granted companions start at. Since 1.10.0 both its floor
+and its default are `0` - level 0 is the level a companion is created at - so an admin who names no
+level hands out a companion identical to one just hatched from an egg rather than one that is
+already a level ahead of it. It has no ceiling: a level past the companion's own cap is clamped when
+it is applied.
 
 ## Silent flags
 
@@ -118,6 +127,11 @@ Inside the position of a real optional argument (the `[page]` of `list`, the `[a
 the flags appear only once you type a leading `-`, so they never crowd the list of values you
 were actually reaching for. A trailing token that is neither an argument nor a flag is
 accepted in silence.
+
+The suggestions themselves are SnLib's. With more than 100 companion files, run **SnLib 1.34.1 or
+later**: older versions cut the option list at 100 *before* matching what you typed, so the
+companion ids past the hundredth were unreachable from tab even by their own first letters. Typing
+an id in full always worked.
 
 The flags do not apply to `/companions reload`, `/companions help` or `/companions debug`, which SnLib owns at root
 level, nor to `/companions toggle` and `/companions hide`, which act on you alone and have no second party to

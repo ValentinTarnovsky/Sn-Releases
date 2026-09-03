@@ -157,7 +157,7 @@ They never change afterwards, so re-query when you need current values. There ar
 
 | View | Components |
 |------|-----------|
-| `CompanionView` | `instance`, `owner`, `companionId`, `level`, `exp`, `equippedSlot`, `obtainedAt`, plus the derived `equipped()` |
+| `CompanionView` | `instance`, `owner`, `companionId`, `level`, `exp`, `equippedSlot`, `obtainedAt`, plus the derived `equipped()`. `level` may be `0` since 1.10.0 (a companion is created at level 0); `CompanionLevelUpEvent.getPreviousLevel()` is `0` on the first level-up |
 | `CompanionTypeView` | `id`, `displayName`, `lore`, `maxLevel`, `groupId`, `buffType`, `buffInitial`, `buffPerLevel`, `fusionTargetId`, `fusionChance`, `fusionCost`, `incompatible`, `placeholder` |
 | `CompanionStorageView` | `owner`, `storedCount`, `storageCapacity`, `equippedCount`, `equipSlots` |
 

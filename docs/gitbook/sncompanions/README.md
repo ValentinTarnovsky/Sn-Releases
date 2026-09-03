@@ -17,7 +17,8 @@ duplicates into stronger ones, and manage everything from configurable menus.
 - Packet formation - a straight line behind the owner, or an arc cut from a circle or an oval -
   with configurable spacing, distance, radius, back radius, arc width, height and bob.
 - Levels and experience per companion type, with per-type level caps and a choice of six experience
-  sources: vanilla XP, blocks, EdTools omnitool breaks, mobs, damage dealt or playtime.
+  sources: vanilla XP, blocks, EdTools omnitool breaks, mobs, damage dealt or playtime. Since
+  1.10.0 a companion is created at level 0, so its first level is earned like every level after it.
 - Damage, resistance and speed buffs, each with a global cap and a per-world gate.
 - Fusion: combine duplicates into a stronger companion that inherits levels, with
   a server-wide announcement you can switch on per companion.

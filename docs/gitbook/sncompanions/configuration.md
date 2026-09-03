@@ -424,6 +424,10 @@ experience:
 #  and what each level adds. The engine then computes, per buff:
 #
 #    base       = initial + (level - 1) x per-level
+#
+#  A companion is created at level 0, one step BELOW the anchor, so a brand new
+#  companion is worth initial - per-level. Write initial equal to per-level and
+#  the ramp reads exactly level x per-level, worth nothing at level 0.
 #    companion buff   = base, the value the companion's own file declares
 #    player     = the sum of every equipped companion
 #    effect     = that sum capped by the "cap" below
@@ -503,7 +507,7 @@ fusion:
 
   # What survives a fusion at all. A field switched off here is not taken from
   # either parent: the result carries what a brand new companion carries, which is
-  # level 1 and no experience.
+  # level 0 and no experience.
   keep:
     # Carry over a level. It is capped by the TARGET companion's own max-level, since
     # every companion declares its own ceiling.
@@ -998,6 +1002,66 @@ Same seeded-once caveat as the two blocks above: the example ships commented out
 `ember_fox.yml` for a fresh install, and you add the block to the companion files you already have
 by hand.
 
+### A companion is created at level 0
+
+Changed in 1.10.0. Every path that mints a companion now starts it unlevelled: opening an egg, a
+fusion result, and `/companions admin give` when no `[level]` token is given. All three used to hand
+out a companion that was already a level in, so the first level was given rather than earned.
+
+Nothing about a level that already exists changed. **Every companion on your server keeps the level
+it has**, and a level is worth exactly what it was worth in 1.9.0: the buff ramp, the
+`edtools-boosts` ramp and the `buff-display` ramp are all still `initial + (level - 1) x per-level`,
+untouched. The release moves where a companion starts, never what a level is worth.
+
+Because the ramp is untouched it simply extends one step down, so a companion at level 0 is worth
+`initial - per-level`:
+
+| Written in the companion file | Worth at level 0 | Worth at level 1 |
+|---|---|---|
+| `initial: 2.0`, `per-level: 0.1` | 1.9 | 2.0 |
+| `initial: 0.4`, `per-level: 0.4` | 0.0 | 0.4 |
+| `initial: 0.1`, `per-level: 1.0` | -0.9 | 0.1 |
+
+Write `initial` equal to `per-level` and the ramp reads exactly `level x per-level` at every level
+including 0, where the companion is worth nothing until it earns its first one. That is the shape a
+foreign plugin's own formula is mirrored in - see `buff-display` above - and it still agrees at every
+level. A companion whose `per-level` exceeds its `initial` contributes a negative value at level 0,
+which is the same designed state a negative modifier already produces; the player's total is floored
+at zero either way.
+
+#### `experience.base` is the cost of leaving the FIRST level
+
+`base` used to be documented as the experience needed to reach level 2. It is now the cost of
+leaving the first level, and **level 0 and level 1 share that one requirement**; every level above
+still adds `per-level` to it, exactly as before. A companion's lifetime therefore gains one extra
+rung of `base`.
+
+That is deliberate, and it is the only way the new starting level can be left at all. A plain
+downward extension of the curve would ask for `base - per-level` to leave level 0, and a requirement
+of `0` is the sentinel that means "this companion does not progress at all". The shipped
+`ember_fox.yml` declares `base: 500` with `per-level: 500`, so the extension would land on exactly
+`0` and every fresh copy of that companion would sit at level 0 forever with nothing in its file to
+blame. Any curve whose `per-level` reaches its `base` has that same shape, so the curve position is
+clamped at 1.
+
+Three smaller consequences:
+
+- A companion **item** no longer mints a free level. The level stamped on an extracted head is
+  floored at 0 rather than 1 when it is read back, so a brand new companion taken out and redeemed
+  comes back the companion that left. The old floor of 1 would have handed it back a level up.
+- `/companions admin setlevel <player> <instance> 0` is accepted, so an admin can put a companion
+  back to fresh, and the `[level]` of `/companions admin give` accepts `0` and defaults to it.
+- A fusion result that inherits no level (`fusion.keep.level: false`) is created at level 0.
+
+A companion's effective level cap still cannot fall below 1. That floor is now the promise that at
+least one level exists to climb, rather than the level a companion starts at.
+
+{% hint style="info" %}
+**No key was added, removed or renamed.** Only comment text changed, in `config.yml` and in the
+three shipped companion files, and a comment on a key you already have never merges - so an existing
+server sees no configuration edit at all, and there is nothing here for you to change.
+{% endhint %}
+
 Here is the seeded `companions/ember_fox.yml` in full, as a working reference:
 
 ```yaml
@@ -1064,7 +1128,9 @@ max-level: 50
 #  Experience.
 # ------------------------------------------------------------
 experience:
-  # Experience needed to reach level 2.
+  # Experience needed to leave the first level. A companion is created at level 0
+  # and level 0 and level 1 share this one requirement; every level above adds
+  # per-level to it.
   base: 500
   # Added to that requirement by each further level.
   per-level: 500

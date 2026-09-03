@@ -391,6 +391,35 @@ after the first boot, so nothing you add or delete there is ever undone by an up
 work the same way, except they are keys inside `eggs.yml` rather than separate files: copy a
 whole top-level block and rename the key.
 
+### Why does a brand new companion read level 0?
+
+Because since **1.10.0** that is the level a companion is created at. It earns its first level like
+every level after it: opening an egg, a fusion result that inherits no level, and
+`/companions admin give` with no `[level]` token all produce a level-0 companion.
+
+Nothing that already exists moved. Every companion on your server kept the level it had, and a level
+is worth exactly what it was worth on 1.9.0 - the buff ramp, the `edtools-boosts` ramp and the
+`buff-display` ramp are all still `initial + (level - 1) x per-level` and were not touched. What
+moved is where a companion starts, so a companion at level 0 is worth `initial - per-level`: one
+written with `initial` equal to `per-level` is worth nothing until it earns its first level, and one
+whose `initial` is larger still grants something at 0.
+
+Level 0 and level 1 cost the same experience, and that is deliberate. `experience.base` in a
+`companions/<id>.yml` is the cost of leaving the FIRST level, and both of them are it; every level
+above still adds `per-level` exactly as before, so the only change to a curve is one extra rung of
+`base` over a companion's lifetime. Extending the curve one step down instead would ask for
+`base - per-level` to leave level 0, and a requirement of `0` is the sentinel that means "this
+companion does not progress at all" - the shipped `ember_fox.yml` declares `base: 500` with
+`per-level: 500`, so that extension lands on exactly 0 and every fresh copy of it would sit at level
+0 forever with nothing in its file to blame.
+
+Two things follow from it that can look like their own bugs. A companion ITEM no longer mints a free
+level: take a brand new companion out as a head, redeem it, and it comes back at level 0, because
+the level tag on the head is floored at 0 rather than 1 when it is read back. And
+`/companions admin setlevel <player> <instance> 0` is accepted now, which is how you put a companion
+back to fresh. No configuration key changed, so there is nothing for you to edit - see
+[A companion is created at level 0](configuration.md#a-companion-is-created-at-level-0).
+
 ### Do I need EdTools?
 
 No. It is optional, exactly like BetterModel. Without it no companion grants a booster, no companion can use the
@@ -528,6 +557,9 @@ Both SQLite and MySQL are covered. If the column genuinely cannot be added the p
 itself rather than running with a table it cannot read - the same rule the initial table creation
 already follows.
 
+Since 1.10.0 a fresh `companions` table declares `level ... DEFAULT 0`; a table that already exists
+keeps `DEFAULT 1` and neither notices, because every INSERT names the column.
+
 Take your usual backup before any update, as always. Nothing else about the schema changed.
 
 ### How do I add a second egg?
@@ -623,3 +655,11 @@ nobody paid for. Install an economy plugin, or price the egg in an EdTools curre
 This is deliberately different from a costed fusion, which IS free when there is no economy: a
 fusion consumes companions the player already owns, so a missing economy only removes a brake.
 `/companions admin openegg` is unaffected either way - it never charges anybody.
+
+### Tab completion of `/companions admin give` stops offering companions after the hundredth. Typing the name works.
+
+Update SnLib to **SnLib 1.34.1** or later. The companion ids are suggested by SnLib, which until
+1.34.1 cut the option list at 100 *before* matching what you typed, so with more than 100 companion
+files every id past the hundredth (alphabetically) was unreachable from tab even by its own first
+letters - typing it in full still worked, because parsing reads the whole set. SnCompanions itself
+needs no change; the fix is in the SnLib jar.
