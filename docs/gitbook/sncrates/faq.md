@@ -101,6 +101,17 @@ It only appears on a crate that accepts **both** `VIRTUAL` and `PHYSICAL`. On a 
 the withdrawn key would be unusable, and on a physical-only crate there is no balance to withdraw
 from. Check `withdraw.enabled` too.
 
+### My key's lore vanished from `/crates` and the preview.
+
+That is 2.4.0. The crate icons in `/crates` and the preview's `info` and `withdraw` buttons are
+drawn from the crate's physical key item, and until 2.3.1 the key's own lore was printed above the
+lore the menu file writes - the redeem instructions sitting on top of the balance the icon exists
+to show, with nothing in the menu file able to move or remove them.
+
+The lore is still on the key item itself, and the menus can still show it: write `{lore}` in that
+template's `lore:` list and the lines come back exactly where you put it, one lore line per line
+the key has. See [Menus](configuration.md#icons-drawn-from-the-crates-key-item).
+
 ### `%sncrates_keys_mycrate%` prints literally.
 
 The raw text means the id does not exist. Check the spelling against the **top-level key of the

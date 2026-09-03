@@ -668,6 +668,42 @@ A window title can name what it shows: `{player}` on `key-balance.yml`, `{crate}
 on every preview layout (2.3.1) and on the animations, `{crate}` / `{reward}` / `{mode}` on the
 editor screens. A placeholder a menu does not seed renders as its own literal text.
 
+### Icons drawn from the crate's key item
+
+Three icons are drawn from the crate's own physical key, so the player sees the key they are being
+told they own - custom head, model data and all: the crate icons in `key-balance.yml`, and the
+`info` and `withdraw` buttons of every preview layout. The `material` and `glow` on those templates
+apply only to a crate that has **no** physical key.
+
+The key item's own **lore** is not shown on them (2.4.0). Those lines are written for a player
+holding the key ("sneak + right-click to redeem") and on a button they sat above what the button
+was actually saying, with no way to move or remove them. Write `{lore}` in the template's `lore:`
+to bring them back, wherever you want them:
+
+```yaml
+templates:
+  default:
+    display-name: "&#8354f2&l{crate}"
+    lore:
+      - "&7You own &f{keys} &7key(s)."
+      - ""
+      - "{lore}"          # the key item's own lore, one lore line per line it has
+      - ""
+      - "&8» &aLeft-click &7to open one"
+```
+
+A crate with no physical key, or a key with no lore, renders `{lore}` as one blank line. Reward
+icons in a preview are unaffected: a reward's own lore is shown on its own icon, as it always was.
+
+The placeholders each icon carries:
+
+| Icon | Placeholders |
+|---|---|
+| A crate in `key-balance.yml` | `{crate}` `{keys}` `{fail-chance}` `{lore}` |
+| `info` in a preview layout | `{crate}` `{rewards}` `{fail}` `{fail-chance}` `{lore}` |
+| `withdraw` in a preview layout | `{crate}` `{keys}` `{lore}` |
+| A reward in a preview layout | `{crate}` `{chance}` `{limit}` `{tags}` |
+
 Add your own preview layout by copying `preview.yml` under a new name. Three places make it a
 first-class layout: list its file name under `editor.preview-layouts` in `config.yml` so the editor
 button can reach it, add a matching entry under `previews:` in the language file so the button shows
