@@ -205,6 +205,9 @@ Synchronous methods read in-memory state. Call them on the main thread.
 | `createFreeUpgradeWand(int)` | `Optional<ItemStack>` | Uses |
 | `createRadiusUpgradeWand(int, int)` | `Optional<ItemStack>` | Radius and uses. The radius must be odd |
 | `createAdminWand()` | `ItemStack` | The staff region selector |
+| `getUpgradePath(String)` | `List<UpgradeStepView>` | Every tier reachable after that type, in chain order |
+| `quoteUpgrade(String, int)` | `Optional<UpgradeQuote>` | Price of climbing N tiers. Capped at the end of the chain |
+| `quoteUpgradeTo(String, String)` | `Optional<UpgradeQuote>` | Price of reaching an exact tier. Empty when it is not ahead |
 | `getApiVersion()` | `String` | The API contract version |
 
 ```java
@@ -246,6 +249,52 @@ api.getIslandGeneratorStats(player.getUniqueId()).thenAccept(stats ->
                 + " generators worth " + stats.totalValue())));
 ```
 
+## Upgrades
+
+The query service only reads. These four methods change the world, so they get their own
+rules. Call them on the main thread. On Folia, call them on the region thread that owns the
+location.
+
+| Method | Returns | Notes |
+|--------|---------|-------|
+| `simulateUpgrade(Player, Location, int)` | `UpgradeResult` | Dry run of the same climb. Nothing is charged |
+| `simulateUpgradeTo(Player, Location, String)` | `UpgradeResult` | Dry run up to an exact tier |
+| `upgradeGenerator(Player, Location, int)` | `UpgradeResult` | Climbs up to N tiers and charges once |
+| `upgradeGeneratorTo(Player, Location, String)` | `UpgradeResult` | Climbs to an exact tier and charges once |
+
+An upgrade is all or nothing. Either every level applies and the total is charged once, or
+nothing changes at all. One `GeneratorUpgradeEvent` fires per hop, and all of them fire before
+any money moves. Cancelling any hop refuses the whole request with `CANCELLED` and charges
+nothing.
+
+You identify a generator by its location. Take it from `GeneratorView#location()` in any of
+the listings above.
+
+{% hint style="info" %}
+SnGens sends no chat message and plays no sound on this path. Render the result yourself.
+{% endhint %}
+
+{% hint style="warning" %}
+These methods do not consume the island's daily upgrade uses, and they do not require the
+island leader. Access is the owner or an island mate, exactly like a shift + right click
+upgrade. Gate them yourself if your menu needs a stricter rule.
+{% endhint %}
+
+```java
+api.getGeneratorAt(loc).ifPresent(gen -> {
+    api.quoteUpgradeTo(gen.generatorId(), "diamond_generator")
+       .ifPresent(quote -> player.sendMessage("Diamond costs " + quote.totalCost()
+               + " over " + quote.levels() + " levels"));
+
+    UpgradeResult result = api.upgradeGenerator(player, loc, 2);
+    if (result.success()) {
+        player.sendMessage("Now " + result.toGeneratorId() + ", paid " + result.charged());
+    } else if (result.status() == UpgradeStatus.NOT_ENOUGH_MONEY) {
+        player.sendMessage("You need " + result.totalCost());
+    }
+});
+```
+
 ## Views
 
 Every returned object is an immutable snapshot. `Location` and `ItemStack` values are cloned,
@@ -264,6 +313,9 @@ so mutating them never affects SnGens.
 | `CollectorView` | `id`, `owner`, `location`, `totalItems`, `slotsUsed`, `contents`, `estimatedValue`, `createdAt`, `updatedAt` |
 | `StoredItemView` | `key`, `item`, `amount`, `unitValue`, `totalValue` |
 | `WandView` | `type`, `uses`, `unlimited`, `sellMultiplier`, `distance`, `radius` |
+| `UpgradeStepView` | `level`, `fromGeneratorId`, `toGeneratorId`, `toDisplayName`, `cost`, `cumulativeCost` |
+| `UpgradeQuote` | `fromGeneratorId`, `toGeneratorId`, `levels`, `totalCost`, `capped`, `steps` |
+| `UpgradeResult` | `status`, `success`, `dryRun`, `fromGeneratorId`, `toGeneratorId`, `levels`, `totalCost`, `charged`, `failedRequirements` |
 
 A `HopperView` or `CollectorView` is a snapshot taken when you asked for it. Both keep
 absorbing items afterwards, so query again on each menu refresh instead of caching.
@@ -282,6 +334,41 @@ api.getWand(held).ifPresent(wand -> {
     }
 });
 ```
+
+A tier's configured `upgrade-cost` is the price of leaving it. So an `UpgradeStepView` prices
+a hop by its origin tier, never by the tier it reaches. `cumulativeCost` is the running total
+up to and including that hop.
+
+An `UpgradeQuote` always covers at least one tier. A type that is already the last tier of the
+chain yields no quote at all. `capped` is true when you asked for more levels than the chain
+still had, and `levels` is then the shorter, real figure.
+
+An `UpgradeResult` is refused or applied, never half applied. On any status other than
+`SUCCESS`, `toGeneratorId` equals `fromGeneratorId`, `levels` is `0` and `charged` is `0`.
+`totalCost` still carries the quoted total when the chain resolved, so `NOT_ENOUGH_MONEY`
+tells you how much was needed. Both ids are `null` only for `INVALID_REQUEST`, `NOT_LOADED`
+and `NOT_A_GENERATOR`. On a dry run `charged` is always `0`, and `SUCCESS` means the upgrade
+would succeed right now. It is not a reservation.
+
+`UpgradeStatus` reports why a request succeeded or was refused:
+
+| Status | Meaning |
+|--------|---------|
+| `SUCCESS` | The upgrade applied, or on a dry run would apply |
+| `INVALID_REQUEST` | Null actor or location, world not loaded, or a level count below one |
+| `NOT_LOADED` | The chunk is not loaded, so SnGens cannot tell what stands there |
+| `NOT_A_GENERATOR` | The chunk is loaded and no generator stands at that location |
+| `CORRUPTED` | The generator is corrupted. Repair it first |
+| `NO_ACCESS` | The actor is neither the owner nor an island mate of the owner |
+| `BUSY` | A bulk upgrade flush still owns this owner's scope. Retry later |
+| `MAX_TIER` | The generator has no next tier |
+| `INVALID_TARGET` | The target type is unknown, or it is not ahead of the current tier |
+| `REQUIREMENTS_FAILED` | An `upgrade-requirements` guard failed on the current or an intermediate tier |
+| `NOT_ENOUGH_MONEY` | The actor's balance is below the total cost |
+| `CANCELLED` | A listener cancelled one of the `GeneratorUpgradeEvent` steps |
+
+`failedRequirements` holds the configured failure messages, raw and with their colour codes.
+It is empty unless the status is `REQUIREMENTS_FAILED`.
 
 ## Extension points
 
@@ -320,3 +407,6 @@ and firing an event per drop would cost more than the feature is worth. Use
 Call `getApiVersion()` for the API contract version. It is independent of the plugin version.
 Additions bump the minor component. Existing members are never removed or changed; deprecated
 members keep working.
+
+The current contract version is `1.4.0`. It added the upgrade path, the quotes, the dry runs
+and the four upgrade methods in SnGens `2.57.0`.
