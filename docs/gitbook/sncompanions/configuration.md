@@ -909,7 +909,8 @@ One file per companion type, named after its id. Three examples are seeded on a 
 `ember_fox.yml`, `gale_sprite.yml` and `stone_golem.yml`. A companion file declares the display
 name, the group it belongs to, the head or BetterModel it renders as, its level cap and
 experience curve, the buffs it grants per level, the hologram drawn above it,
-and the optional `edtools-boosts` block. Copy one of the examples to add your own.
+and the optional `edtools-boosts` and `buff-display` blocks. Copy one of the examples to add your
+own.
 
 The `hologram:` block is optional and, because this folder is seeded once and never merged
 again, it is never added to the companion files you already have. That is what
@@ -966,6 +967,36 @@ Currency display names come from the language file: one `messages.edtools-curren
 currency you want renamed (e.g. `edtools-currency-money: "&6Money"`), with
 `menus.edtools-buff-separator` as the separator between two names. Only `enchant` ships named -
 every other id is invented on your server - and an id without an entry shows as the raw id.
+
+### `buff-display`: a companion whose effect lives in another plugin
+
+The third and last thing those two placeholders can resolve from, added in 1.9.0. Some companions
+exist for a plugin that is not this one: a plugin reads a player's equipped companions through the
+SnCompanions API and grants a boost of its own for some of them, so the companion declares no
+`buff:` and no `edtools-boosts:` because SnCompanions has nothing to apply for it. Without this
+block such a companion renders as `Damage 0.0%` on every menu, item and hologram.
+
+```yaml
+buff-display:
+  name: "&dBattle Pass XP"
+  initial: 0.4
+  per-level: 0.4
+  max: 20.0
+```
+
+`{buff}` becomes `name` and `{buff-value}` becomes `initial + (level - 1) x per-level`, capped by
+`max` (absent or `0` = no ceiling). **SnCompanions never applies this block** - it only shows it -
+and it is the LAST fallback, after the vanilla buff and after `edtools-boosts`, so no companion
+that showed something before 1.9.0 shows anything different now. The name is the switch: a block
+with a name and no numbers is a legitimate declaration with no figure to it, while a block with
+numbers and no name is ignored with a console warning, because `{buff}` would have nothing to
+print. Nothing in this plugin widens the ramp and nothing validates it against anything, so write
+the same numbers the other plugin uses: the figure a player reads here is then the figure they are
+paid there.
+
+Same seeded-once caveat as the two blocks above: the example ships commented out in
+`ember_fox.yml` for a fresh install, and you add the block to the companion files you already have
+by hand.
 
 Here is the seeded `companions/ember_fox.yml` in full, as a working reference:
 
@@ -1106,6 +1137,33 @@ buff:
 #   enchants:
 #     initial: 10.0
 #     per-level: 0.0
+
+# ------------------------------------------------------------
+#  Declared effect (1.9.0). Optional, and for ONE situation only: a companion
+#  whose effect is paid by ANOTHER plugin, which reads this companion through
+#  the SnCompanions API and grants something of its own for it. Such a
+#  companion declares no "buff:" and no "edtools-boosts:", so without this
+#  block {buff} and {buff-value} would read "Damage 0.0%" on every menu,
+#  item and hologram.
+#
+#  SnCompanions NEVER applies this. It only shows it: {buff} becomes "name"
+#  and {buff-value} becomes initial + (level - 1) x per-level, capped by
+#  "max". It is the LAST fallback - a companion that declares a real "buff:"
+#  or an "edtools-boosts:" block keeps showing that, and this block is
+#  ignored. Write the same numbers the other plugin uses, so the figure a
+#  player reads here is the figure they are paid there. Nothing in this
+#  plugin widens this ramp: SnCompanions cannot know whether the other
+#  plugin does. The name accepts & and &#RRGGBB codes like display-name.
+# ------------------------------------------------------------
+# buff-display:
+#   # Shown as {buff}.
+#   name: "&dBattle Pass XP"
+#   # Percent shown at level 1.
+#   initial: 0.4
+#   # Percent added by each level above 1.
+#   per-level: 0.4
+#   # Optional ceiling in percentage points. Absent or 0 = no ceiling.
+#   max: 20.0
 
 # Group label declared in config.yml; drives the storage order, the bulk delete
 # buttons and the lore, nothing else.

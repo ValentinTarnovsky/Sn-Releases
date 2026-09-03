@@ -432,7 +432,10 @@ otherwise) and `{buff-value}` the live value at the companion's current level, w
 `max:` already applied.
 
 A companion that declares neither defaults to a damage buff worth zero at every level, which is the
-"Damage 0.0%" line with nothing behind it.
+"Damage 0.0%" line with nothing behind it. Since 1.9.0 a companion whose effect is paid by another
+plugin through the API can declare a `buff-display:` block in its file (a name and an
+`initial`/`per-level`/`max` ramp) and those two placeholders show that instead; SnCompanions never
+applies it, it only shows it.
 
 ### Why do the companion files I already have carry no `edtools-boosts` block?
 
