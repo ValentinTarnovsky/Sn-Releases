@@ -22,8 +22,8 @@ duplicates into stronger ones, and manage everything from configurable menus.
 - Damage, resistance and speed buffs, each with a global cap and a per-world gate.
 - Fusion: combine duplicates into a stronger companion that inherits levels, with
   a server-wide announcement you can switch on per companion.
-- Companion eggs with weighted tables, price tiers charged in Vault or in one of your EdTools
-  currencies, a Dragon Egg hatch show and per-egg cooldowns. An egg is a purchase, not an item: the table
+- Companion eggs with weighted tables, price tiers charged in Vault, in one of your EdTools
+  currencies, or in several at once, a Dragon Egg hatch show and per-egg cooldowns. An egg is a purchase, not an item: the table
   rolls the moment it is opened and the companions land straight in the owner's storage. A missing
   economy refuses the purchase instead of giving the egg away, and a purchase whose companions
   cannot be saved is refunded in full.
@@ -34,10 +34,11 @@ duplicates into stronger ones, and manage everything from configurable menus.
   faster, breaks and reveals the companion they won. Drawn with packets like the companions
   themselves, so nothing is spawned and nothing can be walked into - and any player who would
   rather not watch it switches it off for themselves from the eggs menu.
-- Companion items: shift + right click a stored companion, or press Q over it, to take it out as a physical
-  head carrying its whole state, and right click it back into a storage. The head remembers who
-  took it out, and only that player can redeem it, so moving a companion to another owner is an
-  admin action.
+- Companion items, **off by default since 1.11.0**: switched on, shift + right click a stored
+  companion, or press Q over it, to take it out as a physical head carrying its whole state, and
+  right click it back into a storage. The head remembers who took it out, and only that player can
+  redeem it, so moving a companion to another owner is an admin action. Left off, a companion never
+  leaves its owner's storage as an object.
 - Holograms: configurable text above every companion, per companion type, drawn as packet entities that
   RIDE the companion, so the text and the companion can never move at different times.
 - Four menus you can re-skin without touching code, with a per-group

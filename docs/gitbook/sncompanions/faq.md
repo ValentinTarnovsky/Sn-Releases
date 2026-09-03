@@ -174,11 +174,17 @@ Both triggers run the same action with the same refusals. `companion-items.enabl
 whole feature off, both triggers at once, and leaves the heads already in circulation redeemable.
 
 {% hint style="warning" %}
-**Deleting the click actions from `guis/main.yml` is not an opt-out.** That file is managed and
-carries no extensible marker, so the next boot merges
-`templates.companion-entry.shift-right-click-actions` and `drop-click-actions` straight back.
-See [Taking a companion out: the two triggers](configuration.md#taking-a-companion-out-the-two-triggers) for
-the ways that do hold.
+**Since 1.11.0 all of this ships OFF.** `companion-items.enabled` defaults to `false` and the shipped
+`guis/main.yml` no longer declares the two click lists at all, so on a fresh install a companion
+cannot leave the storage as an item. Turning it back on is two steps: set the switch, and put
+`shift-right-click-actions` and `drop-click-actions` back on the `companion-entry` template, both
+running `"[companions-extract] {instance}"`. The commented block left in that file spells it out.
+
+Because the shipped file no longer declares them, deleting those lists now HOLDS - the merge has
+nothing to put back. That is the opposite of how it behaved before 1.11.0.
+
+A server upgrading from 1.10.0 keeps its own `config.yml` and `guis/main.yml`: values on disk are
+preserved and never pruned, so the feature stays on there until you switch it off yourself.
 {% endhint %}
 
 ### Can somebody else redeem my companion item?
@@ -614,6 +620,51 @@ want visible go first. The odds are unaffected either way: `{chance}` is normali
 table, and a companion that is not drawn can still be won.
 
 The same rule governs the `o` run and the price buttons: four cells, four `opens:` entries drawn.
+
+### Can one egg cost two currencies at once?
+
+Yes. Write the button's `price` as a map instead of a number, and it is charged in every currency it
+names, together:
+
+```yaml
+premium_egg:
+  display-name: "&6&lPremium Egg"
+  price:
+    currency: vault
+  opens:
+    - amount: 1
+      price: 5000            # a plain number: 5000 of price.currency
+    - amount: 10
+      price:                 # a map: BOTH, on the same click
+        vault: 45000
+        "edtools:essence": 250
+```
+
+It is an **AND, never a choice**. The button locks unless every wallet covers its part, all of them
+are taken on the click, and if the open then fails they all come back. There is no "pay in whichever
+you have" - and two buttons with the same `amount` will not give you one either, because a click
+resolves its bundle by that number and both would charge the first one's price.
+
+Quote a currency inside the map: the colon is the yml key separator. `price.currency` still says
+which wallet a plain NUMBER comes out of; a button that writes a map ignores it.
+
+The button shows the whole price on one line, built from your language file:
+
+```yaml
+menus:
+  eggs:
+    currency-vault: "Monedas"
+    currency-essence: "Esencia"
+    price-entry: "{price} {currency}"
+    price-separator: "&7 + &f"
+```
+
+which reads `45.000 Monedas + 250 Esencia`. Change `price-entry` to `"{price} de {currency}"` and
+every button and every chat line follows.
+
+The EdTools currencies are charged first and the `vault` one last, because `vault` is the only leg
+that cannot be handed back to a player who has already logged off. If any leg refuses, whatever was
+already taken is returned and the console names it.
 
 ### Can eggs cost an EdTools currency?
 

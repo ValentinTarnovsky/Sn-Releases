@@ -560,21 +560,26 @@ fusion:
 #  are weights, not percentages, and there is no failure roll.
 #  Storage is checked ONCE, up front, for every companion the roll produced: if
 #  the whole bundle does not fit, nothing is charged and nothing is granted.
-#  WHAT AN EGG COSTS is eggs.yml's price block, not this section:
-#    price.currency: vault          the server economy, through Vault. With no
-#                                   economy plugin installed the egg is REFUSED,
-#                                   never given away: opening one produces
-#                                   companions, so a free egg would mint them.
-#    price.currency: edtools:<id>   one of your EdTools currencies, by its own
-#                                   id. This is INDEPENDENT of the edtools
-#                                   section below, whose enabled switch governs
-#                                   the companion BOOSTERS and nothing else. An
-#                                   id EdTools does not serve is named in the
-#                                   console when eggs.yml loads, and the egg
-#                                   refuses every click until the id is real.
+#  WHAT AN EGG COSTS is eggs.yml's price block, not this section. Each opens:
+#  button writes its price either as a plain number, charged in the egg's
+#  price.currency, or as a map naming its own currencies - and a map is charged
+#  in ALL of them at once, never in whichever the player happens to have. A
+#  currency is one of two things:
+#    vault          the server economy, through Vault. With no economy plugin
+#                   installed the egg is REFUSED, never given away: opening one
+#                   produces companions, so a free egg would mint them.
+#    edtools:<id>   one of your EdTools currencies, by its own id. This is
+#                   INDEPENDENT of the edtools section below, whose enabled
+#                   switch governs the companion BOOSTERS and nothing else. An
+#                   id EdTools does not serve is named in the console when
+#                   eggs.yml loads, and the egg refuses every click until the
+#                   id is real.
 #  The opens: buttons price a BUNDLE each; an amount with no button of its own
-#  costs the first button's price in proportion. If the companions cannot be
-#  saved after the money was taken, the whole price is refunded automatically.
+#  costs the first button's price in proportion, currency by currency. Nothing
+#  is taken until every wallet has been checked, so a player short of one of two
+#  currencies is refused before either is touched; if one currency is taken and
+#  another then refuses, the first is handed straight back. If the companions
+#  cannot be saved after the money was taken, the whole price is refunded.
 # ------------------------------------------------------------
 eggs:
   # Master switch of egg opening: the menu, the command and the admin open. Off
@@ -592,8 +597,10 @@ eggs:
   allow-creative: false
 
 # ------------------------------------------------------------
-#  Companion items. A stored companion can be taken out of the storage as a physical head
-#  (shift + right click on it in the main menu) and redeemed back by anyone
+#  Companion items. OFF by default since 1.11.0: a companion stays in its owner's
+#  storage and cannot be turned into an object that changes hands.
+#  Switched on, a stored companion can be taken out of the storage as a physical head
+#  and redeemed back by anyone
 #  with a right click, which is how companions change hands. The item carries the
 #  companion's whole state - level and experience - so
 #  a companion that comes back is the companion that left. A redeem into a full storage
@@ -603,11 +610,16 @@ eggs:
 #  whose companions/<id>.yml is gone, because it has no face left to travel with.
 #  The blocked-blocks list below makes the redeem click step aside for a chest,
 #  a door or a workstation, so the block wins the click instead of the item.
+#  Because the feature ships off, guis/main.yml no longer declares the clicks that
+#  take a companion out. Turning enabled on is therefore half the job: add
+#  shift-right-click-actions (and drop-click-actions, which is also what lets the
+#  Q key through strict-clicks) with "[companions-extract] {instance}" back to the
+#  companion-entry template, and say so in its lore.
 # ------------------------------------------------------------
 companion-items:
   # Master switch of extracting and redeeming. Off refuses both and hands a
   # clicked item back. Items already in circulation stay in inventories.
-  enabled: true
+  enabled: false
 
   # Let a creative-mode player redeem companion items. Off by default: creative
   # middle-click copies any stack with its NBT intact, so one companion item would
@@ -706,6 +718,28 @@ companion-items:
       - "&a&lRIGHT CLICK"
       - "&2Redeem this companion into your storage"
 ```
+
+### Companion items are off by default
+
+{% hint style="warning" %}
+Since **1.11.0** `companion-items.enabled` ships as `false`, and the shipped `guis/main.yml` no
+longer declares the clicks that take a companion out. On a fresh install a companion stays in its
+owner's storage and cannot become an object that changes hands, so everything in this section
+describes what the feature does once you switch it on.
+
+Switching it on is two steps, because the menu file is yours as well:
+
+1. `companion-items.enabled: true` in `config.yml`.
+2. Put `shift-right-click-actions` and `drop-click-actions` back on the `companion-entry` template
+   of `guis/main.yml`, both running `"[companions-extract] {instance}"`, and add a lore line saying
+   so. The commented block left in that file spells it out. Declaring `drop-click-actions` is also
+   what lets the **Q** key through `strict-clicks`.
+
+Neither list is merged back in on boot any more, so deleting them again holds.
+
+A server upgrading from 1.10.0 keeps whatever its own files already say: values on disk are
+preserved and never pruned, so the feature stays **on** there until you switch it off yourself.
+{% endhint %}
 
 ### A companion item remembers who took it out
 
@@ -1277,8 +1311,8 @@ other button of that screen.
 | Key | Meaning |
 |-----|---------|
 | `display-name` | The name the menu and every `{egg}` placeholder show. `[rgb]`, `[small]` and `[noprefix]` are applied when the file is read, so the name renders the same in the menu and spliced into the middle of a chat line |
-| `price.currency` | `vault` for the server economy, or `edtools:<id>` for one of your EdTools currencies. Anything else is refused with a console warning and charged as `vault`. See [What an egg costs](#what-an-egg-costs) |
-| `opens` | The buttons of the egg menu: a LIST, one entry per bundle, each with its own `amount` and its own explicit `price`. There is no unit price multiplied by an amount - an owner who wants "10 for the price of 9" writes that number. An amount with no button of its own costs the FIRST button's price in proportion. An egg with no `opens` cannot be bought and stays admin-only |
+| `price.currency` | The currency a button that writes its price as a plain NUMBER is charged in: `vault` for the server economy, or `edtools:<id>` for one of your EdTools currencies. Anything else is refused with a console warning and charged as `vault`. A button that writes a price MAP names its own and ignores this. See [What an egg costs](#what-an-egg-costs) |
+| `opens` | The buttons of the egg menu: a LIST, one entry per bundle, each with its own `amount` and its own explicit `price`. There is no unit price multiplied by an amount - an owner who wants "10 for the price of 9" writes that number. An amount with no button of its own costs the FIRST button's price in proportion. A button's `price` is either a number or a map of currency to amount. An egg with no `opens` cannot be bought and stays admin-only |
 | `drops` | The weighted table, one entry per companion id, each with an `amount` and a `weight`. The numbers are WEIGHTS, not percentages: they are normalized over whatever the table holds, so 60/30/10 and 6/3/1 behave identically. A row naming a companion with no `companions/<id>.yml` file is dropped when the egg loads, with one console warning, and the remaining weights renormalize on their own |
 | `animation` | The hatch show of THIS egg. `enabled` switches it off for everybody; `shake-ticks` is clamped to 4-600 and `reveal-ticks` to 0-600, and the three sound keys take `"SOUND_ID [volume] [pitch]"` or `none`. The pitch of `step-sound` is ignored - it climbs from 0.8 to 2.0 across the shake. Each player can also switch the show off for themselves; see [The egg animation switch](#the-egg-animation-switch) |
 | `feedback.message-key` | Lang key sent to the opener of ONE egg that produced ONE companion. Anything larger sends `messages.egg-opened-bulk` instead, which summarizes the whole open. Empty sends nothing |
@@ -1292,12 +1326,39 @@ goes through.
 
 ### What an egg costs
 
-`price.currency` picks the wallet, and it is the only thing that does:
+A button's `price` is written in one of two ways:
+
+```yaml
+opens:
+  - amount: 1
+    price: 1000            # a number, charged in the egg's price.currency
+  - amount: 3
+    price:                 # a map, charged in EVERY currency it names
+      vault: 2500
+      "edtools:essence": 300
+```
+
+{% hint style="info" %}
+**A map is an AND, never a choice.** The button is refused unless every wallet covers its part, all
+of them are taken together, and if the open then fails they all come back. There is no "pay in
+whichever you have" anywhere in this plugin; two prices for the same bundle would need two buttons,
+and two buttons with the same `amount` do not work - a click resolves its bundle by that number, so
+both would charge the first one's price.
+
+Quote a currency inside the map: the colon is the yml key separator.
+{% endhint %}
+
+A currency is one of two things:
 
 | Value | Charged through |
 |-------|-----------------|
 | `vault` (the default) | The server economy, through Vault or whatever backend SnLib is configured with |
 | `edtools:<id>` | The EdTools currency with that id, through the EdTools currency API |
+
+A price holds at most one `vault` entry, because the server economy is one wallet; the rest are
+EdTools currencies. A price map whose value is not a number, whose currency is neither of the two
+forms, or which names the same currency twice costs that **button**: it is dropped from the menu
+with one console warning rather than quietly charged for less.
 
 {% hint style="warning" %}
 **A missing provider refuses the purchase; it never makes the egg free.** With no economy plugin
@@ -1318,9 +1379,22 @@ the cancellable `CompanionEggOpenEvent`, the storage reservation, the charge, th
 reservation is taken **before** the charge because the server economy settles a tick later, and if
 the charge then fails those places are handed straight back. If the companions cannot be WRITTEN
 after the money was taken - the one failure no gate can foresee - the whole price is refunded
-automatically, in the currency it was paid in, and the player is told both things. A PARTIAL loss
+automatically, in every currency it was paid in, and the player is told both things. A PARTIAL loss
 is not refunded: the companions that did land were bought, and an `opens:` button prices a bundle
 rather than one egg.
+
+**A price with several currencies is charged as a sequence, and the order is deliberate.** Every
+EdTools currency is taken first, one at a time and each settling on the spot, and the single `vault`
+leg is taken last, because it is the only one that settles a tick later and the only one that cannot
+be handed back to a player who has already logged off. If any leg refuses, every leg already taken is
+given straight back and the console names each one. Nothing is taken at all until every wallet has
+been checked, so a player short of one of two currencies is refused before either is touched.
+
+The money words come from the language file: `menus.eggs.currency-vault` ships with a value, and
+`menus.eggs.currency-<edtools-id>` is yours to add - those ids are invented in your own EdTools
+configuration, so an id with no key simply shows itself. How two currencies are written on one line
+is `menus.eggs.price-entry` and `menus.eggs.price-separator` in the same file, so a Spanish server
+writes `"{price} de {currency}"` once and gets it in the menu and in every chat line at once.
 
 `/companions admin openegg` is a **gift**: it skips the creative gate, the cooldown and the price
 entirely, which is also why it can open an egg that declares no `opens:` button at all.
@@ -1352,11 +1426,31 @@ entirely, which is also why it can open an egg that declares no `opens:` button 
 #  The entries under "opens" are the BUTTONS the egg menu shows, each with its
 #  own explicit price. There is no unit price multiplied by an amount: an owner
 #  who wants "10 for the price of 9" writes that number. An egg with no opens
-#  cannot be bought at all and stays admin-only.
+#  cannot be bought at all and stays admin-only. Do NOT write two buttons that
+#  open the same AMOUNT: a click resolves its bundle by that number, so both
+#  would charge the first one's price.
 #
-#  "price.currency" is either "vault" (the server economy) or "edtools:<id>",
-#  which names one of your EdTools currencies. Anything else is refused with a
+#  A button's "price" is written in one of two ways:
+#    price: 1000          a plain number, charged in this egg's price.currency.
+#    price:               a map, charged in EVERY currency it names, together.
+#      vault: 500
+#      "edtools:essence": 500
+#  The map is an AND, never a choice: the button is refused unless every wallet
+#  covers its part, all of them are taken, and if the open then fails they all
+#  come back. A currency the plugin does not recognise, an amount that is not a
+#  number, or the same currency twice costs that BUTTON, with one console
+#  warning - it is dropped from the menu rather than quietly charged for less.
+#
+#  A currency is either "vault" (the server economy) or "edtools:<id>", which
+#  names one of your EdTools currencies. Quote it in a map, because the colon is
+#  the yml key separator. "price.currency" says which one a plain NUMBER is
+#  charged in and defaults to vault; anything else there is refused with a
 #  console warning and charged as vault.
+#
+#  Rename a currency for players with menus.eggs.currency-<id> in
+#  lang/messages_<code>.yml - currency-essence: "Esencia" - or it shows the raw
+#  id. How two currencies are joined on one line is menus.eggs.price-entry and
+#  price-separator in the same file.
 #
 #  "animation" is the hatch show played when the egg is opened. It delays only
 #  the FEEDBACK: the companions are granted and saved before the first frame is
@@ -1378,7 +1472,9 @@ basic_egg:
   #  What it costs, and in what.
   # ----------------------------------------------------------
   price:
-    # "vault" for the server economy, or "edtools:<id>" for an EdTools currency.
+    # The currency a button that writes its price as a plain NUMBER is charged
+    # in: "vault" for the server economy, or "edtools:<id>" for an EdTools
+    # currency. A button that writes a price MAP names its own and ignores this.
     currency: vault
 
   # ----------------------------------------------------------
@@ -1394,6 +1490,14 @@ basic_egg:
       price: 9500
     - amount: 50
       price: 45000
+    # A button that costs two currencies at once looks like this. It is left
+    # commented because "edtools:essence" is an id only your own EdTools knows:
+    # uncomment it with a real id and the button appears in the menu, priced in
+    # both, and the console names the id if EdTools does not serve it.
+    #- amount: 100
+    #  price:
+    #    vault: 80000
+    #    "edtools:essence": 500
 
   # ----------------------------------------------------------
   #  The drop table. One entry per companion id, which is a companions/<id>.yml
