@@ -148,6 +148,11 @@ public void onSell(GeneratorSellEvent event) {
 }
 ```
 
+`GeneratorUpgradeEvent` fires once per hop. A multi level upgrade through the API fires all of
+them before anything is charged. An event that you did not cancel is a proposal, not a commit.
+A later hop can still be cancelled, and the upgrade can still be refused after the events. No
+compensating event follows, so spend a quota against a state you can verify afterwards.
+
 Wand swings are vetoed through their own event, not through the generator ones. A build wand
 places its whole line in one batch and an upgrade wand upgrades its whole square in one batch,
 so neither fires `GeneratorPlaceEvent`, `GeneratorUpgradeEvent` or
@@ -271,6 +276,15 @@ Those per-hop listeners run arbitrary code. SnGens looks the generator up again 
 events and honours the withdrawal result. A listener that removes or changes the generator,
 or that drains the actor's balance, yields `BUSY`, `NOT_A_GENERATOR` or `NOT_ENOUGH_MONEY`
 with nothing changed and nothing charged.
+
+SnGens reads the block once more after the charge, because the charge is third party code too.
+If the generator changed in that window, the player gets the money back and the call refuses.
+The status is `BUSY` or `NOT_A_GENERATOR`, and `charged` stays `0`. A climb whose total is `0`
+never calls the economy at all.
+
+A dry run stops before the per-hop events. `simulateUpgrade` and `simulateUpgradeTo` fire
+nothing, so a simulation never returns `CANCELLED`. Treat a clean simulation as "would succeed
+right now", not as a reservation.
 
 You identify a generator by its location. Any location inside the block matches, because
 decimals, yaw and pitch are ignored. So `player.getLocation()` of a standing player works as
