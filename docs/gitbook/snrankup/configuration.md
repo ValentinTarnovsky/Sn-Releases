@@ -154,6 +154,14 @@ One entry per rank under `rankups:`. Two fields are required and three are optio
 | `rewards` | No | What fires when the player REACHES this rank |
 | `menu-item` | No | How this rank looks in the menus |
 
+{% hint style="info" %}
+A color code inside `display` closes the format codes written before it, so in
+`'&6[&e&l50&6]'` only the `50` is bold and the closing bracket is not. That holds everywhere the
+badge is shown, including `%snrankup_prefix%` pasted into another plugin's chat format, tag or
+broadcast: SnRankUp writes the reset into the placeholder explicitly, so a plugin that does not
+apply the rule on its own still renders the badge correctly.
+{% endhint %}
+
 ```yaml
 # sn:extensible
 rankups:

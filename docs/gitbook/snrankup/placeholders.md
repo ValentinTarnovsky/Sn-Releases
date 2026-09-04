@@ -58,3 +58,9 @@ by the whole ladder. A token with nothing behind it renders as literal text.
 
 The rank display prefixes and the tokens above both support `&` colors, `&#RRGGBB` hex and
 MiniMessage, and any PlaceholderAPI placeholder resolves inside them as well.
+
+The three placeholders that carry a rank display -  `%snrankup_prefix%`,
+`%snrankup_next_prefix%` and `%snrankup_top_value_<N>%` - hand out that badge with its format
+codes closed explicitly. A `&l` inside the display therefore stops at the next color code even
+in a plugin that renders legacy codes through MiniMessage, where the reset a color code
+normally performs would otherwise be dropped and the bold would run to the end of the line.
