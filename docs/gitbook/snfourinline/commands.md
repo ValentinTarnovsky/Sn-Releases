@@ -30,7 +30,7 @@ The root command is `/fourinline`, with the aliases listed in `command.aliases` 
 Amounts accept the usual shorthands (`500`, `2.5k`, `1m`). The smallest stake is `0.01`, and a stake may not be finer than the `decimals` of its currency.
 
 {% hint style="info" %}
-`/fourinline preview` starts a real game with you in both seats, so you can see and play the board with nobody else online. Use it while you edit `guis/board.yml`. The animation, the turn timer, the surrender button and the winning-line highlight all behave as usual, and it is your turn every time. A preview records no statistics, broadcasts no win and can never carry a bet. End it by winning it, drawing it, pressing Surrender, or letting the turn timer run out.
+`/fourinline preview` starts a real game with you in both seats, so you can see and play the board with nobody else online. Use it while you edit `guis/board.yml`. The animation, the turn timer, the surrender button and the winning-line highlight all behave as usual, and it is your turn every time. A preview records no statistics, broadcasts no win and can never carry a bet. End it by closing the board - a preview is yours alone, so closing it cancels the game - or by winning it, drawing it, pressing Surrender, or letting the turn timer run out. Opening another menu over the board (`/fourinline top`, for example) does not end it: close that menu and the board comes back.
 {% endhint %}
 
 {% hint style="info" %}
