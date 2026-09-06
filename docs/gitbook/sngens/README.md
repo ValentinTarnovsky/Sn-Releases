@@ -32,7 +32,8 @@ production. Everything is configured in YAML, and nothing is hardcoded.
 - **Sell multipliers.** Permissions, player balance data, active events, the wand itself and
   equipment all feed one multiplier, with an optional server-wide cap.
 - **Wands.** A sellwand, a build wand that clones a generator down a line, an upgrade wand that
-  upgrades for free or in an area, and an admin region wand that fills a cuboid.
+  upgrades for free or in an area, and an admin region wand that fills a cuboid. Each one can
+  wear a model from your resource pack.
 - **Collectors and infinite hoppers.** Two storage blocks that capture generator drops. The
   collector eats every drop in its chunk before the item entity exists. The hopper scans its
   own column and locks in a fixed number of item types.

@@ -205,6 +205,22 @@ Pass `-1` as the number of uses.
 
 The item then shows the `unlimited-placeholder` text from `wands.yml` instead of a number.
 
+### Can my wands use a model from a resource pack?
+
+Yes. Set `item_model` on the wand item in `wands.yml` to the model your pack ships.
+
+```yaml
+sellwand:
+  item:
+    material: BLAZE_ROD
+    item_model: "mypack:sell_wand"
+```
+
+All five wand items accept it, and so does every other item in the plugin. The value is a
+namespaced key, and a bare name resolves to the `minecraft` namespace. It renders on Minecraft
+1.21.4 and newer. Unlike `custom-model-data`, the pack needs no numeric predicate. See
+[configuration](configuration.md).
+
 ### A player already has a sellwand. What happens if I give them another?
 
 Charges are folded into the wand they already hold, and both sides are told how many were added

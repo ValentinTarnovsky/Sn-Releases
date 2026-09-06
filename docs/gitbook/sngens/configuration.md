@@ -983,6 +983,31 @@ particles while you work. `particle.type` accepts `WAX_OFF`, `END_ROD` or `DUST`
 `DUST` reads `dust-color` and `dust-size`. Very large selections render only their corners, and
 `fill.max-volume` caps a single fill.
 
+### Custom item models
+
+Every wand item accepts `item_model`, so a wand can use a model your resource pack ships. Write
+the model as `namespace:path`, the same value the pack documents.
+
+```yaml
+sellwand:
+  item:
+    material: BLAZE_ROD
+    item_model: "mypack:sell_wand"
+```
+
+A bare `sell_wand` resolves to the `minecraft` namespace. Leave the key empty to keep the
+material's default model. Unlike `custom-model-data`, this needs no numeric predicate in the
+pack, which is why most downloaded model packs document it.
+
+{% hint style="info" %}
+`item_model` renders on Minecraft 1.21.4 and newer. Older clients ignore it and show the plain
+material. The hyphenated spelling `item-model` works too.
+{% endhint %}
+
+Every other item in the plugin reads the same key, so generator drops, shop icons and menu
+buttons take a pack model as well. A misspelled value is ignored and the item keeps its default
+model. Set `debug: true` in `config.yml` to see which value was rejected.
+
 ```yaml
 # =============================================================================
 #  SnGens - Wands
@@ -992,6 +1017,14 @@ particles while you work. `particle.type` accepts `WAX_OFF`, `END_ROD` or `DUST`
 # -----------------------------------------------------------------------------
 #  Sellwand placeholders (used in display-name and lore):
 #    {uses}   {multiplier}   {total_sold}   {total_items}
+# -----------------------------------------------------------------------------
+#  Every wand item below accepts `item_model`, the vanilla 1.21.4+ model
+#  override. Write the model your resource pack ships, as `namespace:path`
+#  (for example `mypack:sell_wand`); a bare `sell_wand` resolves to the
+#  `minecraft` namespace. Leave it empty to keep the material's default model.
+#  Unlike `custom-model-data` it needs no numeric predicate in the pack, which
+#  is why downloaded model packs document this key. An invalid value is ignored
+#  and the item keeps its default model.
 # =============================================================================
 
 # Restrict every wand (sellwand, buildwand, upgradewand) to islands the
@@ -1010,6 +1043,8 @@ sellwand:
     material: BLAZE_ROD
     display-name: '&a&lSell Wand &7· &f{uses}'
     custom-model-data: 0
+    # Resource-pack model, e.g. "mypack:sell_wand". Empty = default model.
+    item_model: ""
     flags:
       - HIDE_ATTRIBUTES
       - HIDE_ENCHANTS
@@ -1045,6 +1080,8 @@ adminwand:
     material: GOLDEN_AXE
     display-name: '&c&lGens Admin Wand'
     custom-model-data: 0
+    # Resource-pack model, e.g. "mypack:admin_wand". Empty = default model.
+    item_model: ""
     flags:
       - HIDE_ATTRIBUTES
       - HIDE_ENCHANTS
@@ -1106,6 +1143,8 @@ upgradewand:
       material: IRON_SHOVEL
       display-name: '&d&lFree Upgrade &7· &f{uses}'
       custom-model-data: 0
+      # Resource-pack model, e.g. "mypack:free_upgrade_wand". Empty = default model.
+      item_model: ""
       flags:
         - HIDE_ATTRIBUTES
         - HIDE_ENCHANTS
@@ -1122,6 +1161,8 @@ upgradewand:
       material: DIAMOND_SHOVEL
       display-name: '&6&lRadius Upgrade &7({radius}x{radius}) &7· &f{uses}'
       custom-model-data: 0
+      # Resource-pack model, e.g. "mypack:radius_upgrade_wand". Empty = default model.
+      item_model: ""
       flags:
         - HIDE_ATTRIBUTES
         - HIDE_ENCHANTS
@@ -1167,6 +1208,8 @@ buildwand:
     material: GOLDEN_HOE
     display-name: '&b&lBuild Wand &7(+{distance}) &7· &f{uses}'
     custom-model-data: 0
+    # Resource-pack model, e.g. "mypack:build_wand". Empty = default model.
+    item_model: ""
     flags:
       - HIDE_ATTRIBUTES
       - HIDE_ENCHANTS
