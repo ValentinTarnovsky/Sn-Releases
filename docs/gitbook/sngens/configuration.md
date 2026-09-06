@@ -1008,6 +1008,31 @@ Every other item in the plugin reads the same key, so generator drops, shop icon
 buttons take a pack model as well. A misspelled value is ignored and the item keeps its default
 model. Set `debug: true` in `config.yml` to see which value was rejected.
 
+### Enchantments
+
+`enchantments` takes a list of `NAME;LEVEL` entries. The level is optional and defaults to 1,
+so a bare `MENDING` works.
+
+```yaml
+sellwand:
+  item:
+    material: BLAZE_ROD
+    enchantments:
+      - DURABILITY;1
+    flags:
+      - HIDE_ENCHANTS
+```
+
+Pair the key with the `HIDE_ENCHANTS` flag for a glint with no extra lore line. Legacy names
+still resolve, so `DURABILITY` gives you Unbreaking and `LOOT_BONUS_BLOCKS` gives Fortune.
+Levels above the vanilla maximum are allowed. An unknown name or a bad level skips that one
+entry and leaves the rest of the list alone.
+
+{% hint style="warning" %}
+Before 2.58.1 this key was read by nothing, so the stock sellwand never showed its glint. If
+you run an older build, the key is present but inert.
+{% endhint %}
+
 ```yaml
 # =============================================================================
 #  SnGens - Wands
@@ -1025,6 +1050,12 @@ model. Set `debug: true` in `config.yml` to see which value was rejected.
 #  Unlike `custom-model-data` it needs no numeric predicate in the pack, which
 #  is why downloaded model packs document this key. An invalid value is ignored
 #  and the item keeps its default model.
+# -----------------------------------------------------------------------------
+#  `enchantments` takes `NAME;LEVEL` entries, e.g. `DURABILITY;1`. The level is
+#  optional and defaults to 1. Legacy names still resolve (`DURABILITY` is
+#  today's `UNBREAKING`), levels may exceed the vanilla maximum, and an unknown
+#  name is skipped without touching the rest of the list. Pair it with the
+#  `HIDE_ENCHANTS` flag for a glint with no extra lore line.
 # =============================================================================
 
 # Restrict every wand (sellwand, buildwand, upgradewand) to islands the

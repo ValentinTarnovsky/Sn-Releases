@@ -221,6 +221,12 @@ namespaced key, and a bare name resolves to the `minecraft` namespace. It render
 1.21.4 and newer. Unlike `custom-model-data`, the pack needs no numeric predicate. See
 [configuration](configuration.md).
 
+### My sellwand has no glint, even though `wands.yml` lists an enchantment.
+
+Update to 2.58.1 or newer. Before that build nothing read the `enchantments` key, so the stock
+`DURABILITY;1` entry did nothing. Wands already handed out keep the look they were created
+with, so give the player a fresh one.
+
 ### A player already has a sellwand. What happens if I give them another?
 
 Charges are folded into the wand they already hold, and both sides are told how many were added
