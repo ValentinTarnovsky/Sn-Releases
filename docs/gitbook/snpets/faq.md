@@ -477,7 +477,25 @@ animations.
 
 Check `/pets toggle` first: it hides the player's own pets and is the usual answer. If other
 players cannot see them either, check `/pets hide` on the viewer's side, then the `worlds`
-section in `config.yml`, which can disable rendering in a named world.
+section in `config.yml`, which can disable rendering in a named world. If they vanished on a
+world change specifically, see the next question.
+
+### My pets go invisible when I change world, and a second world change brings them back
+
+Fixed in **1.24.1**. Update, and there is nothing to configure.
+
+Before that release, changing world (and respawning) re-sent the pets at the position they were
+last drawn at, which is a point in the world you had just left. When the two worlds put you at
+very different coordinates, the pets were created thousands of blocks away, in ground your client
+had never loaded, so it never showed them and never mounted a model pet's parts onto the invisible
+carrier they ride. They stayed gone for the rest of the session.
+
+That is also why it looked like one particular world was broken rather than the hop itself. On a
+jump whose two worlds happen to drop you at similar coordinates, the stale spawn landed right on
+top of you and nothing looked wrong, which made the same journey work or fail depending only on
+where each world puts you. From 1.24.1 the formation is rebuilt where you land, the way
+`/pets reload` already rebuilt it, so every world change and every respawn is clean. It applies to
+pets drawn as player heads too, not only to BetterModel ones.
 
 ### Why does a player receive no buff in one world?
 
