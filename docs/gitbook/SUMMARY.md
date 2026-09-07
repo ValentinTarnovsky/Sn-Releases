@@ -121,6 +121,16 @@
 * [Placeholders](sncustomcrafting/placeholders.md)
 * [FAQ](sncustomcrafting/faq.md)
 
+## SnDiscordLink
+
+* [Overview](sndiscordlink/README.md)
+* [Installation](sndiscordlink/installation.md)
+* [Commands](sndiscordlink/commands.md)
+* [Permissions](sndiscordlink/permissions.md)
+* [Configuration](sndiscordlink/configuration.md)
+* [Placeholders](sndiscordlink/placeholders.md)
+* [FAQ](sndiscordlink/faq.md)
+
 ## SnDisplayShops
 
 * [Overview](sndisplayshops/README.md)
