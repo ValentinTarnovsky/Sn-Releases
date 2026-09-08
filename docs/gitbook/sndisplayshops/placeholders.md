@@ -61,7 +61,7 @@ button charges. The shipped file uses it both ways on purpose.
 {% hint style="info" %}
 `{stock}` and `{amount}` are different numbers. `{stock}` is EVERYTHING the shop holds, every
 variant summed and written out in full (`1.500.000`) - the amount the withdraw button empties, so
-the shipped withdraw button shows it. `{amount}` is one grid cell's own variant, shortened
+the shipped withdraw and deposit buttons both show it. `{amount}` is one grid cell's own variant, shortened
 (`1.2M`), because that one is read across many cells at a glance.
 {% endhint %}
 

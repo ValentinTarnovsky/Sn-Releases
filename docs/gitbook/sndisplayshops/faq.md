@@ -31,6 +31,27 @@ it. The item is read, never taken. Shift-clicking a stack in your inventory ONLY
 if it does not match the traded item it is refused with a message. Before 2.2.0 a non-matching
 shift-click silently replaced the traded item; that gesture is gone on purpose.
 
+## I am on Bedrock and cannot shift-click. How do I stock my shop?
+
+Use the deposit-all button, added in 2.7.0. One click moves every stack in your inventory that
+matches what the shop trades straight into stock.
+
+This is why the button exists. A shift-click was the only way to deposit, and Bedrock clients -
+including anyone proxied through Geyser - cannot send one: their cursor click on the center cell
+*assigns* the traded item instead of depositing it. Stocking a shop was not merely awkward from
+Bedrock, it was impossible.
+
+{% hint style="warning" %}
+On a server that ran any version before 2.7.0, the button will not be visible until an operator
+places it. The update adds the button's definition to `guis/owner.yml`, but it never rewrites a
+`layout:` you already have. See [Configuration](configuration.md#the-deposit-all-button).
+{% endhint %}
+
+It takes only items identical to what the shop trades, never a similar-looking variant such as a
+differently enchanted or damaged one, and only from your own 36 inventory slots - armour, your
+off-hand and anything on your cursor are left alone. Pressing it twice is harmless: the second
+press finds nothing left to move and says so.
+
 ## Why does pickup ask me to click twice?
 
 The first click arms a red confirm cell for a few seconds; the second click removes the shop.

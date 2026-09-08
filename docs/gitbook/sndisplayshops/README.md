@@ -15,6 +15,11 @@ the block, and right-clicking it is the whole interface.
 - **Two menus.** Buyers see a compact offer with a one-click button and a trade-all button. Owners
   see a management screen for the item, the price, the currency, the direction, pausing, the stock
   grid and pickup.
+- **Playable from Bedrock.** Stocking a shop used to need a shift-click, which a Bedrock or Geyser
+  client cannot send at all. A deposit-all button moves every matching stack in one ordinary click,
+  so a shop can be run end to end from either edition. On a server upgrading from before 2.7.0 the
+  button has to be placed in the layout once - see
+  [Configuration](configuration.md#the-deposit-all-button).
 - **Buy or sell.** A shop faces either way. In SELL mode it sells its stock to players; in BUY mode
   it buys from them and pays out of its owner's balance.
 - **Storage without slots.** Stock is held per item variant as a 64-bit amount rather than as

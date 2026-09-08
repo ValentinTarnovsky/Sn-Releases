@@ -275,6 +275,45 @@ Stock removed through the developer API (a sell wand, for instance) is NOT a tra
 logged.
 {% endhint %}
 
+## The deposit-all button
+
+Added in 2.7.0, and **it does not appear by itself on a server that ran an earlier version.**
+
+The update merges the button's definition into your `guis/owner.yml` under `templates:` as
+`deposit:`, but it never rewrites a `layout:` you already have - the updater adds keys you are
+missing and leaves every value you already set exactly as you wrote it. Your layout is such a
+value, so the button exists in the file and is placed nowhere.
+
+To turn it on, put a `+` on any free cell and run `/dshop reload`. The shipped default puts it
+immediately left of the withdraw button:
+
+```yaml
+layout:
+  - "fffffffff"
+  - "ffffdffff"
+  - "ffcfmfpff"
+  - "ffffeffff"
+  - "sssssssss"
+  - "<f+wkfif>"
+```
+
+{% hint style="warning" %}
+Count your own rows before copying that line. The slot the `+` lands on has to exist in *your*
+menu - a five-row menu has no slot 47.
+{% endhint %}
+
+Leaving the `+` out is a legal choice and nothing warns about it, the same way the withdraw
+button is disabled by removing its `w`. But on a server with Bedrock or Geyser players, leaving
+it out means those players cannot stock a shop at all: a shift-click is the only other deposit
+gesture and their client cannot send one.
+
+The button takes only stacks identical to what the shop trades, and only from the owner's 36
+inventory slots - never armour, the off-hand, or a stack held on the cursor.
+
+Two lore lines in `guis/owner.yml` and `messages.shop-deposit-hint` were reworded to name both
+gestures. Those are values you already have on disk, so they are not rewritten either; copy the
+new wording over from the shipped file if you want it.
+
 ## Reloading
 
 `/dshop reload` re-reads all four files, both menu layouts and the hologram settings. Changing the
