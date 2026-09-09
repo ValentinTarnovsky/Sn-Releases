@@ -78,6 +78,12 @@ For a custom-texture head, set the material to `basehead-<base64>`.
 `item-model` only exists from Minecraft **1.21.2** on. On an older server the key is skipped with one console line and the item is built without it, so the same voucher file serves 1.20.x and 1.21.x alike. A key that is not a valid `namespace:path` is reported in the console **naming the voucher file** it came from, then ignored.
 {% endhint %}
 
+{% hint style="warning" %}
+**How a voucher looks in `/voucher open` is decided by the menu file, not by the voucher file.** The icons in the two admin menus are built from the `voucher` template in `guis/categories.yml` and `guis/vouchers.yml`, so an appearance field only reaches the icon if that template names it. The shipped templates carry `material` and, since **2.4.1**, `item-model` - the line is `item-model: "{item-model}"` and it merges into an existing install on the next boot.
+
+`custom-model-data`, `glow`, `color` and `trim` are **not** carried into the menu icon: the item you receive has them, the icon in the listing does not. To make an icon match, set the appearance you want directly on the `voucher` template of the menu file.
+{% endhint %}
+
 {% hint style="info" %}
 Write booleans unquoted. `enabled: "false"` and `auto-claim: "true"` are strings, not booleans; the plugin now parses them correctly and warns, but unquoted is the right form.
 {% endhint %}
