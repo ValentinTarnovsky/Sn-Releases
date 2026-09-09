@@ -1,6 +1,6 @@
 # Configuration
 
-SnMiniGames ships with the following YAML files. `config.yml` and `lang/messages_en.yml` are managed: new keys are auto-merged on boot and your edits and comments are preserved. `games/parkour.yml`, `games/tntrun.yml`, `games/tnttag.yml` and `games/spleef.yml` are seeded once and never auto-merged, so the setup commands and your edits fully own them.
+SnMiniGames ships with the following YAML files. `config.yml`, `schedule.yml` and `lang/messages_en.yml` are managed: new keys are auto-merged on boot and your edits and comments are preserved. `games/parkour.yml`, `games/tntrun.yml`, `games/tnttag.yml`, `games/spleef.yml` and `games/fastmine.yml` are seeded once and never auto-merged, so the setup commands and your edits fully own them.
 
 Every minigame gets its own `games/<game>.yml` holding its `enabled` flag, queue settings, maps and rewards. Settings shared by every game, such as the leave item appearance and the two setup wands, live in `config.yml` instead.
 
@@ -124,6 +124,12 @@ leave-item:
 #  Queue / round start.
 # ------------------------------------------------------------
 queue:
+  # Master switch of the per-game automatic round timers. Set it to false and no
+  # game opens a round on its own queue.auto-start-interval (the per-game key in
+  # games/<game>.yml); rounds then come only from schedule.yml and from
+  # /minigames admin start. It is INDEPENDENT of schedule.yml: turning the timers
+  # off does not turn the schedule on, and the schedule works with them on too.
+  auto-start-timers: true
   # 3-2-1 countdown sound spec: "SOUND_ID [volume] [pitch]" (blank = none).
   countdown-sound: "BLOCK_NOTE_BLOCK_PLING 1.0 1.0"
 
@@ -135,6 +141,73 @@ in-game:
   # The leave command is ALWAYS allowed regardless of this list.
   allowed-commands: []
 ```
+
+## schedule.yml
+
+Out of the box every game opens its own rounds on a treadmill: `queue.auto-start-interval` seconds after the last one ended, set per game in `games/<game>.yml`. Two keys change that.
+
+Turn the treadmill off with `queue.auto-start-timers: false` in `config.yml` above. No game then opens a round by itself. Then set your own hours here.
+
+A fired entry **opens** the round, exactly like `/mg admin start`: the game's own `queue.countdown` still runs and its `queue.min-players` still decides whether the round actually begins. An entry whose game already has a round running is skipped, and a round missed while the server was offline is never fired retroactively.
+
+The two switches are independent. You can run the schedule alongside the per-game timers, instead of them, or neither.
+
+```yaml
+# Master switch of the schedule. false = no entry is armed at all.
+enabled: false
+
+# Clock format of %snminigames_next_time%, a java.time DateTimeFormatter
+# pattern. "HH:mm" is 24 hour; "hh:mm a" is 12 hour; "EEE HH:mm" prepends the
+# weekday, which is worth it when your entries are not daily.
+time-format: "HH:mm"
+
+# Scheduled openings, one per time slot. The key is a label you choose, NOT
+# the game id: use two entries (tntrun-noon, tntrun-night) to open the same
+# game twice a day.
+# sn:extensible
+entries:
+  tntrun-evening:
+    enabled: false
+    game: tntrun
+    cron: "daily 20:00"
+    map: ""
+  spleef-friday-night:
+    enabled: false
+    game: spleef
+    cron: "0 22 * * 5"
+    map: ""
+```
+
+### Entry keys
+
+| Key | Meaning |
+|-----|---------|
+| `enabled` | `false` parks the entry without deleting it. Defaults to `true` |
+| `game` | The game id: `parkour`, `tntrun`, `tnttag`, `spleef` or `fastmine`. A game disabled in its own `games/<id>.yml` is skipped |
+| `cron` | When to open. See below |
+| `map` | Force this exact map instead of the game's rotation. Empty uses the rotation |
+
+A forced `map` does **not** advance a `SEQUENTIAL` rotation, so an entry that always forces one map plays that map forever. A map id that does not exist logs a warning and falls back to the rotation, so the round still happens.
+
+### Cron expressions
+
+| Form | Example | Meaning |
+|------|---------|---------|
+| `daily HH:mm` | `daily 20:00` | every day at 20:00 |
+| `hourly :mm` | `hourly :30` | every hour at minute 30 |
+| 5-field cron | `0 22 * * 5` | minute, hour, day of month, month, day of week |
+
+Inside a field you combine `*`, lists (`1,15`), ranges (`1-5`) and steps (`*/10`, `10-30/5`). Day of week is 0-7 and both 0 and 7 mean Sunday. There is no seconds field, so the finest resolution is one minute. All times follow the timezone of the **server machine**; there is no timezone key, because the schedule fires on that zone and a display-only override would show an hour the round does not actually open at.
+
+{% hint style="warning" %}
+Always quote the `cron` value. A bare `*/30 * * * *` is not valid YAML, and a file that does not parse is backed up and reseeded from the jar, replacing your whole schedule with the shipped examples.
+{% endhint %}
+
+### Checking your work
+
+An unusable expression is dropped with one console warning at boot and nothing else, so run `/mg admin schedule` in game: it lists every entry with its next opening and flags the ones that could not be read. The `%snminigames_next_*%` [placeholders](placeholders.md#scheduled-rounds) show the same schedule to players.
+
+The `entries` section is marked `# sn:extensible`, which means it is yours: an entry you delete stays deleted instead of coming back on the next boot.
 
 ## games/parkour.yml
 

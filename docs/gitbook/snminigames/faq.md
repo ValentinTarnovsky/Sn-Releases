@@ -98,6 +98,19 @@ That was a bug, fixed in v1.8.4 - update the plugin. Until then the probe decide
 ### How do I start a round manually?
 Two admin commands cover it. `/mg admin start <game>` opens a fresh queue right away without waiting for auto-start; add an optional map (`/mg admin start <game> <map>`) to force a specific map instead of the rotation pick, and the rotation cursor stays where it was. Once players are queued, `/mg admin forcestart <game>` skips the remaining countdown and begins the round immediately with whoever is in the queue - the minimum-players requirement is bypassed on purpose, so an empty queue is refused instead.
 
+### Can I decide the hours my minigames run at, instead of a timer?
+Yes, since v1.11.0. Set `queue.auto-start-timers: false` in `config.yml` to stop every game opening rounds on its own interval, then put your grid in `schedule.yml`: one entry per time slot, each pairing a game with a cron expression such as `daily 20:00`, `hourly :30` or `0 22 * * 5`. The whole week lives in that one file. See [Configuration](configuration.md#scheduleyml).
+
+The two switches are independent, so leaving the timers on and adding a schedule for peak hours also works.
+
+### I set up my schedule and nothing opens. What do I check?
+Run `/mg admin schedule`. It lists every entry with its next opening and flags any whose cron expression could not be read, which is otherwise only a single line in the startup log. In order, the usual causes are: `enabled: false` still set at the top of the file (it ships off on purpose), `enabled: false` on the entry itself, an unquoted cron value, a `game` id that is disabled in its own `games/<id>.yml`, and a game whose `queue.waiting-spawn` was never set. The last one warns in the console when the entry fires.
+
+Also remember the entry only *opens* the room. If fewer than `queue.min-players` join before the countdown ends, the round is cancelled exactly as it would be at any other time.
+
+### A round was scheduled while my server was down. Does it fire on startup?
+No. A missed opening is skipped, never replayed. The next run is simply the next instant the expression matches.
+
 ### Why does the [JOIN] chat button do nothing for some players?
 Bedrock players (connecting through Geyser) cannot click chat buttons - that is a Bedrock limitation, not a bug. The announce also shows the plain command (`/minigames join <game>`), which works for everyone. If Java players cannot click either, check the startup log: the plugin warns when a language file edit or translation lost the `<click:...>` tag of a message.
 

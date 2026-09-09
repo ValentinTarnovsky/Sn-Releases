@@ -28,6 +28,7 @@ than one line per subcommand. The setup commands still run and still tab-complet
 | `/mg admin forcestart <game>` | `snminigames.admin.forcestart` | Skip the remaining waiting countdown and begin the round now with whoever is queued (bypasses the minimum-players requirement) |
 | `/mg admin stop <game>` | `snminigames.admin.stop` | Stop the running round and restore everyone |
 | `/mg admin forcejoin <player> [game]` | `snminigames.admin.forcejoin` | Force a player into a round |
+| `/mg admin schedule` | `snminigames.admin.schedule` | List every entry of `schedule.yml` with its cron expression and next opening. Entries whose expression could not be read are flagged here, which is the only place they surface after the boot warning |
 | `/mg admin wand` | `snminigames.admin.setup` | Toggle the single-block setup wand (given when absent, removed when present; also removed on quit) |
 | `/mg admin wand region` | `snminigames.admin.setup` | Toggle the cuboid region wand: left-click one corner, right-click the other, edges rendered with particles. Running it again takes the wand back and clears the selection - and clears the selection even when the wand is already gone, which is how you stop leftover particles |
 | `/mg admin parkour help [page]` | `snminigames.admin.setup` | List every parkour setup command with its usage, paginated |

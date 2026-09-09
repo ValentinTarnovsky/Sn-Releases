@@ -11,6 +11,7 @@ Player permissions default to `true`; every admin node defaults to `op`. `snmini
 | `snminigames.admin.stop` | op | Force-stop a running round |
 | `snminigames.admin.forcejoin` | op | Force a player into a round |
 | `snminigames.admin.setup` | op | Map setup subcommands and the setup wand |
+| `snminigames.admin.schedule` | op | List the scheduled rounds and when they next open |
 | `snminigames.admin.commandbypass` | op | Run any command while inside a minigame |
 | `snminigames.admin.reload` | op | `/minigames reload` |
 | `snminigames.admin.debug` | op | `/minigames debug` |

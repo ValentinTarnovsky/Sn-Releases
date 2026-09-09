@@ -5,6 +5,7 @@ Scalable minigame framework for Paper servers. Adding a new game costs one game 
 ## Features
 
 - Automatic rounds with a clickable **[JOIN]** chat announcement and a live queue countdown.
+- **Pick the hours yourself.** One master switch turns off the per-game timers, and a single `schedule.yml` pairs each minigame with a cron expression - `daily 20:00`, `hourly :30`, Fridays at 22:00 - so the whole week's grid lives in one file. Placeholders put the next round, its time and the countdown to it on your scoreboard.
 - Crash-safe player state: inventory, armor, XP, effects, health, food, location and more are snapshotted to disk before a game touches them, and restored exactly.
 - Full in-game protection: block changes, damage, drops, pickups, inventory clicks and commands are blocked; chat and leaving always work.
 - **Parkour** with multi-map rotation, ordered checkpoints, fall respawn, and single or multi-winner finishes with a finish-hold wait.

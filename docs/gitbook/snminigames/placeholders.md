@@ -11,3 +11,22 @@ All placeholders require [PlaceholderAPI](https://www.spigotmc.org/resources/pla
 | `%snminigames_map_<game>%` | Id of the map the current round plays |
 | `%snminigames_ingame%` | `yes` or `no` for the viewing player |
 | `%snminigames_game%` | The viewing player's current game id, or empty |
+
+## Scheduled rounds
+
+These read [`schedule.yml`](configuration.md#scheduleyml). With the schedule off, or with nothing left to open, each returns the `status.none` word from the language file (`None` by default). `<game>` is a game id as above.
+
+| Placeholder | Description |
+|-------------|-------------|
+| `%snminigames_next_game%` | Display name of the minigame that opens next, colour codes included |
+| `%snminigames_next_game_id%` | The same game's plain id. Use this one for comparisons; the display name carries formatting |
+| `%snminigames_next_time%` | Clock time of that opening, rendered with the schedule's own `time-format` |
+| `%snminigames_next_in%` | How long until it: `1d 3h`, `2h 15m`, `23m`, and `45s` only inside the last minute |
+| `%snminigames_next_time_<game>%` | When that ONE game next opens, so a board can show the whole grid |
+| `%snminigames_next_in_<game>%` | How long until that one game opens |
+
+An entry naming a game that is disabled or unknown is never reported as next: it can never open a round. Times follow the timezone of the server machine.
+
+{% hint style="warning" %}
+Every placeholder on this page needs a player context. Scoreboards and per-viewer holograms provide one; parsing from the console, or with a tool that passes no player, returns nothing.
+{% endhint %}
