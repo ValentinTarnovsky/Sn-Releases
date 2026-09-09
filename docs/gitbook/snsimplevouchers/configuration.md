@@ -45,17 +45,20 @@ mode: WEIGHTED                   # LIST (default), WEIGHTED, RANDOM
 amount: 5
 auto-claim: false
 multi-claim: false               # mass claim for vouchers with no amount
+message: "&aYou redeemed {voucher}!"   # sent on any successful claim
 
 commands:
   - command: "eco give {player} {amount}"
     weight: 75
     condition: "%player_level% >= 10"
+    message: "&aYou got ${amount}!"       # sent only if THIS command runs
+    deny-message: "&cYou need level 10."  # sent if its condition failed
   - command: "crate key give {player} rare 1"
     weight: 25
   - "broadcast &e{player} won something!"
 ```
 
-A command entry can be a plain string, or a map with `command`, `weight` and `condition`.
+A command entry can be a plain string, or a map with `command`, `weight`, `condition`, `message` and `deny-message`.
 
 ### Item fields
 
@@ -77,6 +80,37 @@ For a custom-texture head, set the material to `basehead-<base64>`.
 
 {% hint style="info" %}
 Write booleans unquoted. `enabled: "false"` and `auto-claim: "true"` are strings, not booleans; the plugin now parses them correctly and warns, but unquoted is the right form.
+{% endhint %}
+
+### Messages
+
+A voucher can speak for itself, on top of the plugin's own claim line. All three keys are optional, support `&` and `&#RRGGBB` colours, the five placeholders and PlaceholderAPI, and are turned off by a blank value exactly like a lang key.
+
+| Key | Where | Sent when |
+|---|---|---|
+| `message` | top level of the file | any successful claim of this voucher |
+| `message` | on a command entry | only when **that** command actually runs |
+| `deny-message` | on a command entry | that entry's `condition` did **not** pass |
+
+The per-entry `message` is what lets a `WEIGHTED`/`RANDOM` crate name the prize the player actually drew, since only the drawn entry sends its line.
+
+{% hint style="warning" %}
+`deny-message` is sent **only when the claim hands out nothing** - when every reward on the voucher failed its condition. A claim that ran at least one command is a success and reports itself as one, so a player who got their reward is never also told about the tiers they did not qualify for.
+
+When at least one failing entry has a `deny-message`, those messages **replace** the generic `claim.no-eligible-reward` line rather than printing under it. Entries without one stay silent, so you choose which requirement is worth explaining. The voucher is not consumed either way.
+{% endhint %}
+
+On a `multi-claim` crate one click draws many times, so identical reward messages collapse into one line with a count instead of flooding chat:
+
+```
+You got a diamond!  x87
+A netherite ingot! Lucky.  x3
+```
+
+The `x87` wrapper is `claim.reward-grouped` in `lang/messages_en.yml`, so it can be restyled or translated. A prize drawn exactly once is sent with no suffix. Note that on a crate `{amount}` inside a reward message is the number of vouchers the click consumed, while each command was dispatched with `{amount}` of 1 - prefer the `x{times}` grouping to express how much was won.
+
+{% hint style="info" %}
+Giving a reward its own `message` also stops that voucher from being swept up by a `bulk.aggregate-by-category` click on a sibling: two vouchers that announce themselves differently are two different rewards from the player's seat, and consolidating them would report the wrong text. This only ever makes a click consume less, never more.
 {% endhint %}
 
 ### `mode`
