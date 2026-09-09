@@ -14,14 +14,14 @@ All placeholders require [PlaceholderAPI](https://www.spigotmc.org/resources/pla
 
 ## Scheduled rounds
 
-These read [`schedule.yml`](configuration.md#scheduleyml). With the schedule off, or with nothing left to open, each returns the `status.none` word from the language file (`None` by default). `<game>` is a game id as above.
+These read [`schedule.yml`](configuration.md#scheduleyml). With the schedule off, or with nothing left to open, each returns the `status.none` word from the language file (`None` by default) - except `%snminigames_next_game_id%`, which returns nothing, so a scoreboard condition comparing it does not start matching a translated word. `<game>` is a game id as above.
 
 | Placeholder | Description |
 |-------------|-------------|
 | `%snminigames_next_game%` | Display name of the minigame that opens next, colour codes included |
-| `%snminigames_next_game_id%` | The same game's plain id. Use this one for comparisons; the display name carries formatting |
+| `%snminigames_next_game_id%` | The same game's plain id. Use this one for comparisons; the display name carries formatting. Empty when nothing is scheduled |
 | `%snminigames_next_time%` | Clock time of that opening, rendered with the schedule's own `time-format` |
-| `%snminigames_next_in%` | How long until it: `1d 3h`, `2h 15m`, `23m`, and `45s` only inside the last minute |
+| `%snminigames_next_in%` | How long until it: `1d 3h 27m`, `2h 15m`, `23m`, and `45s` only inside the last minute |
 | `%snminigames_next_time_<game>%` | When that ONE game next opens, so a board can show the whole grid |
 | `%snminigames_next_in_<game>%` | How long until that one game opens |
 
