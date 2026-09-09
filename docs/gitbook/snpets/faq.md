@@ -477,25 +477,37 @@ animations.
 
 Check `/pets toggle` first: it hides the player's own pets and is the usual answer. If other
 players cannot see them either, check `/pets hide` on the viewer's side, then the `worlds`
-section in `config.yml`, which can disable rendering in a named world. If they vanished on a
-world change specifically, see the next question.
+section in `config.yml`, which can disable rendering in a named world. If they vanished after
+travelling - a world change, a warp, a `/home`, an island teleport - see the next question.
 
-### My pets go invisible when I change world, and a second world change brings them back
+### My pets go invisible after I teleport, and travelling again sometimes brings them back
 
-Fixed in **1.24.1**. Update, and there is nothing to configure.
+Fixed in **1.24.1** for a world change and in **1.24.2** for every other long jump. Update, and
+there is nothing to configure.
 
-Before that release, changing world (and respawning) re-sent the pets at the position they were
-last drawn at, which is a point in the world you had just left. When the two worlds put you at
-very different coordinates, the pets were created thousands of blocks away, in ground your client
-had never loaded, so it never showed them and never mounted a model pet's parts onto the invisible
-carrier they ride. They stayed gone for the rest of the session.
+Your client throws an entity away when it unloads the chunk that entity lives in. Before these
+releases, a player who travelled further than their own render distance left every pet behind as
+something their client had already forgotten, and the plugin went on moving pets that no longer
+existed: the packets were dropped in silence, so the server believed the pets were placed and
+visible while the player saw nothing. The packet that attaches a model pet's parts to the
+invisible carrier they ride is only ever sent when a pet is CREATED, so they could never come
+back on their own.
 
-That is also why it looked like one particular world was broken rather than the hop itself. On a
-jump whose two worlds happen to drop you at similar coordinates, the stale spawn landed right on
-top of you and nothing looked wrong, which made the same journey work or fail depending only on
-where each world puts you. From 1.24.1 the formation is rebuilt where you land, the way
-`/pets reload` already rebuilt it, so every world change and every respawn is clean. It applies to
-pets drawn as player heads too, not only to BetterModel ones.
+**It is a distance, never a particular world**, and that is what made it so confusing to report.
+On a hop whose two ends happen to be at similar coordinates the pets landed right on top of you
+and nothing looked wrong, so the same journey worked or failed depending only on where you came
+out - which reads as "world X is broken" or as "teleporting twice fixes it". 1.24.1 rebuilt the
+formation on a world change and a respawn; 1.24.2 does it for **any** jump past the distance your
+client is still being sent chunks for, whatever caused it: a command, a plugin, a portal, a warp,
+an island teleport or a vehicle. It applies to pets drawn as player heads too, not only to
+BetterModel ones.
+
+Since 1.24.2, someone already standing where you land also sees your pets in the right place;
+before, they were sent your pets at the coordinates you had just left.
+
+Nothing to tune: the distance is read from your server's own `view-distance` and from each
+player's render distance, so it cannot drift out of step with your setup. Ordinary walking,
+sprinting and elytra flight never rebuild anything.
 
 ### Why does a player receive no buff in one world?
 
