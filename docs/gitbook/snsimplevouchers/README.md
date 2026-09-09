@@ -14,7 +14,7 @@ Every voucher is its own file under `vouchers/`. Drop files in, group them in fo
 - **Three reward modes**: `LIST` runs every eligible reward, `WEIGHTED` picks one by weight, `RANDOM` picks one evenly.
 - **Per-reward conditions**: a `condition:` expression per reward entry, so one voucher hands a better key to a higher-level player.
 - **Auto-claim vouchers** that skip the item entirely and dispatch straight to the player.
-- **A full item builder**: HEX colours, lore, glow, custom model data, armour trims, leather and potion tinting, and custom-texture player heads.
+- **A full item builder**: HEX colours, lore, glow, custom model data, 1.21.2+ item models, armour trims, leather and potion tinting, and custom-texture player heads.
 - **A paginated admin GUI** for browsing and handing out vouchers.
 - **Give to one player or to the whole server**, with a choice of what happens when someone's inventory is full: drop the overflow at their feet, or skip them entirely and report it.
 

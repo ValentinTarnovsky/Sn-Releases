@@ -34,6 +34,7 @@ item:
   lore:
     - "&7Right-click to claim"
   custom-model-data: 12345
+  item-model: "nexo:my_voucher"  # 1.21.2+ minecraft:item_model component
   glow: true
   color: "#FF0000"               # leather armour and potions
   trim:                          # armour only
@@ -63,11 +64,16 @@ A command entry can be a plain string, or a map with `command`, `weight` and `co
 | `material` | Any Material that exists as an item. `AIR`, `WATER`, `FIRE` and other block-only states are refused at load with a warning, because a voucher built from one is handed out as nothing. A name this server version does not know falls back to a placeholder instead of failing, so one file can target 1.20 and 1.21 alike |
 | `display-name`, `lore` | Support `&` codes and `&#RRGGBB` HEX |
 | `custom-model-data` | Integer |
+| `item-model` | The 1.21.2+ `minecraft:item_model` component, as `namespace:path`. Points the item straight at a resource-pack model instead of addressing it through `custom-model-data`; independent of that field, so a voucher may carry both. A key with no namespace means `minecraft:` |
 | `glow` | Boolean |
 | `color` | Leather armour and potions |
 | `trim` | Armour only, `pattern` + `material` |
 
 For a custom-texture head, set the material to `basehead-<base64>`.
+
+{% hint style="info" %}
+`item-model` only exists from Minecraft **1.21.2** on. On an older server the key is skipped with one console line and the item is built without it, so the same voucher file serves 1.20.x and 1.21.x alike. A key that is not a valid `namespace:path` is reported in the console **naming the voucher file** it came from, then ignored.
+{% endhint %}
 
 {% hint style="info" %}
 Write booleans unquoted. `enabled: "false"` and `auto-claim: "true"` are strings, not booleans; the plugin now parses them correctly and warns, but unquoted is the right form.
