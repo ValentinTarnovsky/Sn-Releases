@@ -11,6 +11,7 @@ their own shop to manage it, and right-click somebody else's to trade.
 |---|---|---|
 | `/dshop give <player> [amount]` | `sndisplayshops.admin.give` | Gives a player shop items. Amount defaults to 1. |
 | `/dshop bypass` | `sndisplayshops.admin.bypass` | Toggles staff bypass for yourself. While it is on you open the OWNER menu of any shop you right-click instead of its buyer menu. |
+| `/dshop logs [filters...]` | `sndisplayshops.admin.logs` | Reads the trade and stock log. See [Trade log](logs.md). |
 | `/dshop reload` | `sndisplayshops.admin.reload` | Reloads config, language, both menu layouts and the hologram settings. |
 | `/dshop help` | `sndisplayshops.admin` | Lists the commands you may run. |
 | `/dshop debug` | `sndisplayshops.admin.debug` | Toggles debug logging. |
@@ -32,6 +33,20 @@ Aliases you ADD here work immediately after a reload. The two shipped above are 
 plugin's own `plugin.yml`, so removing them from this list does not un-register them until the next
 server start.
 {% endhint %}
+
+## Logs
+
+`/dshop logs` searches `plugins/SnDisplayShops/logs/<date>.log` from chat - every trade, deposit,
+withdrawal, pickup, and every shop whose stock was destroyed by an island teardown. Filters are
+`key:value` tokens in any order and <kbd>TAB</kbd> lists them.
+
+```
+/dshop logs days:7 action:withdraw,pickup,destroy player:Steve
+/dshop logs min-unit:1 max-unit:1 days:30 stats
+```
+
+The whole filter language, the file format and the 2.8.0 column rename are on the
+[Trade log](logs.md) page.
 
 ## Bypass
 

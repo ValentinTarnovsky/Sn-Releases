@@ -237,29 +237,38 @@ toggle above could ever remove it. If SuperiorSkyblock cannot answer, the placem
 warning names the cause: a broken API must not stop every shop placement on the server.
 {% endhint %}
 
-## Trade log
+## Trade and stock log
 
 ```yaml
 trade-log:
   enabled: true
   flush-seconds: 10
+  max-rows-per-event: 32
+  query:
+    default-days: 1
+    max-days: 30
+    max-results: 1000
+    max-scanned-lines: 500000
+    page-size: 8
+    cache-seconds: 60
 ```
 
-One line per COMPLETED trade, appended to `plugins/SnDisplayShops/logs/<date>.log`, a new file per
+One line per stock movement, appended to `plugins/SnDisplayShops/logs/<date>.log`, a new file per
 day, the way the server writes its own logs. A refused or aborted trade writes nothing.
 
-```
-[2026-08-15 14:03:11] BUY buyer=Steve buyer-uuid=0a1b… owner=Alex owner-uuid=7f3c… shop=2d9e…
-  loc=world:120:64:-338 item="Diamond Sword" qty=3 unit=1000 total=3000 currency=okicoins
-```
-
-(one line in the file; wrapped here to fit). `BUY` and `SELL` are the BUYER's side of the trade, so
-`BUY` is a player buying from a shop that is in SELL mode. The uuids, `loc`, `shop` and `currency`
-are the machine columns; the names beside them are for reading. `unit` and `total` are what actually
-moved, not what the shop advertises.
+Everything about reading it back is on its own page: [Trade log](logs.md).
 
 `flush-seconds` is how long lines wait in memory before being written, and it is clamped to 1-300.
 Lines are written off the main thread; the server never waits on the disk to finish a trade.
+
+`max-rows-per-event` bounds a `PICKUP` or a `DESTROY`, which cover a whole shop. A shop can hold
+any number of different items, and one island disband removes every shop on the island in a single
+tick - without a cap, one event could fill the line buffer and stop the trades that explain it from
+being recorded at all. Anything past the cap is folded into one extra line carrying how many
+variants it stands for and their total, so the numbers stay complete however low you set it.
+
+The `query:` block bounds a single `/dshop logs` command and affects nothing that gets written. It
+is re-read per query, so an edit applies without a reload.
 
 {% hint style="info" %}
 Old files are never deleted or compressed. Prune the folder yourself if the server is busy enough
@@ -269,10 +278,7 @@ for it to matter.
 {% hint style="warning" %}
 An owner the server has not named yet can appear as `owner=-` on the first line after a restart -
 resolving an offline player's name reads from disk, and that is not done during a click. The
-`owner-uuid` beside it is always correct, and the name is there from the next trade onward.
-
-Stock removed through the developer API (a sell wand, for instance) is NOT a trade and is not
-logged.
+`owner-uuid` beside it is always correct, and the name is there from the next movement onward.
 {% endhint %}
 
 ## The deposit-all button

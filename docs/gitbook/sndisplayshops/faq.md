@@ -117,10 +117,23 @@ are selling before you delete a currency.
 
 ## Where can I see who bought what?
 
-`plugins/SnDisplayShops/logs/<date>.log`, one file per day, one line per completed trade, with the
-buyer, the owner, the shop, the item, the quantity, the unit price, the total and the currency. Turn
-it off with `trade-log.enabled`. See [Configuration](configuration.md) for the line format and its
-two caveats.
+Run `/dshop logs`. It reads `plugins/SnDisplayShops/logs/<date>.log` - one file per day, one line
+per stock movement - and filters it by action, player, owner, shop, world, item, material, currency,
+time window, quantity and price, with a `stats` summary. See [Trade log](logs.md).
+
+## A player says their stock disappeared
+
+Ask the log. `/dshop logs owner:<name> days:7` shows everything that left their shops, and the
+action word says how:
+
+- `BUY` - somebody bought it, which is what a shop is for.
+- `WITHDRAW` or `PICKUP` - they took it out themselves.
+- `DESTROY` - a shop of theirs was removed by an island teardown with the stock still in it. That
+  is `delete-shops-on-island-disband` or `delete-shops-on-membership-loss`; see below.
+- `EXTERNAL` - another plugin took it through the developer API, typically a sell wand.
+
+If nothing shows at all, check the movement predates 2.8.0: before it, only `BUY` and `SELL` were
+recorded, so a withdrawal or a disband from back then left no trace anywhere.
 
 ## Players can afford things and the shop still refuses
 
@@ -152,9 +165,12 @@ make it fit, and there is no value that switches the limit off - below 1 reads a
 ## An island was disbanded and the shops on it lost their stock
 
 That is `integrations.superiorskyblock.delete-shops-on-island-disband`, and it does destroy stock:
-not dropped, not returned, not logged. The same applies to `delete-shops-on-membership-loss`, where
-the island survives and an ex-member loses their stock outright. Turn either off if your players
-expect to keep what their shops held.
+not dropped, not returned to the owner, and the owner is not told. The same applies to
+`delete-shops-on-membership-loss`, where the island survives and an ex-member loses their stock
+outright. Turn either off if your players expect to keep what their shops held.
+
+Since 2.8.0 it IS recorded, as `DESTROY` lines in the trade log, so you can answer the ticket:
+`/dshop logs action:destroy owner:<name> days:7`.
 
 ## A player left an island and their shops are still there
 

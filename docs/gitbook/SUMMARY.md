@@ -136,6 +136,7 @@
 * [Overview](sndisplayshops/README.md)
 * [Installation](sndisplayshops/installation.md)
 * [Commands](sndisplayshops/commands.md)
+* [Trade log](sndisplayshops/logs.md)
 * [Permissions](sndisplayshops/permissions.md)
 * [Configuration](sndisplayshops/configuration.md)
 * [Placeholders](sndisplayshops/placeholders.md)

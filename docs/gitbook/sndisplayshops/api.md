@@ -49,6 +49,13 @@ variant between your snapshot and your removal, and this call is the only step t
 really there.
 {% endhint %}
 
+{% hint style="info" %}
+**Since 2.8.0 a successful removal is recorded**, as one `EXTERNAL` line in the shop's
+[trade log](logs.md) with no actor on it - the shop's owner can otherwise only see that stock went
+missing. Nothing about the call changed: same signature, same return meaning, same threading. The
+recording is the plugin's own business and cannot fail your removal.
+{% endhint %}
+
 ## Example
 
 A sellwand that drains a shop and pays its owner:

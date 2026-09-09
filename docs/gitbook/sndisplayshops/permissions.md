@@ -6,6 +6,7 @@
 | `sndisplayshops.admin` | op | The `/dshop` command itself, and every node below. |
 | `sndisplayshops.admin.give` | op | `/dshop give` |
 | `sndisplayshops.admin.bypass` | op | `/dshop bypass`, and opening any shop's owner menu while it is on. |
+| `sndisplayshops.admin.logs` | op | `/dshop logs` - reads what every player on the server has traded, deposited and withdrawn. |
 | `sndisplayshops.admin.reload` | op | `/dshop reload` |
 | `sndisplayshops.admin.debug` | op | `/dshop debug` |
 | `sndisplayshops.admin.update` | op | Receives the update notice on join when a new version is released. |
@@ -15,6 +16,14 @@
 {% hint style="warning" %}
 `sndisplayshops.admin` is the command root. A staff member who does not hold it cannot run `/dshop`
 at all, not even `/dshop help`.
+{% endhint %}
+
+{% hint style="info" %}
+`sndisplayshops.admin.logs` is its own node on purpose. What it grants is different in kind from
+the rest: bypass lets a staff member act on the one shop in front of them, while the log shows what
+every player on the server has traded, deposited and withdrawn. Give it to a moderator who is not
+otherwise an admin, or withhold it from one who is - `sndisplayshops.admin` still grants it, so
+revoke it explicitly if that is what you want.
 {% endhint %}
 
 ## Revoking `sndisplayshops.use`
