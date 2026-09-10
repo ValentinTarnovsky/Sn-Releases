@@ -30,6 +30,11 @@ Its source plugin is probably not installed, or the tool or crate id in the pool
 ### Which pet box openings count?
 SnPets boxes are counted through the SnPets API, and only when a box really opens: an attempt SnPets refuses - a cooldown still running, storage full, a failed success roll - hands the boxes back and adds no progress, and a shift-click stack credits the boxes that fitted. RivalPets boxes are still counted from the right-click on the box item. Both plugins can be installed at once; they never count the same opening.
 
+### My players never roll their challenges. Can the plugin tell them?
+Since 2.5.0 it does, on its own. A player sitting on rollable slots gets a title and a chat line saying how many are waiting - only while they really can roll something, and at most once every `notifications.challenge-reminder.interval-minutes` (default 20), counted per player rather than per server. A player who just joined is left alone for `join-delay-seconds` (default 60) so the line does not land in the middle of the join messages, and a player with nothing to roll does not burn their interval, so the reminder arrives right after a cooldown ends.
+
+Reword it under `notifications.challenge-reminder` in `lang/messages_en.yml` (`{challenges}` is how many are ready, `{slots}` how many they have), empty both `title` and `subtitle` to make it chat-only, or set `enabled: false` to switch it off - all live on `/battlepass reload`. `%battlepass_challenges_ready%` puts the same number on a scoreboard.
+
 ### What happens if I lower the challenge slot count?
 Challenges already running in the removed slots freeze: they stop earning and stop paying. Their deadline keeps counting in real time, so raising the count back either resumes them or expires them on the next sweep.
 

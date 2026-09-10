@@ -8,7 +8,7 @@ The pass is permanent. There is no season to reset, and nothing expires undernea
 
 - Free and premium reward tracks, with 54 tiers out of the box and a curve set by two numbers.
 - Passive XP from EdTools block farming, with a per-tool override map so a late game drill pays more than a starter pickaxe.
-- Five rotating challenge slots per player, rolled from a weighted pool you curate.
+- Five rotating challenge slots per player, rolled from a weighted pool you curate, with a periodic reminder for players who leave slots unrolled.
 - Rewards are console commands, so any plugin's items, currency, keys or ranks can be given.
 - The premium track unlocks retroactively: buying a pass opens every premium reward on tiers the player already passed.
 - Any currency works. The plugin reads balances through a placeholder and charges through a console command, so Vault, tokens, gems and points all work unchanged.

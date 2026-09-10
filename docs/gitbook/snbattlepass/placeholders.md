@@ -24,7 +24,11 @@ The two boost placeholders read the live pet integrations - the exact value the 
 
 ## Challenge slots
 
-`%battlepass_challenge_<n>_<field>%` reads one challenge slot, where `<n>` is the slot number starting at 1.
+| Placeholder | Description |
+|-------------|-------------|
+| `%battlepass_challenges_ready%` | How many challenge slots the player can roll right now - the same count the unrolled-challenge reminder nudges them with, so a scoreboard line and the chat line can never disagree. Only slots inside `challenges.slots` count. Since 2.5.0 |
+
+`%battlepass_challenge_<n>_<field>%` reads one challenge slot, where `<n>` is the slot number starting at 1. Note the singular `challenge_` here against the plural `challenges_ready` above.
 
 | Field | Description |
 |-------|-------------|

@@ -223,8 +223,9 @@ integrations:
     max-percent-per-tier: 2.0
 
 # ------------------------------------------------------------
-#  Feedback. Timing of the tier-up and challenge-complete title;
-#  the text itself is in lang/messages_en.yml under notifications.
+#  Feedback. Timing of the tier-up, challenge-complete and
+#  challenge-reminder title; the text of all three is in
+#  lang/messages_en.yml under notifications.
 # ------------------------------------------------------------
 notifications:
   title:
@@ -234,6 +235,20 @@ notifications:
     stay-ticks: 40
     # Ticks the title takes to fade out.
     fade-out-ticks: 10
+  # Reminds players who are leaving challenge slots unrolled, which is the one
+  # thing in the pass nobody is otherwise told to do. It only ever speaks to a
+  # player who CAN roll a slot right now, so someone juggling five running
+  # challenges is never nagged. Applied on /battlepass reload.
+  challenge-reminder:
+    # false stops the reminder entirely, live.
+    enabled: true
+    # Minutes between two reminders TO THE SAME PLAYER. This is the anti-spam
+    # knob: it is per player, so a full server nags exactly as often as an empty
+    # one. Raise it to make the reminder rarer, never to zero.
+    interval-minutes: 20
+    # Seconds a player who just joined is left alone before the first reminder
+    # can reach them, so it does not land in the middle of the join messages.
+    join-delay-seconds: 60
 ```
 
 ## challenges.yml
@@ -470,6 +485,8 @@ tiers:
 ## lang/messages_en.yml
 
 Every player-visible string lives here: messages, notification titles, and the `status:` labels the menus use for states such as locked, claimed or on cooldown. One language file ships; add more by copying it and pointing `lang.code` at the new file.
+
+Each entry under `notifications:` is a `title` / `subtitle` / `chat` trio. Emptying a value silences that part: an empty `chat` sends no chat line, and since **2.5.0** emptying BOTH `title` and `subtitle` sends no title at all instead of a blank one that still eats the fade-in, the stay and the fade-out. That is how you make an announcement chat-only - it matters most for `challenge-reminder`, which repeats. MiniMessage works in these values too, so the reminder's chat line can be made clickable with `<click:run_command:'/battlepass challenges'>`.
 
 ## guis/
 
