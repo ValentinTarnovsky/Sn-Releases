@@ -818,3 +818,11 @@ cut the option list at 100 *before* matching what you typed, so with more than 1
 every id past the hundredth (alphabetically) was unreachable from tab even by its own first
 letters - typing it in full still worked, because parsing reads the whole set. SnPets itself needs
 no change; the fix is in the SnLib jar.
+
+### Every startup warns `Could not save messages_es.yml ... because messages_es.yml already exists`.
+
+Update to **1.24.3** or later. The warning was Bukkit's, not the plugin's, and it was harmless:
+SnPets writes `lang/messages_es.yml` itself on the first boot, because only the English file is
+seeded for it, and it kept offering the file on later boots even though it was already there. Your
+copy was never touched or overwritten. Since 1.24.3 the plugin writes the file only when it is
+missing, so the line is gone.
