@@ -47,6 +47,12 @@ command:
 # group-formats entry below.
 # Placeholders: {prefix}, {suffix}, {displayname}, {name}, {message}, %papi%
 # A format WITHOUT {message} renders the format alone and drops the message.
+#
+# {prefix} and {suffix} are read from LuckPerms and accept hex written EITHER
+# way: &#RRGGBB, or a bare #RRGGBB with no ampersand, which is what most prefix
+# generators hand you (#E70000&lO#F30000&lW... renders as colour, not as text).
+# That leniency is for the LuckPerms values only - hex written in THIS file, and
+# hex a player types in their own message, still needs the &.
 # The colour in front of {message} carries onto the message body; codes the
 # sender typed themselves override it.
 #

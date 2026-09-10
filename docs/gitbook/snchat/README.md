@@ -4,7 +4,7 @@ SnChat formats your chat per LuckPerms group and moderates it. Players can show 
 
 ## Features
 
-- **Group chat formats.** One format per LuckPerms primary group, with a global fallback. Every line supports `&` codes, `&#RRGGBB` hex and PlaceholderAPI.
+- **Group chat formats.** One format per LuckPerms primary group, with a global fallback. Every line supports `&` codes, `&#RRGGBB` hex and PlaceholderAPI. In `{prefix}` and `{suffix}` the hex may also be written bare, `#RRGGBB`, the way most prefix generators produce it.
 - **Line hover and click.** Attach a tooltip and a click action to the whole chat line.
 - **Showcase tokens.** `[item]` embeds the held item with its real tooltip. `[inv]` and `[ec]` post a clickable tag that opens a frozen, view-only replica.
 - **Chat moderation.** Caps, character repetition, message cooldowns, a `plugin:command` syntax block and a global mute. Each module corrects or denies, and can alert staff.

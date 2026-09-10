@@ -26,6 +26,18 @@ That is the change, not a bug. Alerts used to be on for every `snchat.notify` ho
 
 It only has to be done once - the choice is saved in `data.yml` and survives relog and restart, which the old session-scoped toggle did not.
 
+### My LuckPerms prefix shows the hex codes as text instead of colouring.
+
+Fixed in **2.2.0**. A prefix written the way most generators produce it -
+
+```
+prefix: "#E70000&lO#F30000&lW#FF0000&lN#E60000&lE#CD0000&lR #CD0000"
+```
+
+- has no `&` in front of the hex, and before 2.2.0 nothing consumed it, so the codes reached chat spelled out. From 2.2.0 both `&#RRGGBB` and a bare `#RRGGBB` work in `{prefix}` and `{suffix}`. Update and reload; the prefix itself needs no editing.
+
+This applies to the LuckPerms values only. Hex written in `config.yml`, and hex a player types into their own message, still needs the `&` - accepting a bare `#` there would let anyone colour chat without holding `snchat.color`.
+
 ### A player typed `<red>hello` and it appeared as literal text. Why?
 
 Styling applies only to a message that carries a `&` somewhere. A message with no `&` is published exactly as typed. That guard stops SnChat overwriting a line another plugin already coloured.
