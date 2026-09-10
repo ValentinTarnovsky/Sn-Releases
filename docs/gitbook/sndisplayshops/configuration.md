@@ -199,6 +199,27 @@ restart - sold stock reappears. The plugin logs a SEVERE at startup if it finds 
 above 1.
 {% endhint %}
 
+## Public developer API
+
+```yaml
+api-events:
+  enabled: true
+```
+
+The master switch of the events other plugins listen for - see the [developer API](api.md). With it
+`false` nothing is dispatched at all, and every cancellable event answers "not cancelled", so no
+other plugin can stop a shop menu from opening.
+
+That is what makes it a diagnostic rather than a performance knob: if shops have stopped responding
+to right-clicks and you want to know whether another plugin is the reason, turn this off and click
+one. Menus open again means yes.
+
+{% hint style="info" %}
+Only the event half is gated. The read half - the facade other plugins query for a shop and its
+stock, and the sellwands built on it - keeps working either way, so turning this off never stops a
+sellwand from draining a shop.
+{% endhint %}
+
 ## Island integrations
 
 ```yaml
