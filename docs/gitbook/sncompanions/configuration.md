@@ -269,6 +269,79 @@ models:
   # beside them, and the client interpolates that carrier on its own.
 
 # ------------------------------------------------------------
+#  Bedrock players (Geyser + Floodgate). Everything this plugin draws a
+#  companion's BODY with is a Display entity, and Geyser has no Bedrock
+#  definition for one: it drops the spawn without a word, so a Bedrock player is
+#  shown nothing where their companion is. The name plate is the one piece that
+#  does get through, which is why it used to hang frozen in the air over an
+#  empty spot.
+#  With this on, a Bedrock viewer is sent a BABY ZOMBIE wearing the companion's
+#  own head and a set of armour instead, moving exactly like the companion and
+#  carrying the name plate. Java players are never sent it and see no change
+#  whatsoever.
+#  Floodgate is optional: without it every player counts as a Java client and
+#  this whole band does nothing.
+# ------------------------------------------------------------
+bedrock:
+  # Send Bedrock viewers a substitute. Off renders them exactly as before, which
+  # on a Geyser server means they see nothing at all.
+  enabled: true
+  # Uniform size of the substitute, MULTIPLIED by the companion's own model.scale
+  # from companions/<id>.yml. A companion twice the size of another stays twice
+  # the size here, so this value alone scales the whole collection. Clamped to
+  # 0.0625 - 16 by the client's own attribute, and ignored entirely by clients
+  # below 1.20.5, where that attribute does not exist yet. Note that "baby"
+  # below already halves the zombie on its own.
+  scale: 1.0
+  # Blocks added to the substitute's height. ZERO is right for a VISIBLE zombie:
+  # this plugin draws its companions at the owner's feet, so at 0.0 the zombie
+  # STANDS on the ground where the companion is, with its own head naturally
+  # above it. Set it to about -0.8 instead if you would rather the zombie's HEAD
+  # landed exactly where a Java player sees the floating head - but with a
+  # visible body that sinks the zombie into the floor, so only do it together
+  # with invisible: true. Nudge it in game until it looks right.
+  height-offset: 0.0
+  # Use a baby zombie: about half height, with an oversized head that makes the
+  # worn companion head legible at that size. Off gives a full-size zombie.
+  baby: true
+  # Hide the zombie's own body, leaving only the head and armour it wears. OFF by
+  # default because the dressed figure is the point. Turn it ON if you want the
+  # old floating-head look - and note that some Bedrock versions hide an
+  # invisible entity's armour along with its body, which would hide the very
+  # head the substitute exists to show, so check it before keeping it.
+  invisible: false
+  # Let the companion's name plate ride the substitute, so the name follows it.
+  # LEAVE THIS ON. Off does NOT remove the name plate: the label lines are sent
+  # to every viewer before the companion is, so turning this off only stops them
+  # being attached to anything - they stay frozen in the air at the spot the
+  # companion was built, which is the exact bug this whole section exists to fix.
+  # The switch is here only so you can prove whether a broken Geyser version is
+  # mishandling the mount itself; it is not a way to hide the label.
+  mount-label: true
+  # What the zombie wears below the head. Put an armour material here and you can
+  # dress a companion in gold or diamond. Write NONE to leave a slot empty and
+  # get a barer zombie - write the word, do not just delete the value after the
+  # colon, because an empty key counts as an invalid value and puts the default
+  # back. A material this server does not know warns in the console and falls
+  # back to leather rather than failing the load; a material that is merely not
+  # ARMOUR is passed through as written, and the client will usually draw
+  # nothing for it, so a typo like DIAMOND_SWORD shows up as a missing piece
+  # rather than as an error.
+  armor:
+    chestplate: LEATHER_CHESTPLATE
+    leggings: LEATHER_LEGGINGS
+    boots: LEATHER_BOOTS
+    # Dye colour for LEATHER pieces only, as RRGGBB hex (the leading # is
+    # optional). QUOTE IT - "123456" is a colour, but 123456 unquoted is a
+    # number to YAML, which is rejected with a warning and leaves the leather
+    # undyed.
+    # Empty means undyed, which is the shipped value on purpose: a per-item
+    # colour does not reliably survive Geyser's translation to Bedrock, so treat
+    # this as something to try on your own server rather than something that is
+    # known to work. It is ignored by non-leather materials.
+    color: ""
+
+# ------------------------------------------------------------
 #  EdTools boosters. An equipped companion whose file declares an "edtools-boosts"
 #  block grants EdTools boosters: one per currency it names, plus the GLOBAL
 #  enchant multiplier. EdTools is optional - without it, or with the switch
@@ -939,6 +1012,130 @@ mix. It applies on the next formation rebuild, which `/companions reload` perfor
 {% hint style="info" %}
 `config.yml` is managed, so a server whose file lacks the key receives `billboard: vertical`
 on the next boot and its labels straighten up with no file editing.
+{% endhint %}
+
+### Bedrock players see a substitute companion
+
+New in **1.12.0**, and the whole of the `bedrock:` band above.
+
+Everything this plugin draws a companion's BODY with is a Display entity: a head companion is an
+`ITEM_DISPLAY`, and a BetterModel companion's bones ride the `ITEM_DISPLAY` carrier beside them.
+Geyser has no Bedrock definition for `ITEM_DISPLAY` or `BLOCK_DISPLAY` and discards the spawn in
+silence, so a Bedrock player was shown nothing at all where their companion was. `TEXT_DISPLAY`
+Geyser *does* translate, which is why those players were left with the companion's NAME hanging
+frozen in mid-air over an empty spot: the label lines had been arriving all along, riding a vehicle
+that never came.
+
+With the band on, a viewer on Bedrock is sent a fake client-side **baby zombie** instead. It wears
+the companion's own head in the helmet slot plus a set of leather armour, it is moved by the exact
+same arithmetic as the real companion, and it carries the name plate. Java viewers receive
+byte for byte what they received before and see no change whatsoever.
+
+Floodgate is what tells the plugin a player is on Bedrock, and it is optional: **without Floodgate
+every player counts as a Java client and this whole band does nothing.** Floodgate is asked about a
+player exactly once, on their join, and never from the animation tick. Installing or removing
+Floodgate while the server is running is handled live: the plugin re-asks every online player and
+rebuilds every formation one tick later, so there is no restart to plan. See
+[Installation](installation.md#dependencies).
+
+| Key | Default | What it does |
+|---|---|---|
+| `bedrock.enabled` | `true` | Send Bedrock viewers a substitute. Off renders them exactly as before, which on a Geyser server means they see nothing at all |
+| `bedrock.scale` | `1.0` | Uniform size, MULTIPLIED by the companion's own `model.scale` from `companions/<id>.yml`, so one value scales the whole collection and the relative sizes hold. Clamped to `0.0625` - `16` by the client's own attribute, and ignored entirely by clients below 1.20.5. `baby` below already halves the zombie on its own |
+| `bedrock.height-offset` | `0.0` | Blocks added to the substitute's height. `0.0` is right for a VISIBLE zombie: companions are drawn at the owner's feet, so at `0.0` the zombie stands on the ground where the companion is and its head sits naturally above it. About `-0.8` lands the zombie's HEAD where a Java player sees the floating head, but with a visible body that buries it in the floor, so use it only together with `invisible: true` - which ships `false`, and which some Bedrock versions apply to an entity's ARMOUR as well as its body, hiding the very head the substitute exists to show. A value to nudge in game |
+| `bedrock.baby` | `true` | A baby zombie: about half height, with the oversized head that makes the worn companion head legible at that size. Off gives a full-size zombie |
+| `bedrock.invisible` | `false` | Hide the zombie's own body, leaving only what it wears. Off by default because the dressed figure is the point; on gives the old floating-head look. Some Bedrock versions hide an invisible entity's armour along with its body, which would hide the very head the substitute exists to show |
+| `bedrock.mount-label` | `true` | Let the name plate ride the substitute. **Leave this on** - see the warning below |
+| `bedrock.armor.chestplate` | `LEATHER_CHESTPLATE` | What the zombie wears below the head. Any armour material works, so a companion can be dressed in gold or diamond |
+| `bedrock.armor.leggings` | `LEATHER_LEGGINGS` | As above, the leg piece |
+| `bedrock.armor.boots` | `LEATHER_BOOTS` | As above, the foot piece |
+| `bedrock.armor.color` | `""` (undyed) | Dye colour for LEATHER pieces only, as `RRGGBB` hex with the leading `#` optional. **Quote it** - see the warning below. Empty means undyed, which is the shipped value on purpose |
+
+{% hint style="warning" %}
+**`mount-label: false` does not remove the name plate.** The label lines are sent to every viewer
+before the companion is, so turning the mount off only stops them being attached to anything: they
+stay frozen in the air at the spot the companion was built, which is the exact bug this feature
+exists to fix. The switch is here for one purpose only - proving whether a broken Geyser version is
+mishandling the mount itself. It is not a way to hide the label.
+{% endhint %}
+
+{% hint style="warning" %}
+**Quote `armor.color`.** `"123456"` is a colour, but `123456` unquoted is a *number* to YAML, which
+is rejected with a console warning and leaves the leather undyed. It ships empty on purpose: a
+per-item colour does not reliably survive Geyser's translation to Bedrock, so treat it as something
+to try on your own server rather than something that is known to work. It is ignored by non-leather
+materials.
+
+**Write `NONE` to empty an armour slot**, rather than deleting the value after the colon: an empty
+key counts as an invalid value and puts the default straight back. A material this server does not
+know warns once and falls back to leather; a material that is merely not ARMOUR is passed through as
+written, and the client usually draws nothing for it, so a typo like `DIAMOND_SWORD` shows up as a
+missing piece rather than as an error.
+{% endhint %}
+
+#### Known limits: what a Bedrock viewer gets, and what they do not
+
+Six of them, and they are real limits rather than oversights. The first three are the price of being
+visible at all: a living entity is not a Display and cannot be made into one.
+
+- **It does not turn.** A companion's facing is applied to a head as a Display transform quaternion,
+  and a living entity has no equivalent, so on Bedrock the zombie always faces one direction while it
+  moves. **This always applies and there is nothing to switch off.** `formation.facing` is
+  `OWNER_YAW`, `OUTWARD` or `CENTER` - there is no off value and no `NONE`. `config.yml` ships
+  `OWNER_YAW`, and a file that writes anything else is named once in the console and read as
+  `OWNER_YAW` anyway.
+- **It does not bounce**, for the same reason. Moot at the shipped `animation.bounce.height: 0.0`.
+- **It has a hitbox.** A Display has no collision and a living entity does, and the Java protocol
+  carries no per-entity no-collision flag, so `invisible: true` does not help either - the box stays.
+  Bedrock runs its own client-side entity-push prediction, so a Bedrock player may find their
+  companions nudging them about. Keeping `baby: true` halves the box, and the formation already
+  places companions behind their owner. **This is the first thing to watch on your own server.**
+- **A BetterModel companion arrives as its HEAD, never as the animated model.** The substitute's
+  helmet is always built from the companion's `head-texture`, whichever backend that companion
+  renders with, so a Bedrock viewer never sees a model. The consequence is worth acting on: a
+  companion that declares a `model:` and **no** `head-texture` dresses its substitute in the default
+  head, so on a server with Bedrock players every companion should declare a `head-texture` even when
+  it renders as a model. All three shipped companions already do.
+- **A model companion whose only viewers are on Bedrock still holds a live BetterModel engine handle
+  that nobody is shown.** The wrapped renderer has to keep being called so its tracked position keeps
+  advancing - skipping it would spawn a Java viewer arriving later at a spot the companion left long
+  ago - and materializing the engine handle is part of that call. An accepted cost, not a bug.
+- **The egg hatch show is not decorated for Bedrock, so the buyer sees the reveal's NAME with nothing
+  under it.** The show never goes through the Bedrock decorator: the reveal is spawned for every
+  viewer, and because the Dragon Egg and the revealed head are both `ITEM_DISPLAY` they are discarded
+  while the reveal's name line, a `TEXT_DISPLAY`, arrives. That is the same orphan-label symptom this
+  release removes everywhere else, and it is more confusing than seeing nothing. The sounds and the
+  break particles are not Display entities, so those are expected to arrive. A known remaining gap,
+  deliberately left out of 1.12.0.
+
+#### What it costs when nobody is on Bedrock
+
+Genuinely nothing. Without Floodgate, or with `bedrock.enabled: false`, the decorator never enters
+the render chain at all and the render path is exactly what it was before this band existed. Wrapped
+but with no Bedrock viewer watching that companion, one animation pass costs three double stores, one
+field read, one branch and one virtual call: no allocation, no map lookup, and nothing asked about
+the viewers.
+
+{% hint style="info" %}
+**Nothing else in the plugin moved for this.** No new command, no new permission, no new language key
+(still 135 per locale, both locales identical), no database change, and no change to the public API -
+`API_VERSION` stays `1.0.0`. `config.yml` is managed, so an existing server receives the `bedrock:`
+band on its next boot with the defaults above and nothing else of its file is touched.
+{% endhint %}
+
+{% hint style="warning" %}
+**This band is derived rather than measured on SnCompanions: no Bedrock client has been in front of
+it here yet.** It is a port of the same change in SnPets, which *is* confirmed working on Bedrock,
+and the two plugins share the renderer, the tracker and the formation code line for line - but no
+SnCompanions server has run it. Expect to settle `scale`, `height-offset`, `invisible` and the armour
+set against a real screen, and look at the hitbox first.
+
+`scale` is the one of those four whose shipped value is not neutral: it **multiplies** each
+companion's own `model.scale` from `companions/<id>.yml`, so on a server whose companion files
+declare a scale below `1.0` the shipped `1.0` renders small, and raising it there is the fix rather
+than a preference. Clients below 1.20.5 ignore it entirely. Remember that `invisible: true` may take
+the armour with the body on some Bedrock versions, which would hide the head itself; it ships `false`
+for that reason as much as for the look.
 {% endhint %}
 
 ## companions/

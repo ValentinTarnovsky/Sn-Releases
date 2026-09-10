@@ -338,7 +338,9 @@ animations.
 Check `/companions toggle` first: it hides the player's own companions and is the usual answer. If other
 players cannot see them either, check `/companions hide` on the viewer's side, then the `worlds`
 section in `config.yml`, which can disable rendering in a named world. If they vanished on a
-world change specifically, see the next question.
+world change specifically, see the next question. If it is only your BEDROCK players who see
+nothing, the cause is a different one - see
+[My Bedrock players cannot see their companions](#my-bedrock-players-cannot-see-their-companions).
 
 ### My companions go invisible when I change world, and a second world change brings them back
 
@@ -366,6 +368,106 @@ because the player genuinely receives nothing there. That is configuration, not 
 
 Yes, unless the viewer ran `/companions hide` or the world gates rendering off. Each viewer's own
 preference is respected, so one player hiding companions never affects anyone else's view.
+
+### My Bedrock players cannot see their companions
+
+Install **Floodgate** next to Geyser and update to **1.12.0**. There is nothing to switch on: the
+`bedrock` band of `config.yml` ships with `enabled: true`, and `config.yml` is managed, so a server
+whose file lacks the band receives the whole of it on the next boot.
+
+What those players were seeing is the whole diagnosis. Everything this plugin draws a companion's
+BODY with is a Display entity - a head companion is an item display, and a model companion's bones
+ride one too - and Geyser has no Bedrock definition for an item or block display at all, so it
+discards the spawn in silence. Text displays it DOES translate, which is why a Bedrock player was
+left with the companion's NAME hanging frozen in mid-air over an empty spot: the label lines were
+arriving the whole time, riding a vehicle that never came.
+
+From 1.12.0 a viewer on Bedrock is sent something else instead - a fake, client-side **baby zombie**
+wearing that companion's own head in the helmet slot plus leather armour, moved by the exact same
+arithmetic as the real companion and carrying the name plate. It is a baby on purpose: about half
+height, with the oversized head that makes the worn companion head legible at that size. Java
+viewers receive byte for byte what they received before and see no change whatsoever.
+
+Two knobs are then yours, if the substitutes do not look right on your server:
+
+- **`bedrock.height-offset`**, if the zombie sits at the wrong height. It ships
+  at `0.0`, which is right for a VISIBLE zombie: this plugin draws companions at the owner's FEET,
+  so at `0.0` the zombie STANDS on the ground where the companion is, with its head naturally above
+  it. About `-0.8` instead makes the zombie's HEAD land exactly where a Java player sees the
+  floating head - but with a visible body that sinks it into the floor, so only do that together
+  with `bedrock.invisible: true`. That switch ships `false`, and it comes with a warning of its own:
+  some Bedrock versions hide an invisible entity's ARMOUR along with its body, which would hide the
+  very head the substitute exists to show. Check it on a test account before you keep it.
+- **`bedrock.scale`**, if they come out the wrong size. It ships at `1.0` and MULTIPLIES the
+  companion's own `model.scale` from `companions/<id>.yml`, so on a server whose companion files
+  declare a scale below `1.0` the shipped `1.0` renders small - raise this one value and the whole
+  collection keeps its relative sizes. Clients below 1.20.5 ignore it entirely, because the
+  attribute it rides does not exist there yet, and `baby: true` already halves the zombie on its own.
+
+Without Floodgate every player counts as a Java client and the whole band does nothing. With
+`bedrock.enabled: false` the substitute is never sent either, which on a Geyser server means those
+players go back to seeing nothing at all.
+
+Installing or removing Floodgate on a running server needs no restart either way: the plugin
+re-asks every online player and rebuilds every formation one tick later, so the substitutes appear
+or disappear on their own.
+
+{% hint style="warning" %}
+**Leave `bedrock.mount-label: true` alone.** Turning it off does NOT remove the name plate: the
+label lines are sent to every viewer before the companion is, so off only stops them being attached
+to anything and they stay frozen in the air at the spot the companion was built - the exact bug this
+feature exists to fix. The switch is there only to prove whether a broken Geyser version is
+mishandling the mount itself.
+{% endhint %}
+
+{% hint style="info" %}
+This is new in 1.12.0 and has NOT been verified on a live SnCompanions server yet. It is a port of
+the same change in SnPets, where it IS confirmed working on Bedrock, and the two plugins share the
+renderer, the tracker and the formation code line for line - but check it on a test account before
+you announce it. Nothing a Java player sees can change either way.
+{% endhint %}
+
+### My Bedrock players see their companions, but the companions never turn and they bump into them
+
+All of that is expected, and it is the honest cost of the substitute. A Display entity is a
+rendering object and a zombie is a living entity, so here is the whole of what a Bedrock viewer gets
+and what they do not:
+
+- **It does not TURN.** Facing is applied to a head as a Display transform quaternion, and a living
+  entity has no equivalent, so on Bedrock the zombie always faces one direction while it moves. This
+  ALWAYS applies and there is nothing to switch off: `formation.facing` is `OWNER_YAW`, `OUTWARD` or
+  `CENTER` and has no "off" value. `config.yml` ships `OWNER_YAW`, and a value the plugin does not
+  know warns once in the console and falls back to `OWNER_YAW` anyway.
+- **It does not BOUNCE**, for the same reason. Moot at the shipped `animation.bounce.height: 0.0`.
+- **It is never the MODEL.** The substitute's helmet is always built from that companion's
+  `head-texture`, whichever backend the companion uses, so a BetterModel companion reaches a Bedrock
+  viewer as its HEAD and never as the animated model. The consequence is worth acting on before it
+  bites you: a companion that declares a model and NO `head-texture` dresses its substitute in the
+  DEFAULT head, so on a server with Bedrock players give every companion a `head-texture` even if it
+  renders as a model. All three shipped companions already do.
+- **It DOES have a hitbox**, the one item here that is something the substitute gains rather than
+  loses. A Display has no collision, a living entity does, and the Java protocol
+  carries no per-entity "no collision" flag to turn it off - `bedrock.invisible: true` does not help
+  either, the box stays. Bedrock also does its own client-side entity-push prediction, so a Bedrock
+  player may well find their companions nudging them. Keeping it a baby halves the box, and the
+  formation already stands the companions behind their owner. **This is the first thing to watch on
+  your own server.**
+
+One more thing on a model server, and it is a cost rather than a symptom: a model companion whose
+ONLY viewers are on Bedrock still holds a live BetterModel engine handle that nobody is being shown.
+The wrapped renderer has to keep being called for its tracked position to keep advancing - otherwise
+a Java viewer arriving later would be sent the companion at a spot it left long ago - so the handle
+is kept on purpose. Accepted cost, not a bug.
+
+One gap comes with it: the **egg hatch show is not translated** for Bedrock players, and what they
+get is more confusing than nothing at all. The show never goes through the Bedrock substitute path,
+so its reveal is spawned for EVERY viewer exactly as it always was - and the Dragon Egg and the
+revealed head are Display entities, which Geyser discards, while the reveal's name line is a text
+display, which it delivers. So a Bedrock buyer is shown the reveal's floating NAME with nothing
+underneath it: the same orphan-label symptom this release removes everywhere else. The sounds and the
+break particles are not Display entities, so they are expected to arrive. The companions they won
+are granted and saved exactly as always. That is a known remaining gap, deliberately left out of
+scope for 1.12.0.
 
 ### A player has more companions stored than their capacity allows. How?
 

@@ -35,6 +35,7 @@ startup.
 | PlaceholderAPI | No |
 | BetterModel | No |
 | EdTools | No |
+| Floodgate | No |
 
 SnLib is the engine behind the config, language, database, item, menu and command layers.
 packetevents draws every companion and sends the formation updates, so the plugin cannot run
@@ -42,7 +43,31 @@ without it. PlaceholderAPI adds the `%sncompanions_...%` expansion. BetterModel 
 render as an animated model instead of a head. EdTools lets an equipped companion grant currency and
 global-enchant boosters, and unlocks the `EDTOOLS_BLOCK_BREAK` experience source so a companion can level
 from the blocks an omnitool consumes. It is reached through only two isolated classes, and a server
-without it never loads an EdTools type: the break listener is not even registered.
+without it never loads an EdTools type: the break listener is not even registered. Floodgate
+identifies the players who came in through Geyser, which is what lets each of them be sent a
+substitute companion their Bedrock client can actually draw instead of the Display entities Geyser
+discards in silence. It is asked about a player exactly once, on their join, never from the animation
+tick, and a server without it never loads an `org.geysermc` class.
+
+{% hint style="warning" %}
+**Without Floodgate every player is treated as a Java client.** The `bedrock:` band of `config.yml`
+then does nothing at all, so on a Geyser server the Bedrock players keep seeing nothing where their
+companions are, with only the name plate hanging in the air. Nothing breaks and nothing warns: the
+plugin simply has no way to tell the two kinds of client apart. See [Bedrock players see a substitute
+companion](configuration.md#bedrock-players-see-a-substitute-companion).
+
+**Adding or removing Floodgate does not need a restart.** Either one is handled live: the plugin
+re-asks every online player and rebuilds every formation one tick later, so the substitutes appear or
+disappear on their own.
+{% endhint %}
+
+{% hint style="info" %}
+**If you run BetterModel and Floodgate together, give every companion a `head-texture`.** A Bedrock
+viewer receives the companion as its HEAD and never as the animated model - the substitute's helmet is
+always built from `head-texture`, whichever backend the companion renders with - so a companion that
+declares a `model:` and no `head-texture` dresses its substitute in the default head. All three
+shipped companions already declare one.
+{% endhint %}
 
 {% hint style="warning" %}
 Folia is not supported. The plugin does not declare `folia-supported`, so run it on Paper.

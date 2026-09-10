@@ -41,6 +41,15 @@ duplicates into stronger ones, and manage everything from configurable menus.
   leaves its owner's storage as an object.
 - Holograms: configurable text above every companion, per companion type, drawn as packet entities that
   RIDE the companion, so the text and the companion can never move at different times.
+- A Bedrock fallback, **on by default since 1.12.0**: a player on Bedrock is sent a fake baby zombie
+  wearing that companion's own head plus leather armour, moved by the same arithmetic as the real
+  companion and carrying the same name plate, because the Display entity every companion body is
+  drawn with has no Bedrock definition at all and Geyser drops it without a word. The head is what
+  those players see whichever backend the companion uses, so a companion that renders as a
+  BetterModel model reaches them as its head rather than as the animated model - give every companion
+  a head texture if your server has Bedrock players. Java players receive byte for byte what they
+  received before and see no change whatsoever. Floodgate is optional, and is what tells the plugin
+  who is on Bedrock.
 - Four menus you can re-skin without touching code, with a per-group
   colour every companion template can draw with.
 - Equipped companions are kept in slots 1..n with no gap, so the free slots are always the last ones.
@@ -53,6 +62,13 @@ duplicates into stronger ones, and manage everything from configurable menus.
   Without it the plugin runs normally and simply skips the expansion.
 - **BetterModel**: lets a companion type render as an animated model with separate idle and moving
   animations. Without it every companion renders as a player head, which is the built-in default.
+- **Floodgate**: tells the plugin which players are on Bedrock, so those players can be sent the
+  baby-zombie substitute instead of a Display entity their client cannot be shown. It is asked once
+  per player, on their join, and never from the animation tick. Without Floodgate every player
+  counts as a Java client and the whole `bedrock` band of `config.yml` does nothing - on a Geyser
+  server that means Bedrock players keep seeing nothing where their companions are. Installing or
+  removing it on a running server needs no restart: the plugin re-asks every online player and
+  rebuilds every formation one tick later.
 - **EdTools**: lets an equipped companion grant EdTools currency boosters and the global enchant
   multiplier, summed across every equipped companion,
   with an optional per-companion `max:` ceiling on each entry. It also unlocks the `EDTOOLS_BLOCK_BREAK`
