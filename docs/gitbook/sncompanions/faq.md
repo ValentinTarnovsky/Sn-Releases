@@ -732,3 +732,19 @@ Update SnLib to **SnLib 1.34.1** or later. The companion ids are suggested by Sn
 files every id past the hundredth (alphabetically) was unreachable from tab even by its own first
 letters - typing it in full still worked, because parsing reads the whole set. SnCompanions itself
 needs no change; the fix is in the SnLib jar.
+
+### My console warns `Could not save messages_es.yml ... because messages_es.yml already exists` on every startup
+
+Fixed in **1.11.3**. Update, and the line is gone.
+
+SnCompanions writes `lang/messages_es.yml` itself on the first boot, because SnLib only ever seeds
+the English file and the Spanish one has to be on disk before the language module reads it. Bukkit's
+own copy call does not fail when the file is already there, it logs that warning instead, and the
+plugin only ever handled the other outcome (a jar carrying no such file). So from the second startup
+onwards a perfectly healthy install kept warning about the file its own first startup had written on
+purpose.
+
+Nothing was ever wrong with the file: no message was lost, your edits were never touched and
+`lang: es` worked the whole time. Only the line was wrong. From 1.11.3 the copy is skipped when the
+file is already there, and a `lang/messages_es.yml` you have deleted is still written on the next
+boot exactly as before.
