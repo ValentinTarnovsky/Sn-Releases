@@ -38,6 +38,9 @@ duplicates into stronger ones, and manage everything from seven configurable men
   are consumed one per use.
 - Holograms: configurable text above every pet, per pet type, drawn as packet entities that
   RIDE the pet, so the text and the pet can never move at different times.
+- Bedrock fallback (1.25.0): Geyser discards the Display entity a pet body is drawn with, so a
+  Bedrock player is sent a client-side armor stand wearing the pet's own head texture instead, moved
+  by the same tick and carrying the same name plate. Needs Floodgate; Java players are untouched.
 - Seven menus you can re-skin without touching code, with a per-player switch that decides
   whether that player's roll animation plays or the result appears instantly, and a per-group
   colour every pet template can draw with.

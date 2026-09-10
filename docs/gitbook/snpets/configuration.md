@@ -255,6 +255,47 @@ models:
   # beside them, and the client interpolates that carrier on its own.
 
 # ------------------------------------------------------------
+#  Bedrock players (Geyser + Floodgate). Everything this plugin draws a pet's
+#  BODY with is a Display entity, and Geyser has no Bedrock definition for one:
+#  it drops the spawn without a word, so a Bedrock player is shown nothing where
+#  their pet is. The name plate is the one piece that does get through, which is
+#  why it used to hang frozen in the air over an empty spot.
+#  With this on, a Bedrock viewer is sent an armor stand wearing the pet's own
+#  head instead, moving exactly like the pet and carrying the name plate. Java
+#  players are never sent it and see no change whatsoever.
+#  Floodgate is optional: without it every player counts as a Java client and
+#  this whole band does nothing.
+# ------------------------------------------------------------
+bedrock:
+  # Send Bedrock viewers a substitute. Off renders them exactly as before, which
+  # on a Geyser server means they see nothing at all.
+  enabled: true
+  # Uniform size of the substitute, MULTIPLIED by the pet's own model.scale from
+  # pets/<id>.yml. A pet twice the size of another stays twice the size here, so
+  # this value alone scales the whole collection. Clamped to 0.0625 - 16 by the
+  # client's own attribute, and ignored entirely by clients below 1.20.5, where
+  # that attribute does not exist yet.
+  scale: 1.0
+  # Blocks added to the substitute's height. An armor stand's HEAD sits above its
+  # own feet, so this is normally NEGATIVE: it lowers the stand until the head
+  # lands where a Java player sees the pet. Roughly -0.7 for a small stand and
+  # -1.6 for a full-size one; nudge it until the two line up.
+  height-offset: -0.7
+  # Use a small armor stand. Off doubles the stand's height, so height-offset
+  # above has to be roughly doubled with it.
+  small: true
+  # Hide the stand's own body, leaving only the head it wears. Turn this OFF if
+  # Bedrock players report seeing nothing: some Bedrock versions hide an
+  # invisible entity's armour along with its body, which would hide the very
+  # head the substitute exists to show. A visible stand is ugly but it proves
+  # whether the packets are arriving.
+  invisible: true
+  # Let the pet's name plate ride the substitute, so the name follows the pet.
+  # Off leaves Bedrock players with no name plate at all, which is the right
+  # trade only if it renders in the wrong place on your Geyser version.
+  mount-label: true
+
+# ------------------------------------------------------------
 #  EdTools boosters. An equipped pet whose file declares an "edtools-boosts"
 #  block grants EdTools boosters: one per currency it names, plus the GLOBAL
 #  enchant multiplier. EdTools is optional - without it, or with the switch
@@ -1145,6 +1186,62 @@ mix. It applies on the next formation rebuild, which `/pets reload` performs.
 `config.yml` is managed, so servers upgrading from 1.9.0 or earlier receive `billboard: vertical`
 on the next boot and their labels straighten up with no file editing. Set it to `center` if you
 want the old look back.
+{% endhint %}
+
+### What Bedrock players see: the `bedrock:` band
+
+**Added in 1.25.0.** Everything this plugin draws a pet's BODY with is a Display entity: a floating
+head is an item display, and a BetterModel pet's bones ride an invisible item display that carries
+them. Geyser has no Bedrock definition for one, so it drops the spawn without a word. Until 1.25.0
+a Bedrock player was therefore shown **nothing at all** where their pet was - and the name plate,
+which is a text display and the one piece Geyser does translate, hung frozen in mid-air over the
+spot the pet had been spawned at, with nothing under it and nothing moving it.
+
+With this band on, a Bedrock viewer is sent a substitute instead: a client-side armor stand wearing
+the pet's OWN head texture - the same one the pet item shows - moving on the same packets, the same
+positions and the same interpolation the pet already used, with the pet's name plate mounted on it
+so the name travels with the pet instead of standing still.
+
+**Java players are unaffected.** The substitute is decided per VIEWER, never per pet, so one
+formation is drawn as a model for the Java players watching it and as an armor stand for the
+Bedrock ones at the same moment; nothing on the Java path is rewritten.
+
+| Key | Default | Meaning |
+|---|---|---|
+| `bedrock.enabled` | `true` | Send Bedrock viewers a substitute. `false` renders them exactly as before, which on a Geyser server means they see nothing at all |
+| `bedrock.scale` | `1.0` | Uniform size, **multiplied by the pet's own `model.scale`** from its `pets/<id>.yml`, so a pet twice the size of another stays twice the size and this one value scales the whole collection. Clamped to `0.0625` - `16` by the client's own attribute, and ignored entirely below 1.20.5, where that attribute does not exist |
+| `bedrock.height-offset` | `-0.7` | Blocks added to the substitute's height. **Normally NEGATIVE**: an armor stand's HEAD sits above its own feet, so this lowers the stand until the head lands where a Java player sees the pet. Roughly `-0.7` small, `-1.6` full size |
+| `bedrock.small` | `true` | Use a small armor stand. Off roughly doubles the stand's height, so double `height-offset` with it |
+| `bedrock.invisible` | `true` | Hide the stand's own body, leaving only the head it wears |
+| `bedrock.mount-label` | `true` | Let the pet's name plate ride the substitute. Off leaves Bedrock players with no name plate at all |
+
+{% hint style="warning" %}
+**If a Bedrock player reports seeing nothing, turn `invisible` off first.** Bedrock has
+historically hidden an invisible entity's EQUIPMENT along with its body, which hides the very head
+the substitute exists to show. A visible armor stand is ugly, but it proves whether the packets are
+arriving at all - and once you know they are, `height-offset` and `small` are the two that decide
+whether the head lands where the pet is.
+{% endhint %}
+
+Those three are deliberately **keys and not constants**: they are what decides whether a Bedrock
+client renders anything, none of them can be settled without a Bedrock client in front of you, and
+an operator should tune them with `/pets reload` rather than wait for a new build.
+
+Nothing here costs a server without Bedrock players anything. Without Floodgate installed, or with
+`bedrock.enabled: false`, the substitute is not even part of the render chain; with it on but no
+Bedrock player watching a given pet, the animation tick quick-exits on a single field read, so a
+Bedrock player across the map costs the other formations nothing. Floodgate is asked whether a
+player is on Bedrock exactly once, when they join.
+
+`bedrock.enabled: false` restores the pre-1.25.0 behaviour exactly, on both sides: Java players
+were never touched by this feature, and Bedrock players go back to being sent the Display entities
+their client discards.
+
+{% hint style="info" %}
+`config.yml` is **managed**, so the whole `bedrock:` band is merged into an existing install on the
+first boot of 1.25.0, comments and all, and your existing values are untouched. Nothing in
+`pets/*.yml` changed: the substitute reuses the `model.scale` a pet already declares, so there is
+no per-pet Bedrock key to add.
 {% endhint %}
 
 ## traits.yml

@@ -35,6 +35,7 @@ startup.
 | PlaceholderAPI | No |
 | BetterModel | No |
 | EdTools | No |
+| Floodgate | No |
 
 SnLib is the engine behind the config, language, database, item, menu and command layers.
 packetevents draws every pet and sends the formation updates, so the plugin cannot run
@@ -42,7 +43,12 @@ without it. PlaceholderAPI adds the `%snpets_...%` expansion. BetterModel lets a
 render as an animated model instead of a head. EdTools lets an equipped pet grant currency and
 global-enchant boosters, and unlocks the `EDTOOLS_BLOCK_BREAK` experience source so a pet can level
 from the blocks an omnitool consumes. It is reached through only two isolated classes, and a server
-without it never loads an EdTools type: the break listener is not even registered.
+without it never loads an EdTools type: the break listener is not even registered. Floodgate is
+only needed to recognise Bedrock players, so the plugin can send them the armor stand substitute a
+Geyser client actually renders instead of the Display entities it discards; without it every player
+counts as a Java client and the `bedrock:` band of `config.yml` does nothing. It is reached through
+one isolated class and asked one question - whether a UUID belongs to a Bedrock player - once, when
+that player joins.
 
 {% hint style="warning" %}
 Folia is not supported. The plugin does not declare `folia-supported`, so run it on Paper.

@@ -509,6 +509,58 @@ Nothing to tune: the distance is read from your server's own `view-distance` and
 player's render distance, so it cannot drift out of step with your setup. Ordinary walking,
 sprinting and elytra flight never rebuild anything.
 
+### My Bedrock players cannot see the pets
+
+Fixed in **1.25.0**, and it needs Floodgate installed. Update both and there is nothing else to do.
+
+The BODY of every pet is drawn with a Display entity - an `ITEM_DISPLAY` for a head pet, and for a
+model pet the invisible one its bones ride. Geyser has no Bedrock definition for that entity, so it
+throws the spawn away in silence. The name plate is a `TEXT_DISPLAY`, which Geyser DOES translate,
+so what a Bedrock player actually got was the pet's name frozen in mid-air at the spot it first
+appeared, with nothing under it and nothing moving it.
+
+Since 1.25.0 those players are sent something their client can draw instead: a client-side armor
+stand wearing the pet's OWN head texture - the same texture the pet item shows - carried by the same
+animation tick, the same interpolation and the same packets as everybody else's pets, with the name
+plate riding it so it follows the pet rather than hanging behind. Java players are untouched: the
+plugin never rewrites a packet on their path, it only decides who the substitute is sent to.
+
+{% hint style="info" %}
+**A Bedrock player sees the pet's HEAD, not the animated model.** There is no way to send a
+BetterModel model to a Bedrock client, so a model pet arrives as its head texture on the stand like
+every other pet. That is the whole of what the fallback promises: something correct, in the right
+place, moving with its owner, instead of nothing.
+{% endhint %}
+
+Floodgate is what tells SnPets which players are on Bedrock, and it is asked exactly once per
+player, on join. Without Floodgate every player counts as a Java client and the whole band does
+nothing at all.
+
+If a Bedrock player sees the WRONG thing rather than nothing, tune the `bedrock` band of
+`config.yml` in this order, with `/pets reload` after each change:
+
+```yaml
+bedrock:
+  enabled: true        # off renders Bedrock players exactly as before, i.e. nothing
+  scale: 1.0           # MULTIPLIED by the pet's own model.scale from pets/<id>.yml
+  height-offset: -0.7  # blocks; NEGATIVE, because an armor stand's HEAD sits above its feet
+  small: true          # a small stand; off roughly doubles the height, so double the offset too
+  invisible: true      # hide the stand's body, leaving only the head it wears
+  mount-label: true    # let the pet's name plate ride the substitute
+```
+
+`invisible` first, because Bedrock has historically hidden an invisible entity's EQUIPMENT along
+with its body - which would hide the very head the stand exists to show. If the plate now follows
+the player correctly but there is still nothing under it, set `invisible: false` and you will see a
+stand wearing the head. `height-offset` second, until the head sits where a Java client's pet sits;
+it is negative because a stand's head is above its feet, and turning `small` off roughly doubles the
+height, so double the offset with it. `scale` third: it MULTIPLIES the pet's own `model.scale` from
+`pets/<id>.yml` rather than replacing it, so a server whose pets are all at `0.80` scales from
+there. `mount-label` last, and only if you prefer the plate standing still to riding the stand.
+
+`config.yml` is managed, so the whole band is merged into your file on the first boot after
+updating, comments and all, with your own values untouched.
+
 ### Why does a player receive no buff in one world?
 
 Buffs have a per-world gate in `config.yml`. In a gated world the placeholder reports zero
