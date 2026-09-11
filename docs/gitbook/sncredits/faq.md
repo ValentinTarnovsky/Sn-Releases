@@ -9,6 +9,20 @@ Your configuration files are not merged. When a file's `config-version` falls be
 renames yours to `old-<name>-v<version>-<timestamp>.yml` and writes a fresh default in its place.
 Open the renamed copy and move your values across by hand.
 
+### Why did a reload disconnect players from a backend?
+
+Before 1.14.2 the proxy sent each backend its whole shop in one plugin message. A backend refuses
+a plugin message larger than 32767 bytes and disconnects the player it arrived through, logging
+`Payload may not be larger than 32767 bytes`. Once a shop grew past about 32 KB, every reload
+kicked a player from that backend, and so did joining it right after it restarted.
+
+Since 1.14.2 the proxy sends a message that large in parts and the backend puts it back together,
+so the size of a shop no longer matters. The fix lives in the proxy: update the proxy and every
+backend, and restart the proxy as well, or large shops keep disconnecting players.
+
+After a reload the proxy console reports how many backends received the new configuration. A
+backend with nobody online cannot receive it and keeps its previous shop until it restarts.
+
 ### Does it support Folia?
 
 No. SnCredits declares no Folia support. It runs on Velocity and on Paper, from the same jar.
