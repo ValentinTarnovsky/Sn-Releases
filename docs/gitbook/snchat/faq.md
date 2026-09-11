@@ -16,9 +16,9 @@ Either add your groups to `blockcommands.yml`, or set `command-blocker.enabled: 
 
 ### The console printed `ConcurrentModificationException` after `/snchat reload`.
 
-Update to 2.1.1. Before it, every reload rebuilt the command whitelist's placeholder commands on the same tick Paper was serializing the command tree out to players, and Paper's tree-sending pool holds no lock against that. Nothing crashed and nothing was lost, but any player whose send failed kept their old tab completion until they relogged.
+Update to 2.2.1. Paper sends the command tree to players from a background pool that holds no lock against the server thread, and on reload the command whitelist rebuilds its placeholder commands. Before 2.1.1 every reload did that rebuild while those sends were running. 2.1.1 skipped it when nothing had changed, but a reload right after editing `blockcommands.yml` still rebuilt too late and hit the same sends. Nothing crashed and nothing was lost, but any player whose send failed kept their old tab completion until they relogged.
 
-From 2.1.1 that rebuild runs only when the whitelist, or the set of plugins owning those commands, actually changed - and a tick later, clear of the sends. The race itself belongs to Paper and other plugins can still trigger it, but SnChat no longer does.
+From 2.2.1 the rebuild happens before any tree is sent, and only when the whitelist, or the set of plugins owning those commands, actually changed. The race itself belongs to Paper and other plugins can still trigger it, but SnChat no longer does.
 
 ### My staff stopped receiving violation alerts after updating to 2.1.0.
 
