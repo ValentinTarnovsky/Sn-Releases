@@ -59,7 +59,8 @@ defaults:
   bounce-speed: 0.12
   # Peak height of the bounce above the rest position, in blocks.
   bounce-height: 0.25
-  # Distance in blocks from which the head is rendered (approximate; capped by the server view distance).
+  # Distance in blocks from which the head is rendered (approximate; capped by the server view
+  # distance, and for a bm: model also by spigot.yml entity-tracking-range.other).
   view-range: 48
   # Base64 texture value used when /rotatinheads create omits one. Empty = plain player head.
   texture: ""
@@ -276,3 +277,32 @@ If `heads.yml` cannot be read (a YAML mistake, or `heads:` that is not a map), t
 heads, refuses to save until you fix or remove the file and run `/rh reload`, and says so in the
 console and after every command. Nothing is overwritten.
 {% endhint %}
+
+## `bm:` heads and entity cleaners
+
+A head with a BetterModel model (`bm:<id>`) is drawn onto a real carrier entity: one **invisible
+marker armor stand** per head. This is what lets Bedrock players see the model, because Nexo's
+Scaffolding addon only bridges BetterModel content that rides an entity tracker.
+
+The carrier is invisible, has no gravity, is silent, invulnerable, non-collidable and is **never
+saved to the world**, so it can never duplicate across restarts. It carries the scoreboard tag
+`snrotatinheads` and the persistent-data key `snrotatinheads:rhead_id`.
+
+{% hint style="warning" %}
+An entity cleaner (ClearLag and friends) can sweep the carrier like any other armor stand. The
+plugin notices within a second and rebuilds the head, so the worst case is a brief flicker rather
+than a permanently invisible model - but the clean fix is to exclude it. Prefer a filter on the
+scoreboard tag `snrotatinheads` so your other armor stands keep being cleaned; if your cleaner
+cannot filter on tags, exclude `ARMOR_STAND` in the worlds that hold `bm:` heads. On the stock
+ClearLag config `ARMOR_STAND` is already absent from the removal lists, so nothing is needed.
+{% endhint %}
+
+Two consequences of riding a real entity, both of which apply to Java and Bedrock players alike:
+
+- **`view-range` is capped by vanilla entity tracking.** A value above `entity-tracking-range.other`
+  in `spigot.yml` (64 by default) has no effect on a `bm:` head. The shipped default of 48 is
+  unaffected. The cutoff is also the client-side Display test, so it scales with each player's Entity
+  Distance video setting, exactly as it always has for plain heads.
+- **Each `bm:` head adds one invisible entity** to entity counts in its chunk.
+
+`meg:` (ModelEngine) heads and heads without a model are unaffected by all of the above.

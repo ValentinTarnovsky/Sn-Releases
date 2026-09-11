@@ -70,6 +70,30 @@ The engine has no such model right now: it is not installed, still loading its m
 or the model was renamed. Check the engine's console output and `/rh info <id>` for the model name.
 The head retries on its own every second and appears as soon as the model is there.
 
+### Bedrock players see nothing where my `bm:` head is.
+
+They should see the model as of 2.5.0, provided the server has the bridge: **Geyser + Floodgate** and
+Nexo's **Scaffolding** addon, which is what converts BetterModel content for Bedrock. A `bm:` head is
+drawn onto a real carrier entity precisely so Scaffolding can bridge it; before 2.5.0 it was drawn
+with a location-bound tracker that the bridge never saw, so Bedrock players saw nothing at all.
+
+This applies to `bm:` (BetterModel) heads only. A `meg:` (ModelEngine) head, an item-model head and a
+plain skull are all Display entities, which Geyser discards without a word, so Bedrock players do not
+see those. Their DecentHolograms labels do come through, since those are text displays.
+
+### My `bm:` head disappears for a moment and comes back.
+
+An entity cleaner (ClearLag and friends) swept its carrier armor stand. The plugin notices within a
+second and rebuilds the head, which is the flicker you saw. Exclude the carrier to stop it happening
+at all - it carries the scoreboard tag `snrotatinheads`; see *`bm:` heads and entity cleaners* in
+[Configuration](configuration.md) for both exclusion handles.
+
+### My `bm:` head stops being visible further away than it used to.
+
+A `bm:` head rides a real entity, so its `view-range` is capped by `entity-tracking-range.other` in
+`spigot.yml` (64 by default). A `view-range` above that has no effect. Raise the tracking range, or
+accept the cap - the shipped default of 48 is below it and is unaffected.
+
 ### I set a texture and nothing changed.
 
 The head shows a model that is not a player head, so there is no skin to render; the command says

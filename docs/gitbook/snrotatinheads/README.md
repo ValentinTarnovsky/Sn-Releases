@@ -21,6 +21,10 @@ almost nothing.
   renders a Blockbench model with bones and animations in place of the skull. It still spins,
   bounces, carries the label and answers clicks; `/rh animation set <id> <name>` picks the looping
   animation.
+- **Bedrock players see `bm:` models.** A BetterModel head rides a real carrier entity (one invisible
+  marker armor stand), which is what lets Nexo's Scaffolding addon bridge it to Bedrock through
+  Geyser. See [Configuration](configuration.md) for the two consequences: entity cleaners, and
+  `view-range` being capped by vanilla entity tracking.
 - Animation sequences: `/rh animation add <id> <seconds> <name>` plays another animation once
   every so many seconds on top of the loop (idle all the time, wave every 80s), and the engine
   falls back to the loop on its own when it ends.
