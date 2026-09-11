@@ -49,7 +49,8 @@ duplicates into stronger ones, and manage everything from configurable menus.
   BetterModel model reaches them as its head rather than as the animated model - give every companion
   a head texture if your server has Bedrock players. Java players receive byte for byte what they
   received before and see no change whatsoever. Floodgate is optional, and is what tells the plugin
-  who is on Bedrock.
+  who is on Bedrock. Since 1.13.0 each companion can give that zombie its own leather colour with
+  `bedrock.armor-color` in its file, so the outfit matches the head.
 - Four menus you can re-skin without touching code, with a per-group
   colour every companion template can draw with.
 - Equipped companions are kept in slots 1..n with no gap, so the free slots are always the last ones.

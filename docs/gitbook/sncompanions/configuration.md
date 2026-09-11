@@ -339,6 +339,9 @@ bedrock:
     # colour does not reliably survive Geyser's translation to Bedrock, so treat
     # this as something to try on your own server rather than something that is
     # known to work. It is ignored by non-leather materials.
+    # A companion can override this for itself with bedrock.armor-color in its
+    # own companions/<id>.yml, so each one can match its own head - the example
+    # is commented in companions/ember_fox.yml.
     color: ""
 
 # ------------------------------------------------------------
@@ -1050,6 +1053,7 @@ rebuilds every formation one tick later, so there is no restart to plan. See
 | `bedrock.armor.leggings` | `LEATHER_LEGGINGS` | As above, the leg piece |
 | `bedrock.armor.boots` | `LEATHER_BOOTS` | As above, the foot piece |
 | `bedrock.armor.color` | `""` (undyed) | Dye colour for LEATHER pieces only, as `RRGGBB` hex with the leading `#` optional. **Quote it** - see the warning below. Empty means undyed, which is the shipped value on purpose |
+| `bedrock.armor-color` *(in `companions/<id>.yml`, 1.13.0)* | unset | This companion's own leather colour, overriding `bedrock.armor.color` for it alone so each substitute can match its head. Same format, same quoting rule. A companion that says nothing keeps the global colour |
 
 {% hint style="warning" %}
 **`mount-label: false` does not remove the name plate.** The label lines are sent to every viewer
@@ -1060,6 +1064,23 @@ mishandling the mount itself. It is not a way to hide the label.
 {% endhint %}
 
 {% hint style="warning" %}
+**A colour per companion (1.13.0).** One server-wide colour clashes with most heads in a varied
+collection, so a companion file can set its own:
+
+```yaml
+# companions/<id>.yml
+bedrock:
+  armor-color: "DD7430"
+```
+
+It overrides `bedrock.armor.color` for that companion alone and follows the same rules below. Only
+leather takes a colour, so keep the three `bedrock.armor` pieces on `LEATHER_*`. An unreadable value
+warns in the console and falls back to the global colour; the companion still loads. `companions/` is
+seed-only, so existing files never gain the key on their own - add it to the companions you want to
+colour. It lives in the companion file rather than in `config.yml` for the same reason `head-texture`
+does: it describes one companion's look. A good starting value is the head's own dominant colour, a
+little brighter than it looks, because dyed leather renders darker than a flat swatch.
+
 **Quote `armor.color`.** `"123456"` is a colour, but `123456` unquoted is a *number* to YAML, which
 is rejected with a console warning and leaves the leather undyed. It ships empty on purpose: a
 per-item colour does not reliably survive Geyser's translation to Bedrock, so treat it as something

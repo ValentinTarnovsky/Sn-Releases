@@ -427,6 +427,24 @@ renderer, the tracker and the formation code line for line - but check it on a t
 you announce it. Nothing a Java player sees can change either way.
 {% endhint %}
 
+### Can each companion's Bedrock substitute wear a colour that matches its head?
+
+Yes, since 1.13.0. Give the companion file its own leather colour:
+
+```yaml
+# companions/<id>.yml
+bedrock:
+  armor-color: "DD7430"
+```
+
+It overrides `bedrock.armor.color` from `config.yml` for that companion alone. Write it as `RRGGBB` hex and
+**quote it** - an unquoted `123456` is a number to YAML and is rejected with a warning. Only leather takes a
+colour, so keep `bedrock.armor.chestplate`, `leggings` and `boots` on `LEATHER_*`. A good starting point is
+the most common colour of the head itself, a little brighter than it looks, because dyed leather renders
+darker than a flat swatch. Companions in one family that share a head should share the colour too. Whether
+the colour survives Geyser's translation to Bedrock is not verified yet; if it does not, the substitute
+simply wears plain leather.
+
 ### My Bedrock players see their companions, but the companions never turn and they bump into them
 
 All of that is expected, and it is the honest cost of the substitute. A Display entity is a
