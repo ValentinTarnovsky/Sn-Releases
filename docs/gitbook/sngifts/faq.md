@@ -76,6 +76,20 @@ whole network. Enable IP forwarding, or set `claim.ip-limit-per-gift: 0`.
 Yes, on the same day. The draw is per tier per day, not per player, and it is stored, so everyone
 claiming that tier that day gets the same commands. `/gifts resetgifts` rerolls it for everybody.
 
+### How do players know what they won?
+
+Give the reward a `name` in `rewards.yml` and put `{name}` in `messages.gift-claimed`:
+
+```yaml
+rewards:
+  - command: "pets admin givebox {player} Box_Basica 1 -sf"
+    name: "&6Basic Box"
+```
+
+A gift that pays several rewards lists them all, `A, B and C`. Rewards without a name are left out.
+Names reach players from the next draw, so run `/gifts resetgifts` after naming entries if you want
+them today.
+
 ### A `vault:500` reward did nothing. Why?
 
 There is no economy on the server, or the transaction was refused. The player is told, that one

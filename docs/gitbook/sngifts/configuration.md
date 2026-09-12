@@ -189,23 +189,39 @@ it again.
 
 ```yaml
 rewards:
-  - "give {player} diamond 1"
-  - "give {player} emerald 5"
+  - command: "give {player} diamond 1"
+    name: "&b1 Diamond"
+  - command: "give {player} emerald 5"
+    name: "&a5 Emeralds"
   - "give {player} netherite_ingot 1"
   - "give {player} golden_apple 2"
-  - "vault:500"
+  - command: "vault:500"
+    name: "&e$500"
 ```
 
-| Syntax | What it does |
+Each entry is either a plain command line, or a map with a `command` and an optional `name`. Both
+forms can be mixed freely in the same pool.
+
+| Key | What it does |
+|---|---|
+| `command` | What the reward runs. Required in the map form. A map without one is skipped with a console warning |
+| `name` | Optional. What the player is told they won, through `{name}` in `messages.gift-claimed`. Colour codes are allowed |
+
+| Syntax inside a command | What it does |
 |---|---|
 | `{player}` | Replaced with the claiming player's name |
 | `vault:<amount>` | Deposits that amount through Vault instead of running a command |
 | anything else | Run as a console command |
 
-How the draw works: once per day, each tier draws its own `amount-of-rewards` lines from this pool
-at random. A tier never draws the same line twice, but two different tiers can draw the same line
-on the same day, because the pool is shared. The draw is stored, so a mid-day restart keeps what
-players already see. Only the daily reset and `/gifts resetgifts` reroll it.
+How the draw works: once per day, each tier draws its own `amount-of-rewards` entries from this
+pool at random. A tier never draws the same entry twice, but two different tiers can draw the same
+entry on the same day, because the pool is shared. The draw is stored, names included, so a mid-day
+restart keeps what players already see. Only the daily reset and `/gifts resetgifts` reroll it.
+
+{% hint style="info" %}
+Names are stored with the draw. After upgrading from 2.0.0, or after naming entries mid-day, the
+names show up from the next draw: wait for the daily reset or run `/gifts resetgifts`.
+{% endhint %}
 
 {% hint style="warning" %}
 Put more lines in the pool than your largest `amount-of-rewards`, or a tier cannot fill its draw.
@@ -325,7 +341,7 @@ placeholders above, only `%papi%` ones.
 Every player facing string lives here. Colors accept `&a` legacy codes, `&#RRGGBB` and `<#RRGGBB>`
 hex, and `[rgb]` gradients.
 
-The file has five parts:
+The file has seven parts:
 
 | Section | What it holds |
 |---|---|
@@ -333,8 +349,32 @@ The file has five parts:
 | `snlib` | SnLib's shared command contract: no permission, usage, help header and so on |
 | `messages` | The plugin's own single line messages |
 | `lists` | Multi line messages, sent without the prefix |
+| `reward-names` | How `{name}` lists the rewards a claim paid |
 | `status` | The short state words |
 | `time-format` | How durations are rendered |
+
+### Reward names
+
+```yaml
+messages:
+  gift-claimed: "&aYou claimed &f{gift}&a and received &f{name}&a!"
+
+reward-names:
+  separator: "&a, &f"
+  last-separator: "&a and &f"
+  # Used when none of the rewards the claim paid had a name.
+  none: "a surprise reward"
+```
+
+`{name}` in `messages.gift-claimed` lists the names of the rewards the claim paid, taken from
+`rewards.yml`, the way a sentence does: `A`, `A and B`, `A, B, C and D`. Rewards without a name are
+left out, and a claim that paid no named reward shows `none`. Translate `last-separator` to your
+server's language, for example `"&a y &f"`.
+
+{% hint style="info" %}
+An existing server keeps its own `gift-claimed` value on upgrade. Add `{name}` to it wherever you
+want the rewards to appear.
+{% endhint %}
 
 ### State words
 
