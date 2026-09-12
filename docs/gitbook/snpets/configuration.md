@@ -840,6 +840,12 @@ whether or not the item advertises an owner.
 1.17.0 it is an ordinary pet placeholder and works in `pet-items.item.lore` and in the pet cells of
 `guis/main.yml` and `guis/selector.yml` too.
 
+**PlaceholderAPI tokens work in `pet-items.item` since 1.26.1**, resolved for the player the item is
+built for, exactly as in a menu cell. The pet placeholders are filled in first, so one can sit
+inside a PAPI token: `&cx%math_2:half-up_1+{buff-value}/100%` renders the multiplier on the head.
+The lore is painted when a pet is taken out and when an ownership scroll claims it, so a head
+extracted on an older version keeps its old lore until one of those happens again.
+
 ### Scrolls
 
 **Added in 1.18.0.** A new managed band declares three consumable ITEMS, handed out with
