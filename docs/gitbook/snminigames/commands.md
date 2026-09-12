@@ -15,7 +15,7 @@ than one line per subcommand. The setup commands still run and still tab-complet
 
 | Command | Description |
 |---------|-------------|
-| `/mg join <game>` | Join the open queue of a minigame |
+| `/mg join [game]` | Join the open queue of a minigame. Without a game, you join a random round that is still open (waiting for players and not full), preferring rounds you are not on rejoin cooldown for |
 | `/mg leave` | Leave the queue or the running round |
 | `/mg list` | List games, their state and queue count |
 | `/mg help` | Show the help menu |
