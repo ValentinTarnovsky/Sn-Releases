@@ -877,9 +877,13 @@ is still cancelled, so nothing rendered in the menu can be taken out of it.
 
 **The level scroll** raises the pet by the number stamped on that stack and stops at the pet's own
 level cap - the one its trait and its level boost grade widen, not the plain `max-level` of its
-file. A pet already at that cap is refused and keeps the scroll; a pet below it that the scroll
-would carry past it is raised to the cap and the scroll IS spent, so a pet can always finish its
-climb. The message reports the levels really gained rather than the number on the item.
+file. Since **1.26.0** one click applies the WHOLE stack on your cursor, left or right click alike,
+but never more scrolls than the pet can absorb: twenty +1 scrolls on a pet three levels below its
+cap spend three, and the other seventeen stay on your cursor. Split the stack first to apply fewer.
+A pet already at that cap is refused and keeps every scroll; the last scroll spent may carry it
+past the cap, in which case it is raised to the cap and that scroll IS spent, so a pet can always
+finish its climb. The message reports the levels really gained rather than the number on the item,
+and names how many scrolls were used when it was more than one (`messages.scroll-level-used-many`).
 
 **The rarity scroll** turns the pet into whatever its `pets/<id>.yml` names under `upgrades-to`,
 keeping its level, experience, trait, boosts and obtained date. The upgraded pet always lands in

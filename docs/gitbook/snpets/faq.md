@@ -283,9 +283,18 @@ click is the ordinary inventory swap it looks like.
 
 Since **1.19.0**: open the pets menu with `/pets`, pick the scroll up onto your cursor out of your
 own inventory, and left or right click a pet - an equipped slot marker along the top row, or a
-stored pet in the grid. It is applied to that pet and one scroll is consumed. In 1.18.0 those two
-were defined, given and stamped but nothing spent them; scrolls handed out back then work exactly
-as they would have.
+stored pet in the grid. It is applied to that pet and the scroll is consumed - for a level scroll,
+since 1.26.0, as many of the stack on your cursor as the pet can use (see below). In 1.18.0 those
+two were defined, given and stamped but nothing spent them; scrolls handed out back then work
+exactly as they would have.
+
+### I clicked a pet with a stack of level scrolls. How many does it use?
+
+Since **1.26.0**, all of them - left or right click alike - but never more than the pet can absorb.
+Twenty +1 scrolls on a pet fifty levels below its cap spend all twenty; the same twenty on a pet
+three levels below its cap spend three, and the other seventeen stay on your cursor. The message
+says how many were used. To spend fewer on purpose, split the stack in your inventory first (right
+click picks up half, or drop them one by one). Before 1.26.0 every click spent exactly one scroll.
 
 A level scroll raises the pet by the number stamped on that stack. A rarity scroll turns it into
 whatever its `pets/<id>.yml` names under `upgrades-to`, keeping its level, experience, trait and

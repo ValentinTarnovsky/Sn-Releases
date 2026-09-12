@@ -34,8 +34,9 @@ duplicates into stronger ones, and manage everything from seven configurable men
   in your own inventory and makes that head yours, which is the way out of the 1.17.0 owner lock.
   Since 1.19.0 the LEVEL and RARITY scrolls are applied by holding one and clicking a pet in the
   main menu - an equipped one or a stored one: the level scroll raises the pet by the number
-  stamped on the stack, the rarity scroll turns it into whatever its `upgrades-to` names, and both
-  are consumed one per use.
+  stamped on the stack, the rarity scroll turns it into whatever its `upgrades-to` names. Since
+  1.26.0 a click with a stack of level scrolls applies the whole stack at once, never spending more
+  than the pet can absorb; a rarity scroll is still consumed one per use.
 - Holograms: configurable text above every pet, per pet type, drawn as packet entities that
   RIDE the pet, so the text and the pet can never move at different times.
 - Bedrock fallback (1.25.0): Geyser discards the Display entity a pet body is drawn with, so a
