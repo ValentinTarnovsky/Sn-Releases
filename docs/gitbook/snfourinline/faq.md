@@ -38,7 +38,11 @@ Every running game ends with both stakes returned and no result recorded. One ca
 
 ### A transfer failed. Who ate the money?
 
-Nobody, silently. Every transfer is a console command with the balance read back around it: a take counts only when the balance dropped, a payout to an online player only when it rose. When a transfer does not move the money, the plugin refuses to start (or list) that bet, tells the player, and logs one WARN naming the exact `currencies.<id>.<give|take>-command` key, the player and the amount.
+Nobody, silently. Every transfer is a console command with the balance read back around it, and watched for the currency's `confirm-ticks`: a take counts only once the balance is seen to drop, and a payout to an online player is checked for the rise. When a transfer does not move the money, the plugin refuses to start (or list) that bet, tells the player, and logs one WARN naming the exact `currencies.<id>.<give|take>-command` key, the player and the amount.
+
+### Bets say "unavailable", but the economy still took the money
+
+The economy applies console commands later than the plugin waited for them. This is typical of a proxy economy (one whose command is forwarded to BungeeCord or Velocity, such as SnCredits), where the balance moves a round trip after the command runs. The console WARN says so and names the amount owed. Raise that currency's `confirm-ticks` (default `60`, at most `200`) and run `/fourinline reload`. A player who starts a bet while an earlier charge is still being confirmed is asked to try again in a moment.
 
 ### Can I redesign the menus?
 

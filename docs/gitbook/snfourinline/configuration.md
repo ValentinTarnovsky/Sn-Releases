@@ -79,11 +79,13 @@ currencies:
     take-command: "eco take {player} {amount}"
     balance-placeholder: "%vault_eco_balance%"
     decimals: 2
+    confirm-ticks: 60
 ```
 
 - `balance-placeholder` is a PlaceholderAPI token (`%...%`) whose value is the player's balance as a **number**. Color codes and a currency symbol around it are stripped, and `1,234.5`, `3.0E7` or `10.5k` all read correctly.
 - `decimals` is how finely the currency counts: `2` for money, `0` for a points economy or a placeholder that answers whole numbers (such as `%vault_eco_balance_fixed%`). A stake may not be finer than this, because a fractional charge could not be verified against a whole-number balance.
-- `give-command` and `take-command` are dispatched from the console. `{player}` and `{amount}` are the only tokens; the amount is always plain decimal, never scientific notation. Right after a take the balance is read again and the stake only counts if it dropped. A take the economy refuses (a minimum-balance rule, a command that only prints its usage) never starts a game whose stake nobody paid. An economy that applies console commands asynchronously cannot be used for bets.
+- `give-command` and `take-command` are dispatched from the console. `{player}` and `{amount}` are the only tokens; the amount is always plain decimal, never scientific notation. After a take the balance is read again and the stake only counts once it is seen to drop. A take the economy refuses (a minimum-balance rule, a command that only prints its usage) never starts a game whose stake nobody paid.
+- `confirm-ticks` (default `60`, at most `200`) is how long the balance is watched for a take or a payout to show up. An economy that applies commands at once is confirmed on the first read and never waits. A proxy economy (one that forwards the command to BungeeCord or Velocity, such as SnCredits) moves the balance a round trip later and needs this wait; the bet starts as soon as the charge shows up. A take not seen within it is refused and logged. `0` demands the move in the same tick.
 - `display-name` is shown in messages and menus and may itself contain colors. A PlaceholderAPI token inside it resolves in chat messages, not inside menu items.
 - A currency is only offered for new bets when all three fields are set. A half-filled entry is reported at boot and on `/fourinline reload`, and so is an empty `currencies:` block.
 
