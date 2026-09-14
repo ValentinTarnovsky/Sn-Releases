@@ -27,6 +27,33 @@ The switch covers the two roulettes only: a pet box keeps its own `animation:` b
 `boxes.yml`, and a roulette you turned off with `traits.roll.enabled: false` or
 `boosts.roll.enabled: false` stays off for everyone regardless.
 
+### My players spam the roll button and lose great results. Can a good roll be protected?
+
+Yes, since **1.27.0**, and it is on by default. List the traits and boost grades worth protecting
+under `roll-confirm` in `config.yml`:
+
+```yaml
+roll-confirm:
+  traits:
+    - prodigy
+  boosts:
+    - mythic
+```
+
+When the selected pet ALREADY holds one of them, clicking a roll button opens a confirmation menu
+instead of rolling, and its Cancel button sits on the very cell the player was clicking. The spam
+lands on Cancel and the pet keeps what it has; Confirm rolls exactly as before, and closing the
+question spends nothing. On the boosts menu the list is checked against every stat the button
+would reroll: that stat for a single-stat button, any of the three for Roll Every Boost. Ids
+ignore case and an empty list never asks. The defaults are the rarest shipped entries, so a server
+with its own ids is unaffected until you list them.
+
+The two menus are `guis/traits_confirm.yml` and `guis/boosts_confirm.yml`. **Keep them aligned**:
+each has the same number of rows as the menu it asks for, because a menu with a different row count
+sits at a different height on screen and the Cancel would no longer be under the cursor. If you move
+a roll button or change the rows of `guis/traits.yml` or `guis/boosts.yml`, do the same in the
+matching confirmation. See [The reroll confirmation](configuration.md#the-reroll-confirmation-traits_confirm-and-boosts_confirm).
+
 ### Can I style the three boost roll buttons separately? And where does the roulette spin?
 
 Since **1.21.0**, yes: `guis/boosts.yml` declares one template per button -

@@ -574,6 +574,28 @@ boosts:
     reveal-sound: "ENTITY_PLAYER_LEVELUP 1.0 1.4"
 
 # ------------------------------------------------------------
+#  Reroll confirmation (since 1.27.0). A roll is decided the moment its button
+#  is clicked, so a player spam-clicking can reroll a great result before they
+#  even read it. When the selected pet ALREADY holds something listed below,
+#  clicking a roll button opens a confirmation menu instead of rolling, and
+#  that menu's Cancel button sits on the very cell the player was clicking:
+#  spam lands on Cancel and nothing is lost. Confirm rolls as usual.
+#  The two menus are guis/traits_confirm.yml and guis/boosts_confirm.yml.
+#  Ids are matched ignoring case. An empty list never asks. An id that no
+#  entry declares simply never matches.
+# ------------------------------------------------------------
+roll-confirm:
+  # Trait ids from traits.yml. Asked on the traits menu when the pet's current
+  # trait is one of these.
+  traits:
+    - prodigy
+  # Grade ids from boost-grades.yml. Asked on the boosts menu when a stat the
+  # button would reroll holds one of these: that stat for a single-stat
+  # button, any of the three for Roll Every Boost.
+  boosts:
+    - mythic
+
+# ------------------------------------------------------------
 #  Fusion. Two pets of the SAME id become the pet that their own
 #  pets/<id>.yml names as its fusion target: it is a pet-to-pet map, never a
 #  rarity ladder, and a pet whose file names no target cannot be fused at all.
@@ -2191,6 +2213,8 @@ Seven menu layouts, all managed and all re-skinnable without touching code.
 | `boosts.yml` | Boost rolling for one pet |
 | `fusion.yml` | Fusion, including the Fuse All bulk path |
 | `bulk_delete.yml` | Bulk deletion by group |
+| `traits_confirm.yml` | 1.27.0. Asks before a trait roll replaces a trait listed in `roll-confirm.traits`; mirrors `traits.yml` |
+| `boosts_confirm.yml` | 1.27.0. Asks before a boost roll replaces a grade listed in `roll-confirm.boosts`; mirrors `boosts.yml` |
 
 {% hint style="warning" %}
 A menu file defines a fixed number of cells. If you raise a player's equip slots above the
@@ -2354,6 +2378,42 @@ the file - a managed merge never deletes - but nothing reads them any more: dele
 you like, and if you had restyled `roll-stat`, copy your style into the three new templates. The
 traits menu is untouched - it has no stat cells, so its roulette keeps playing on the
 selected-pet cell.
+{% endhint %}
+
+### The reroll confirmation: `traits_confirm` and `boosts_confirm`
+
+A roll is decided and saved the moment its button is clicked, so a player spam-clicking a roll
+button can reroll away a great result before they even read it. Since **1.27.0**, when the selected
+pet ALREADY holds a trait listed in `roll-confirm.traits` or a grade listed in `roll-confirm.boosts`
+(see [config.yml](#config-yml)), the roll button opens one of these two menus instead of rolling.
+
+| Cell | What it does |
+|---|---|
+| `cancel` (item) | Goes back to the traits or boosts menu (`[pets-open] traits` / `[pets-open] boosts`). Nothing is spent. |
+| `confirm` (template) | Fires the source menu's own roll action with `confirm` (`[pets-roll-trait] confirm` / `[pets-roll-boost] confirm`): back to the source menu, then the roll happens exactly as a normal click would. Binds `{currency}` `{balance}`. |
+| `at-risk` (template) | Every pet placeholder plus `{at-risk}`: the trait the roll would replace, or one `menus.boost-line` per listed grade it would replace. |
+| `selected-none` (template) | The same cell when no pet is selected any more. |
+
+Closing the question (ESC) rolls nothing and forgets the selected pet, like every other SnPets menu.
+The question is only asked for a roll that would really happen, so a player without the ticket or
+dice still gets the usual message instead of the menu.
+
+**The whole point is WHERE Cancel sits.** Each confirmation has the SAME number of rows as the menu
+it asks for, and Cancel covers the same cells as that menu's roll buttons:
+
+| Menu | Rows | Roll button cells | Cancel cells | Confirm | At risk |
+|---|---|---|---|---|---|
+| `traits_confirm.yml` | 3 | 15 | 15 | 11 | 13 |
+| `boosts_confirm.yml` | 5 | 25, 39, 40, 41 | 25, 39, 40, 41 | 19 | 22 |
+
+A chest menu is drawn centred on the screen, so a menu with a different number of rows sits at a
+different height and slot 15 of one is not where slot 15 of the other is. Mirroring the rows is what
+puts Cancel under a spamming cursor.
+
+{% hint style="warning" %}
+**Keep them aligned.** If you move a roll button or change the rows of `guis/traits.yml` or
+`guis/boosts.yml`, make the same change in the matching confirmation, or Cancel stops being under
+the cursor. Nothing reads one file to place the other.
 {% endhint %}
 
 ### Colouring a pet by its group

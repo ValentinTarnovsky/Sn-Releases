@@ -10,7 +10,7 @@ tasks and unequipped pets cost nothing.
 A pet is more than a cosmetic. It levels up from a configurable experience source, carries a
 rollable trait and graded stat boosts, and grants its owner damage, resistance and speed
 buffs that scale with its level. Players collect pets from weighted pet boxes, fuse
-duplicates into stronger ones, and manage everything from seven configurable menus.
+duplicates into stronger ones, and manage everything from nine configurable menus.
 
 ## Features
 
@@ -42,7 +42,8 @@ duplicates into stronger ones, and manage everything from seven configurable men
 - Bedrock fallback (1.25.0): Geyser discards the Display entity a pet body is drawn with, so a
   Bedrock player is sent a client-side armor stand wearing the pet's own head texture instead, moved
   by the same tick and carrying the same name plate. Needs Floodgate; Java players are untouched.
-- Seven menus you can re-skin without touching code, with a per-player switch that decides
+- Nine menus you can re-skin without touching code (two of them ask before a reroll would throw
+  away a trait or grade you listed), with a per-player switch that decides
   whether that player's roll animation plays or the result appears instantly, and a per-group
   colour every pet template can draw with.
 - Equipped pets are kept in slots 1..n with no gap, so the free slots are always the last ones.
