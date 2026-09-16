@@ -14,7 +14,6 @@ jobs:
         env:
           WEBHOOK_URL: ${{ secrets.DISCORD_UPDATES_WEBHOOK }}
           RELEASE_NAME: ${{ github.event.release.name }}
-          RELEASE_BODY: ${{ github.event.release.body }}
           RELEASE_URL: ${{ github.event.release.html_url }}
         shell: bash
         run: |
@@ -23,9 +22,8 @@ jobs:
             exit 0
           fi
 
-          content=$(printf '## 🚀 %s\n\n%s\n\nRelease and download: <%s>' \
-            "$RELEASE_NAME" "$RELEASE_BODY" "$RELEASE_URL")
-          content="${content:0:1900}"
+          content=$(printf '🚀 **%s** is now available.\n<%s>' \
+            "$RELEASE_NAME" "$RELEASE_URL")
           payload=$(jq -n --arg content "$content" \
             '{content: $content, allowed_mentions: {parse: []}}')
 
