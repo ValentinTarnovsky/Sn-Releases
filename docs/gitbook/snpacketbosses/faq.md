@@ -22,6 +22,14 @@ EdTools block breaks by the owner, and almost nothing else. Each valid `EdToolsB
 EdTools is a hard dependency. Without EdTools and packetevents installed, the server refuses to enable SnPacketBosses.
 {% endhint %}
 
+### Can one kill pay its rewards more than once?
+
+No, not since 2.0.1. EdTools fires its break events off the main thread, one per block, so an area tool lands many blows at the same moment. Only the blow that takes the boss to zero counts as the kill, and `rewards.commands` then run exactly once, from the console, on the main thread. If a time-out, a logout or an admin kill happens at the same moment as the kill, whichever comes first wins. When the kill comes first it is still paid, and no attempt is spent.
+
+{% hint style="warning" %}
+Versions up to 2.0.0 could pay a single kill several times when the killing blow came from an area tool, up to once per block broken by that swing. Update to 2.0.1 or later.
+{% endhint %}
+
 ### How does a player get an egg, and what is an attempt?
 
 An admin runs `/packetbosses give <player> <boss> [amount]`. The egg is an ordinary item that players can stack, store, sell and trade freely. Its identity lives in the item's persistent data, so renaming it in an anvil does not break it, and a hand made copy summons nothing. Each egg carries an attempt count, capped by `max-attempts` in the boss file. Right-clicking spends the egg from the stack and starts the fight.
@@ -44,7 +52,7 @@ Set `movement.enabled: true` and the boss follows its owner everywhere, across w
 
 ### What happens to a running fight if I delete or disable a boss file?
 
-The next reload ends every live fight whose boss is now missing or disabled. The stored row is deleted, the owner is told, and the console logs how many fights were ended. This is deliberate: a fight pointing at a boss that no longer exists could never be won and would block its owner forever. If the last boss file load was incomplete, for example because one file failed to parse, paused fights are kept and a warning is logged instead.
+The next reload ends every live fight whose boss is now missing or disabled. The stored row is deleted, the owner is told, and the console logs how many fights were ended. This is deliberate: a fight pointing at a boss that no longer exists could never be won and would block its owner forever. If the last boss file load was incomplete, for example because one file failed to parse, no fight is ended: running fights keep going on the boss they started with, and paused fights are kept with a warning in the console.
 
 ### How do I free a player who is stuck in a fight?
 
