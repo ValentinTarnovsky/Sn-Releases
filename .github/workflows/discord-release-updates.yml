@@ -14,7 +14,7 @@ jobs:
         env:
           WEBHOOK_URL: ${{ secrets.DISCORD_UPDATES_WEBHOOK }}
           RELEASE_NAME: ${{ github.event.release.name }}
-          RELEASE_URL: ${{ github.event.release.html_url }}
+          CHANGELOG_URL: https://sndevelopment.dev/changelog
         shell: bash
         run: |
           if [ -z "$WEBHOOK_URL" ]; then
@@ -22,8 +22,8 @@ jobs:
             exit 0
           fi
 
-          content=$(printf '🚀 **%s** is now available.\n<%s>' \
-            "$RELEASE_NAME" "$RELEASE_URL")
+          content=$(printf '🚀 **%s** is now available.\nChangelog: <%s>' \
+            "$RELEASE_NAME" "$CHANGELOG_URL")
           payload=$(jq -n --arg content "$content" \
             '{content: $content, allowed_mentions: {parse: []}}')
 
