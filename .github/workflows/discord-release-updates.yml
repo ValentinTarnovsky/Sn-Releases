@@ -29,7 +29,7 @@ jobs:
             changelog_url="https://sndevelopment.dev/changelog"
           fi
 
-          content=$(printf '🚀 **%s** is now available.\nChangelog: <%s>' \
+          content=$(printf '<:Logo:1549807860341280798> **%s** is now available.\nChangelog: <%s>' \
             "$RELEASE_NAME" "$changelog_url")
           payload=$(jq -n --arg content "$content" \
             '{content: $content, allowed_mentions: {parse: []}}')
