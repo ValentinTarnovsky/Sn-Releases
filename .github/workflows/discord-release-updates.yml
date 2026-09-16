@@ -1,0 +1,36 @@
+name: Publish Discord release update
+
+on:
+  release:
+    types: [published]
+
+permissions: {}
+
+jobs:
+  announce:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Send release to Discord
+        env:
+          WEBHOOK_URL: ${{ secrets.DISCORD_UPDATES_WEBHOOK }}
+          RELEASE_NAME: ${{ github.event.release.name }}
+          RELEASE_BODY: ${{ github.event.release.body }}
+          RELEASE_URL: ${{ github.event.release.html_url }}
+        shell: bash
+        run: |
+          if [ -z "$WEBHOOK_URL" ]; then
+            echo "DISCORD_UPDATES_WEBHOOK is not configured; skipping notification."
+            exit 0
+          fi
+
+          content=$(printf '## 🚀 %s\n\n%s\n\n[View release and download](%s)' \
+            "$RELEASE_NAME" "$RELEASE_BODY" "$RELEASE_URL")
+          content="${content:0:1900}"
+          payload=$(jq -n --arg content "$content" \
+            '{content: $content, allowed_mentions: {parse: []}}')
+
+          curl --fail-with-body --silent --show-error \
+            --retry 3 --retry-delay 3 --retry-all-errors \
+            --header 'Content-Type: application/json' \
+            --data "$payload" \
+            "$WEBHOOK_URL"
