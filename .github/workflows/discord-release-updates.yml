@@ -23,7 +23,7 @@ jobs:
             exit 0
           fi
 
-          content=$(printf '## 🚀 %s\n\n%s\n\n[View release and download](%s)' \
+          content=$(printf '## 🚀 %s\n\n%s\n\nRelease and download: <%s>' \
             "$RELEASE_NAME" "$RELEASE_BODY" "$RELEASE_URL")
           content="${content:0:1900}"
           payload=$(jq -n --arg content "$content" \
