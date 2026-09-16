@@ -10,6 +10,7 @@ Configurable lootbox system with animated GUI opening. You define lootboxes as Y
 - Full in-game editor: create, rename, duplicate and delete lootboxes, and capture rewards from your inventory.
 - Per-lootbox aesthetics: 3-stop gradient names, bullet character, key glow and custom model data.
 - Keys of the same lootbox always stack: held keys are re-rendered from the current definition on join and before every grant.
+- Reward items stay stackable with the real thing: `/lootbox audit` finds rewards whose stored snapshot drifted from what its owning plugin mints today, and `/lootbox sync` refreshes every copy across every lootbox from one item in your hand.
 - Fast-open by shift + right-click, denied above a configurable stack size so a full stack cannot be burst-opened.
 - Per-lootbox personal or global announcements, and a per-IP giveall cap.
 

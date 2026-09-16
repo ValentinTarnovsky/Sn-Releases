@@ -126,6 +126,19 @@ editor:
   delete-confirm-seconds: 10
 
 # ------------------------------------------------------------
+#  Reward item audit (/lootbox audit). A reward stores a byte-exact
+#  snapshot of the item it was captured from, so when the plugin that
+#  mints that item later changes its name or lore rendering, old
+#  snapshots stop stacking with freshly obtained copies while still
+#  looking identical. The audit finds them; /lootbox sync (with the
+#  fresh item in hand) refreshes every copy across every lootbox.
+#  These two values only cap the chat output. 0 = no limit.
+# ------------------------------------------------------------
+audit:
+  max-items: 15
+  max-variants-per-item: 4
+
+# ------------------------------------------------------------
 #  Delivery. Caps how many accounts sharing one IP receive keys from
 #  /lootbox giveall:
 #    0 -> no limit; every online player receives a key.

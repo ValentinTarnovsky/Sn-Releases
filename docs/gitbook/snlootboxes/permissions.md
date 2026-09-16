@@ -12,6 +12,8 @@ Every administrative node defaults to `op`; `lootboxes.use` defaults to `true`.
 | `lootboxes.admin.create` | `op` | Allows `/lootbox create`. |
 | `lootboxes.admin.delete` | `op` | Allows `/lootbox delete`. |
 | `lootboxes.admin.editor` | `op` | Allows `/lootbox editor`. |
+| `lootboxes.admin.audit` | `op` | Allows `/lootbox audit`. |
+| `lootboxes.admin.sync` | `op` | Allows `/lootbox sync`. |
 | `snlootboxes.admin.reload` | `op` | Allows `/lootbox reload`. |
 | `snlootboxes.admin.debug` | `op` | Allows `/lootbox debug`. |
 | `snlootboxes.admin.update` | `op` | Receive update notifications of SnLootBoxes. |
