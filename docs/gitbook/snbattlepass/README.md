@@ -12,7 +12,7 @@ The pass is permanent. There is no season to reset, and nothing expires undernea
 - Rewards are console commands, so any plugin's items, currency, keys or ranks can be given.
 - The premium track unlocks retroactively: buying a pass opens every premium reward on tiers the player already passed.
 - Any currency works. The plugin reads balances through a placeholder and charges through a console command, so Vault, tokens, gems and points all work unchanged.
-- Three menus, each an editable YAML layout.
+- Three menus, each an editable YAML layout. The pass menu opens on the page of the player's current tier.
 
 ## Optional integrations
 

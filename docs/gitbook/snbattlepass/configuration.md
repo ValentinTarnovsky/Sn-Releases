@@ -60,6 +60,11 @@ database:
 presentation:
   # Bare /battlepass: gui opens the main pass menu, chat prints the generated help.
   main: gui
+  # true opens the pass menu on the page holding the highest tier the player has
+  # reached, so nobody has to page through the tiers they already passed. false
+  # always opens the first page. Going back from another menu keeps the page the
+  # player left either way. Applied on /battlepass reload.
+  open-at-current-tier: true
 
 # ------------------------------------------------------------
 #  Passes. Everyone starts on Free; Gold and Diamond are the paid
@@ -491,6 +496,8 @@ Each entry under `notifications:` is a `title` / `subtitle` / `chat` trio. Empty
 ## guis/
 
 Three files, one per menu: `main.yml`, `challenges.yml` and `confirm-purchase.yml`.
+
+Since **2.6.0** `/battlepass` opens `main.yml` on the page holding the highest tier the player has reached rather than on page 1: a player on tier 23 lands on the page with tiers 19-27, the tier the title and the profile tile name as theirs, so the reward they just unlocked is on screen. A player on tier 0 opens page 1. Going back from the challenge or confirmation menu still returns to the page they left. `presentation.open-at-current-tier: false` restores the always-first-page behavior.
 
 Each menu is a title, a row count, a `layout:` character grid and an `items:` map keyed by the letters in that grid. To move a button, move its letter. To remove one, delete its letter from the layout: a key the layout does not use is hidden, and because the layout is a list value rather than a key, the auto-merge never puts it back.
 

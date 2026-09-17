@@ -21,6 +21,9 @@ Yes. The plugin never talks to an economy API. It reads a balance by expanding a
 ### Purchases are refused and the console mentions the balance placeholder. What is wrong?
 The configured placeholder did not expand to a number. Check that PlaceholderAPI and the expansion providing it are installed, and avoid placeholders that abbreviate or group digits, such as `1.2K` or `1,200`. Setting `economy.deny-on-unreadable-balance: false` lets the purchase through and leaves the charge command to refuse a player who cannot pay.
 
+### Which page does the pass menu open on?
+Since 2.6.0, the page holding the highest tier the player has reached: a player on tier 23 lands on the page with tiers 19-27 instead of paging through the first two. Coming back from the challenge or confirmation menu keeps the page they were on. Set `presentation.open-at-current-tier: false` to always open the first page.
+
 ### Can I remove a button from a menu?
 Yes. Delete its letter from the menu's `layout:` grid. A key the layout does not use is hidden, and because the layout is a list value rather than a key, the auto-merge never restores it.
 
