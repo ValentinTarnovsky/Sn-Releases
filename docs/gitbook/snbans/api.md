@@ -143,6 +143,15 @@ On several backends the same punishment is reported once per backend: once as `L
 `REMOTE` on each of the others. Deduplicate on `PunishmentView.id()`.
 {% endhint %}
 
+An overwrite - a punishment issued by a holder of `snbans.overwrite` over an active one of the
+same type - is also one action, vetoed as one through `PunishmentIssueEvent`. Cancelling it leaves
+the punishment already in force untouched. When it goes through, the replaced punishment is reported
+by `PunishmentRevokedEvent` with no `PunishmentRevokeEvent` before it, followed by the
+`PunishmentIssuedEvent` of the replacement: `LOCAL` on the issuing server, and `REMOTE` on each
+peer. A listener that has to tell an overwrite from an unban can match the revoked view's
+`liftedAt()` against the `createdAt()` of a punishment of the same player and type issued at that
+instant.
+
 A rollback is one bulk action, so it is vetoed as one. `PunishmentRevokeEvent` does not fire per
 swept punishment, and neither does `PunishmentRevokedEvent` on the sweeping server.
 

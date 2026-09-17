@@ -1,6 +1,6 @@
 # Permissions
 
-Every SnBans node defaults to `op` except the two player-facing ones, `snbans.helpop` and `snbans.report`, which default to **true**. There is no `snbans.use` node: each command root carries its own leaf node instead. The tree is 27 nodes, declared once for both platforms: the 25 SnBans checks itself behave identically on a backend and on the proxy, and the two SnLib owns are Paper only.
+Every SnBans node defaults to `op` except the two player-facing ones, `snbans.helpop` and `snbans.report`, which default to **true**. There is no `snbans.use` node: each command root carries its own leaf node instead. The tree is 28 nodes, declared once for both platforms: the 26 SnBans checks itself behave identically on a backend and on the proxy, and the two SnLib owns are Paper only.
 
 | Permission | Default | Description |
 |-----------|---------|-------------|
@@ -18,6 +18,7 @@ Every SnBans node defaults to `op` except the two player-facing ones, `snbans.he
 | `snbans.report` | **true** | Allows `/report` |
 | `snbans.silent` | op | Allows the `-s` / `-p` visibility flag on punishments and reverts |
 | `snbans.noreason` | op | Allows issuing a punishment without typing a reason |
+| `snbans.overwrite` | op | Allows replacing an active ban, mute or blacklist with a new one |
 | `snbans.ban` | op | Allows `/ban` |
 | `snbans.ipban` | op | Allows `/ipban` |
 | `snbans.unban` | op | Allows `/unban` |
@@ -34,7 +35,7 @@ Every SnBans node defaults to `op` except the two player-facing ones, `snbans.he
 
 ## What granting `snbans.admin` does
 
-`snbans.admin` is declared with an exhaustive children map: the other 26 nodes are all listed under it. Granting `snbans.admin` alone therefore grants the seven `snbans.admin.*` nodes, `snbans.notify`, `snbans.requests.receive`, `snbans.silent`, `snbans.noreason`, and all fifteen flat command roots. A full-staff rank needs that one node and nothing else.
+`snbans.admin` is declared with an exhaustive children map: the other 27 nodes are all listed under it. Granting `snbans.admin` alone therefore grants the seven `snbans.admin.*` nodes, `snbans.notify`, `snbans.requests.receive`, `snbans.silent`, `snbans.noreason`, `snbans.overwrite`, and all fifteen flat command roots. A full-staff rank needs that one node and nothing else.
 
 On Paper, Bukkit expands the children map inside its own permission registry, so a group holding only the parent passes `snbans.ban` without the leaf being granted. A proxy has no descriptor and no registry, so SnBans reproduces the same semantics in its own check: the node's own value is read first, then the two default-true nodes, and only after that does an undefined leaf fall through to the parent. Reproducing the **defaults** as well as the children map is what makes `/helpop` work for an ordinary player on a proxy install, where nothing has granted them anything.
 
@@ -60,6 +61,8 @@ SnLib declares and tests both itself, so no line of SnBans code ever names eithe
 `snbans.silent` gates the `-s` / `-p` flag on every issue and every revert. Without it, the per-type `silent-by-default` setting in `config.yml` always decides who hears a punishment. Staff who type a flag they may not use are refused with the branded no-permission line, never silently downgraded.
 
 `snbans.noreason` gates issuing a punishment with no reason at all. Without it, `/ban Notch` answers the usage line and nothing is stored. Holders may run the command bare, and the row records the `messages.format.no-reason` text ("No reason" by default), which is then shown as `{reason}` by every announcement, history line, Discord embed and disconnect screen. It is a node of its own rather than part of `snbans.ban`, because the reason is what a history line and an appeal are read from - so the strict behaviour stays the default and you opt individual ranks out of it. The console holds it implicitly.
+
+`snbans.overwrite` gates replacing a punishment that is already in force. Without it, `/ban Notch 1h griefing` on an account that already carries an active ban answers "already has an active ban" and nothing is stored. Holders get the new punishment instead, and the old one stops applying: it stays in `/history` as lifted by the holder, at that instant. It covers `/ban`, `/mute` and `/blacklist` and their IP forms, and only ever replaces a punishment of the same type - a mute never replaces a ban. It is a node of its own rather than part of `snbans.ban` because, without it, `/ban <player> 1s` over a permanent ban would be an unban for anybody who was never given `snbans.unban`. Unlike the other nodes, the console does NOT hold it: a punishment typed at the console keeps the "already has an active ban" refusal, because that is also the path every anticheat and chat filter dispatches its punishments through, and automation must never quietly shorten a sanction already in force. A blacklist, which only the console may lift, is only replaced when the new one still covers the address the old one covered - otherwise a holder could free an address they could never have run `/unblacklist` on.
 
 `snbans.notify` holders receive the notices for silent punishments, the output of the automatic join alt scan (filtered by `alts.notify-states`) and the attempt notices of `attempt-notices` - a banned account that tried to join, a muted one that tried to talk. The console always receives all three, on a backend and on the proxy alike. One node for the three, because they are one job: watching what SnBans is doing while nobody typed a command.
 

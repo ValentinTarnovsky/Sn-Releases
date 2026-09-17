@@ -38,6 +38,14 @@ Duration tokens are `30s`, `5m`, `2h`, `7d`, and the literal `permanent`. No dur
 
 {% hint style="info" %}
 The `-s` (silent) and `-p` (public) flags work on every punishment and every revert, and both need `snbans.silent`. On an issuing command you type the flag inside the reason (`/ban Notch -s hacks`), anywhere in it, and the last flag wins. On a revert it is an explicit trailing token. Without a flag the per-type `silent-by-default` key decides. A silent punishment still reaches every holder of `snbans.notify`.
+
+On several servers sharing one MySQL, the flag travels with the action. A ban, a mute, and an `/unban`, `/unmute` or `/unblacklist` are announced on every other server too, once each, under that server's own `broadcasts` toggles: a `-s` unban reaches the `snbans.notify` holders of the whole network, and a `-p` one every player on it.
+{% endhint %}
+
+{% hint style=info %}
+**Overwriting an active punishment.** `/ban`, `/mute` and `/blacklist` (and their IP forms) on an account that already carries an active punishment of the same type answer "already has an active ban" by default. A holder of `snbans.overwrite` REPLACES it instead: `/ban Notch 4m griefing` followed by `/ban Notch 1h griefing` leaves only the one-hour ban in force. The replaced punishment is not deleted - `/history` keeps it, shown as lifted by whoever overwrote it - and it is never announced as lifted, so nobody is told the player was freed; only the new punishment is announced and posted to Discord. The replacement is one database transaction, so there is no moment in which the account carries neither punishment. A reason matching a template escalates as usual and counts the replaced punishment as a prior offence, so overwriting with a template moves the player one step up its ladder.
+
+The console never overwrites: a punishment typed at the console, or dispatched through it by an anticheat or a chat filter, is refused on an account that is already punished, exactly as before, so automation cannot shorten a sanction in force. A `/blacklist` over an active blacklist goes through only when the new one still covers the address the old one covered, because only the console may lift a blacklist.
 {% endhint %}
 
 {% hint style="warning" %}

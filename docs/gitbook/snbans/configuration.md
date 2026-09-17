@@ -212,6 +212,7 @@ rollback:
 # you can configure about it is broadcasts.wipe, at the bottom of this file.
 
 # Cross-server propagation; only does something when servers share one MySQL.
+# Punishments, unbans and their announcements all travel through it.
 sync:
   # Seconds between cross-server punishment polls.
   interval-seconds: 5
@@ -234,6 +235,10 @@ mute:
 # ------------------------------------------------------------
 # Public announcements, one key per announced event; snbans.notify holders are
 # told either way. An unban covers both a ban and an IP ban, and so on.
+# On a shared MySQL these keys also decide how THIS server announces what
+# another server did: a ban, an unban, a mute or an unmute performed on a peer
+# is announced here under this server's own toggles, and an unban typed with -s
+# stays with snbans.notify holders on every server of the network.
 broadcasts:
   # Announce bans; false leaves them to snbans.notify holders.
   ban: true
@@ -626,6 +631,11 @@ This file is seeded once, so keys added by a future version never appear in an e
 #  and raw id mentions cannot ping, and the markdown characters are escaped so a
 #  reason cannot restyle the embed around it. Your own markdown below (the **
 #  pairs) is untouched - only the value is neutralized, never this file.
+#
+#  Every OTHER value arrives as plain text too. The words a lang file hands out
+#  keep their colours in chat and lose them here, so a console name written as
+#  &#FF0000WatchDog in messages.format.console posts as WatchDog, and a {status}
+#  of &aActive posts as Active.
 #
 #  The rollback event has no punishment row of its own, so it carries {staff},
 #  {total} (how many punishments were reverted), {duration} (the window that was
