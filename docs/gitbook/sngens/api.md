@@ -108,6 +108,9 @@ The last five originate off the main thread inside SnGens, but the plugin hops t
 Folia aware scheduler before dispatching, so your listener always runs on the main thread and
 can touch the Bukkit API freely.
 
+For a pickup, `RefundIssuedEvent` fires once the vault write is confirmed. A pickup aborted
+by a failed write leaves the generators placed and fires nothing.
+
 `RefundIssuedEvent` stays generator only. When an island kick, leave, ban or disband also
 removes the player's collectors and hoppers, those arrive as a separate
 `StorageRefundIssuedEvent`, so a generator listener never sees an empty id list.
