@@ -33,8 +33,8 @@ command available to everyone.
 | `sngens.break.others` | `op` | Break a generator you do not own |
 | `sngens.top.force` | `op` | Force a leaderboard refresh with `/gens forcetop` |
 | `sngens.wand` | `op` | Use the admin region wand |
-| `sngens.collector.admin` | `op` | Give and pick up collectors, break other players' collectors |
-| `sngens.hopper.admin` | `op` | Give and pick up infinite hoppers, break other players' hoppers |
+| `sngens.collector.admin` | `op` | Give, pick up and adjust collectors, break or upgrade other players' collectors |
+| `sngens.hopper.admin` | `op` | Give, pick up and adjust infinite hoppers, break other players' hoppers |
 | `sngens.upgrade.admin` | `op` | Grant upgrade uses with `/gens addupgrades` |
 | `sngens.upgrade.bypass` | `op` | Skip the island owner check and the upgrade usage limits |
 | `sngens.command.armor.give` | `op` | `/gens armor give` |

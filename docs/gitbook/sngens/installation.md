@@ -25,7 +25,7 @@ runs once, at boot: there are no periodic re-checks and no degraded mode while r
 
 | Plugin | Required | What it does |
 |--------|----------|--------------|
-| Vault | Yes | Every payment and payout. Buying, upgrading, repairing and selling all go through your Vault economy plugin. |
+| Vault | Yes | Every payment and payout by default. Buying, upgrading, repairing and selling go through your Vault economy plugin. Collector levels can also charge other currencies. |
 | PlaceholderAPI | Yes | Registers the `%sngens_...%` expansion for scoreboards, tab, holograms and menus. |
 | DecentHolograms | Yes | Draws the floating text over broken generators, collectors and hoppers. |
 | SuperiorSkyblock2 | No | Island mode: island leaderboards, island only placement, shared upgrades and vault returns on kick or disband. |

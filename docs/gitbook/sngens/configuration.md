@@ -5,11 +5,11 @@ one of them is plain YAML, and every player facing string in them supports colou
 
 | File | What it holds | Updated on new versions |
 |------|---------------|-------------------------|
-| `config.yml` | Global behaviour: language, database, tick rate, limits, corruption, leaderboard, upgrade menu | Merged |
+| `config.yml` | Global behaviour: language, database, tick rate, limits, corruption, leaderboard, upgrade menu, economies | Merged |
 | `generators.yml` | Every generator: item, drops, sell values, upgrade chain | Seeded once |
 | `wands.yml` | Sellwand, build wand, upgrade wands, admin region wand | Merged |
 | `events.yml` | Timed server events and their rotation | Seeded once |
-| `storages.yml` | Collector and infinite hopper | Merged |
+| `storages.yml` | Collector, collector levels, infinite hopper, admin adjust | Merged |
 | `armors.yml` | Armor sets and their full set bonuses | Seeded once |
 | `offhands.yml` | Off-hand items and their bonuses | Seeded once |
 | `gui/*.yml` | The eight menu layouts | Merged |
@@ -19,6 +19,10 @@ one of them is plain YAML, and every player facing string in them supports colou
 every boot, and on every `/gens reload`, while leaving your values, lists and comments alone.
 Set `update-configs: false` at the top of `config.yml` to switch that off, in which case the
 plugin only logs how many sections are missing.
+
+Two sections are the exception: `economies` in `config.yml` and `collector.upgrade.levels` in
+`storages.yml`. They are added only while missing. Once they exist, nothing is merged into them,
+so an entry you delete stays deleted.
 
 **Seeded once** means the file is written on a fresh install and never touched again. Those
 four files hold content you own: your generators, your events, your gear. A generator you
@@ -260,6 +264,49 @@ island-pickup: true
 # regardless of value. When true, placing in wilderness or on someone
 # else's island is blocked with the `island-place-only` message.
 island-place-only: false
+
+
+# -----------------------------------------------------------------------------
+# Economies
+# -----------------------------------------------------------------------------
+# Currencies a price can charge (Collector upgrades in storages.yml). A price
+# names an economy by its id, for example "vault: 250000" or "gems: 50".
+# "vault" is built in and always exists, even if you delete its entry below.
+# Once this section exists in your file it is never auto-merged again, so an
+# economy you remove stays removed.
+#
+# type                 VAULT charges your Vault economy. PLACEHOLDER reads the
+#                      balance from a PlaceholderAPI placeholder and changes it
+#                      with console commands.
+# name                 Shown as {currency} in messages.
+# display              How an amount is shown. {amount} = 1,250,000
+#                      {amount_short} = 1.2M
+# decimals             Amounts are rounded UP to this many decimals before they
+#                      are shown, charged or refunded. 0 = whole numbers only,
+#                      -1 = no rounding. Default: -1 for VAULT, 0 for PLACEHOLDER.
+# balance-placeholder  Must return the balance. Colors, symbols, commas and
+#                      suffixes such as 1.5k or 2M are understood. Use a live
+#                      placeholder, not a cached one.
+# take-command         Run from the console to charge. {player} name, {uuid}
+#                      UUID, {amount} plain number such as 1250000.
+# give-command         Optional. Run from the console to give a charge back when
+#                      a purchase is cancelled or fails. Without it that
+#                      currency cannot be refunded.
+#
+# Example (remove the leading "# " to use it; the id "gems" is up to you):
+#   gems:
+#     type: PLACEHOLDER
+#     name: "&dGems"
+#     display: "&d{amount} Gems"
+#     decimals: 0
+#     balance-placeholder: "%playerpoints_points%"
+#     take-command: "points take {player} {amount}"
+#     give-command: "points give {player} {amount}"
+economies:
+  vault:
+    type: VAULT
+    name: "&aMoney"
+    display: "&2$&a{amount}"
 
 
 # -----------------------------------------------------------------------------
@@ -548,6 +595,59 @@ upgrade-gui:
 Each island has two pools: a daily one that refills at `reset-time`, and a bonus pool granted
 with `/gens addupgrades` that the reset never touches. Set `usage.enabled: false` to remove
 limits entirely and hide the counter item.
+
+### Economies
+
+A price can charge more than one currency. Collector levels in `storages.yml` use this today.
+Each entry under `economies` is one currency, and its key is the id a price refers to.
+
+| Type | How it works |
+|------|--------------|
+| `VAULT` | Charges your Vault economy plugin. The `vault` entry is built in and always exists, even if you delete it |
+| `PLACEHOLDER` | Reads the balance from a PlaceholderAPI placeholder and changes it with console commands |
+
+| Key | What it does |
+|-----|--------------|
+| `type` | `VAULT` or `PLACEHOLDER` |
+| `name` | The currency name, shown as `{currency}` in messages |
+| `display` | How an amount is shown. `{amount}` prints `1,250,000` and `{amount_short}` prints `1.2M` |
+| `decimals` | Amounts are rounded up to this many decimals. `0` means whole numbers, `-1` means no rounding. Defaults to `0` for `PLACEHOLDER` and `-1` for `VAULT` |
+| `balance-placeholder` | `PLACEHOLDER` only. Returns the balance. Colours, symbols, commas and suffixes such as `1.5k` are understood |
+| `take-command` | `PLACEHOLDER` only. Console command that charges. Accepts `{player}`, `{uuid}` and `{amount}` |
+| `give-command` | `PLACEHOLDER` only, optional. Console command that gives a charge back. Same placeholders |
+
+A PlayerPoints currency looks like this. The id `points` is up to you:
+
+```yaml
+economies:
+  vault:
+    type: VAULT
+    name: "&aMoney"
+    display: "&2$&a{amount}"
+  points:
+    type: PLACEHOLDER
+    name: "&dPoints"
+    display: "&d{amount} Points"
+    decimals: 0
+    balance-placeholder: "%playerpoints_points%"
+    take-command: "points take {player} {amount}"
+    give-command: "points give {player} {amount}"
+```
+
+A price then names it by id, for example `points: 50`. `{amount}` in a command is always a
+plain number such as `1250000`, with no commas and no suffix.
+
+{% hint style="warning" %}
+SnGens reads the balance right before and right after the take command. If it did not drop by
+the amount, the purchase is refused and a console warning explains why. Nothing is given back
+automatically, so check a partial drop by hand. The placeholder must be live. A cached
+placeholder, a wrong command or a wrong `decimals` value makes every purchase fail.
+{% endhint %}
+
+Without a `give-command`, SnGens cannot return that currency. If a purchase fails after that
+part was taken, it stays spent. The console then asks you to return it by hand. The plugin
+warns about a missing `give-command` on every load. Vault and every economy with a
+`give-command` are charged first, so a later refusal can still roll them back.
 
 ---
 
@@ -1478,10 +1578,11 @@ Two blocks that capture generator drops, deliberately different from each other.
 
 | | Collector | Infinite hopper |
 |---|-----------|-----------------|
-| Scope | Every drop in its chunk | Items in a small box above itself |
+| Scope | Every drop in its chunk, or in a wider chunk square once upgraded | Items in a small box above itself |
 | When it captures | Before the item entity exists | After the item exists, by scanning |
 | Item types | Unlimited | The first `max-types` types lock in |
 | Selling | Sell all button, sell on break, sale logs | Sellwand only |
+| Levels | Bought from its menu, see below | None |
 | Best at | Absorbing a whole farm | Specialising on a few valuable drops |
 
 The collector never lets the drop become an entity, so it is the option that removes the most
@@ -1519,7 +1620,12 @@ collector:
   break:
     sell-on-break: true  # pay the owner when the block is broken
     purge-on-sell: true
+    drop-cap: 256        # stacks dropped when contents fall on the ground, the rest is voided
 ```
+
+When a collector's contents fall on the ground, `break.drop-cap` limits the stacks it drops.
+A player break that would go over it is refused with a message, so nothing is lost; sell or
+withdraw first. An admin pickup or island removal voids the rest and logs it.
 
 ```yaml
 hopper:
@@ -1568,6 +1674,18 @@ island-removal:
   drop-contents: false
 
 # -----------------------------------------------------------------------------
+# Admin adjust (shared by Collector and Infinite Hopper)
+# -----------------------------------------------------------------------------
+# /gens collector adjust <percent> and /gens hopper adjust <percent> scale every
+# item type already stored in the block you are looking at: +10 adds 10% to
+# each type, -10 removes 10%. Amounts round to the nearest whole item and a
+# type that rounds to 0 is removed. A Collector with a limited capacity can end
+# up above it; it then stops absorbing until it is sold down.
+admin-adjust:
+  # How far away (in blocks) the targeted block may be. 1 to 64.
+  target-range: 8
+
+# -----------------------------------------------------------------------------
 # Collector
 # -----------------------------------------------------------------------------
 # Chunk-bound block that intercepts generator drops BEFORE they spawn as
@@ -1601,12 +1719,49 @@ collector:
     # When true, sell-on-break wipes the storage after selling. When false,
     # any items that didn't have a sell value drop on the ground.
     purge-on-sell: true
+    # Most item stacks a single Collector drops when its contents fall on the
+    # ground (a break that does not sell, an admin pickup of an offline owner,
+    # island removal with drop-contents). The rest is voided and logged, so a
+    # Collector holding millions of items cannot spawn a flood of entities.
+    drop-cap: 256
+  # Paid levels. A Collector starts at level 1 and absorbs its own chunk. Each
+  # level adds a ring of chunks around it: level 2 = 3x3, level 3 = 5x5,
+  # level N = (2N-1)x(2N-1). Players buy levels from the Collector menu.
+  # When areas overlap, a chunk belongs to the Collector standing in it, then
+  # to the nearest one, then to the oldest.
+  # A Collector keeps its level when it is picked up, refunded or recovered.
+  upgrade:
+    # false = levels cannot be bought and the upgrade button is hidden.
+    # Levels already bought keep working.
+    enabled: true
+    # Highest level a Collector can reach (1 to 32). Lowering it shrinks larger
+    # areas to this level but never deletes a level a player bought.
+    max-level: 3
+    # true = with SuperiorSkyblock2, a Collector only reaches chunks fully
+    # inside its own island area, so it never collects a neighbour's drops.
+    # Its own chunk always counts. No effect without SuperiorSkyblock2.
+    island-bound: true
+    # Price to reach each level, from 2 up to max-level. List every economy
+    # to charge under `cost` using an id from `economies` in config.yml; all
+    # of them are charged, or none. Amounts accept suffixes such as 250k.
+    # "cost: {}" makes a level free. A missing level, an unknown economy or a
+    # negative amount blocks that upgrade and logs a warning.
+    # Keep level numbers unquoted (2:, not '2':). Once this section exists in
+    # your file it is never auto-merged again, so removed entries stay removed.
+    levels:
+      2:
+        cost:
+          vault: 250000
+      3:
+        cost:
+          vault: 1000000
   item:
     material: ENDER_CHEST
     name: "&aChunk Collector"
     lore:
       - "&7Place me in a chunk to absorb"
       - "&7all generator drops in that chunk."
+      - "&7Level: &e{level} &8(&7{area} chunks&8)"
       - ""
       - "&eRight-click placed: open menu"
       - "&eBreak: pick up + sell contents"
@@ -1620,6 +1775,7 @@ collector:
       - "&b&lCOLLECTOR"
       - "&fOwner: &e{owner}"
       - "&fItems: &a{items}&7/&a{capacity}"
+      - "&fArea: &d{area} &7(level {level})"
 # GUI titles live in each gui/collector_*.yml under the `title:` key
 # (mirrors gui/shop_gui.yml, gui/top_gui.yml, etc.).
 
@@ -1716,6 +1872,93 @@ hopper:
       - "&fItems: &a{items}"
       - "&fTypes: &a{slots-used}&7/&a{slots-max}"
 ```
+
+### Collector levels
+
+A collector starts at level 1 and absorbs its own chunk. Each level adds a ring of chunks around
+it, so level N covers a square of (2N-1)x(2N-1) chunks.
+
+| Level | Area | Chunks covered |
+|-------|------|----------------|
+| 1 | 1x1 | 1 |
+| 2 | 3x3 | 9 |
+| 3 | 5x5 | 25 |
+| 4 | 7x7 | 49 |
+
+Players buy the next level from the Upgrade button in the collector menu. The owner can buy it,
+and so can a player with `sngens.collector.admin`. Whoever clicks pays, so an admin upgrading
+another player's collector pays with their own money.
+
+```yaml
+collector:
+  upgrade:
+    enabled: true
+    max-level: 3
+    island-bound: true
+    levels:
+      2:
+        cost:
+          vault: 250000
+      3:
+        cost:
+          vault: 1000000
+          points: 50        # an id from economies in config.yml
+```
+
+- `enabled: false` hides the Upgrade button. Levels already bought keep working.
+- `max-level` accepts 1 to 32. Lowering it shrinks bigger areas to the new cap, but never
+  deletes a level a player bought. Raise it again and the full area comes back.
+- `levels.<n>.cost` lists every economy to charge, by its id from `economies` in `config.yml`.
+  Every economy listed is charged, or none of them is.
+- `cost: {}` makes a level free. Amounts accept suffixes such as `250k`.
+
+{% hint style="warning" %}
+A missing level, an unknown economy, or a negative or malformed amount blocks that upgrade. The
+console logs a warning naming the broken path. Keep level numbers unquoted: write `2:`, not
+`'2':`. Once `levels` exists in your file, updates never merge new entries into it.
+{% endhint %}
+
+**Overlapping areas.** Every chunk belongs to exactly one collector, so a drop is never counted
+twice. The collector standing in that chunk wins first. Otherwise the nearest collector wins,
+then the oldest.
+
+**Island bound.** With SuperiorSkyblock2 and `island-bound: true`, a collector only reaches
+chunks that lie fully inside its own island. It never collects a neighbour's drops, and its own
+chunk always counts. Without SuperiorSkyblock2 the key does nothing.
+
+**Keeping levels.** The level travels with the item, and the item lore shows it through
+`{level}` and `{area}`. It survives a break, the Remove button, an admin pickup, an island kick,
+leave, ban or disband refund, and `/gens recover`. Give a leveled collector with
+`/gens collector give <player> [amount] [level]`.
+
+The hologram lines accept `{level}`, `{max-level}` and `{area}`. The Upgrade button in
+`gui/collector_main.yml` also accepts `{next-level}`, `{next-area}` and `{cost}`.
+
+{% hint style="info" %}
+An update never rewrites a list you already have. If your `storages.yml` predates levels, add
+`{level}` and `{area}` to the item lore and hologram lines yourself.
+{% endhint %}
+
+### Admin adjust
+
+`/gens collector adjust <percent>` and `/gens hopper adjust <percent>` scale what a block already
+stores. Look at the block and run the command. `admin-adjust.target-range` sets how far away the
+block may be, from 1 to 64 blocks.
+
+```yaml
+admin-adjust:
+  target-range: 8
+```
+
+Every stored item type is scaled, then rounded to the nearest whole item. A type that rounds to
+0 is removed, which frees a hopper type slot. Holograms, open menus and the database update right
+away.
+
+{% hint style="warning" %}
+An adjust ignores capacity. A capacity limited collector can end above `max-items`, and then
+stops absorbing until it is sold down. If the new total would pass the storable maximum, nothing
+changes at all.
+{% endhint %}
 
 ---
 
@@ -2588,12 +2831,21 @@ paginated storage list of what it holds, and the paginated sale log.
 
 Every button in the main panel declares what it does through its `type`: `INFO` shows the owner
 and the contents, `STORAGE` opens the storage list, `SELL_ALL` sells everything at once, `LOGS`
-opens the sale log, `REMOVE` breaks the block from inside the menu, and `DUMMY` is decoration.
-Delete a button you do not want, or move it by changing its `slots`.
+opens the sale log, `REMOVE` breaks the block from inside the menu, `UPGRADE` buys the next
+level, and `DUMMY` is decoration. Delete a button you do not want, or move it by changing its
+`slots`.
+
+The Upgrade button sits in slot 13 as a `BEACON` and shows the next level, its area and its
+cost. Once the collector reaches `max-level`, its `maxed` block takes over and draws a
+`NETHER_STAR` instead. The button is hidden while `collector.upgrade.enabled` is `false` in
+`storages.yml`. See [Collector levels](#collector-levels).
+
+The storage list only hands out what fits in your inventory, even on a shift left click that
+takes all. The rest stays stored, and nothing drops on the ground.
 
 ```yaml
 # Collector main menu - opened on right-click on the Collector block.
-# Placeholders: {items} {capacity} {owner}
+# Placeholders: {items} {capacity} {owner} {level} {max-level} {area}
 title: "&8Collector"
 size: 27
 
@@ -2613,6 +2865,7 @@ items:
     lore:
       - "&7Owner: &e{owner}"
       - "&7Stored: &a{items}&7/&a{capacity}"
+      - "&7Level: &e{level}&7/&e{max-level} &8(&7{area} chunks&8)"
 
   storage:
     material: CHEST
@@ -2630,6 +2883,28 @@ items:
     lore:
       - "&7Sell every item stored at once."
       - "&7Multiplier from your &eSnGens user&7 applies."
+
+  # Buys the next Collector level. Hidden when collector.upgrade.enabled is
+  # false in storages.yml. Extra placeholders: {next-level} {next-area} {cost}
+  # `maxed` replaces material, name and lore once the Collector is at max level.
+  upgrade:
+    material: BEACON
+    display-name: "&d&lUpgrade Collector"
+    type: UPGRADE
+    slots: [13]
+    lore:
+      - "&7Level: &e{level}&7/&e{max-level} &8(&7{area} chunks&8)"
+      - ""
+      - "&7Next: &eLevel {next-level} &8(&7{next-area} chunks&8)"
+      - "&7Cost: {cost}"
+      - ""
+      - "&eClick to upgrade"
+    maxed:
+      material: NETHER_STAR
+      display-name: "&d&lMax Level"
+      lore:
+        - "&7Level: &e{level}&7/&e{max-level} &8(&7{area} chunks&8)"
+        - "&7This Collector already covers its full area."
 
   logs:
     material: BOOK
@@ -2901,6 +3176,7 @@ hide-stats-off: "&aYour gens stats are now &fvisible&a."
 usage-target: "&cUsage: &e/{command} <player>"
 usage: "&cUsage: &e/{command}"
 invalid-number: "&cInvalid number: &e{input}"
+invalid-percent: "&cInvalid percent: &e{input}&c. Use a value like &e10&c, &e-10 &cor &e12.5% &c(minimum -100)."
 reload: "&aConfiguration reloaded."
 generators-paused: "&eGenerator task paused. No drops will be generated until resumed."
 generators-resumed: "&aGenerator task resumed."
@@ -3013,6 +3289,11 @@ gens-repaired: "&aAll of your broken generators have been repaired."
 # Economy
 # -----------------------------------------------------------------------------
 not-enough-money: "&cNot enough money. &7(&e${money}&7/&e${upgradecost}&7, need &c${remaining}&7)"
+# How a price is written when it can charge several economies. Each part uses
+# its economy's `display` from config.yml.
+cost-separator: "&7 + "
+cost-free: "&aFree"
+cost-unavailable: "&cUnavailable"
 
 
 # -----------------------------------------------------------------------------
@@ -3242,10 +3523,10 @@ help-entries:
     usage: "<iterations> [chunkRadius]"
     description: "Capture generator spawn telemetry across N task iterations into a JSON dump"
   collector:
-    usage: "give|pickup <args>"
+    usage: "give|pickup|adjust <args>"
     description: "Manage Collectors (admin)"
   hopper:
-    usage: "give|pickup <args>"
+    usage: "give|pickup|adjust <args>"
     description: "Manage Infinite Hoppers (admin)"
   wipeuser:
     usage: "<player|uuid> confirm [--include-island]"
@@ -3393,12 +3674,33 @@ collector-place-success: "&aCollector placed. Right-click it to open the menu."
 collector-place-chunk-occupied: "&cThis chunk already has a Collector."
 collector-place-cap-reached: "&cYou have reached your Collector cap ({current}/{max})."
 collector-place-not-island-member: "&cYou can only place Collectors on an island you belong to."
+collector-place-level-unavailable: "&cUpgraded Collectors cannot be placed right now. Please tell an admin."
 collector-break-not-owner: "&cYou don't own this Collector."
 collector-sell-not-owner: "&cYou don't own this Collector."
 collector-break-success: "&aCollector removed."
+collector-break-too-full: "&cThis Collector holds more than &e{cap} &cstacks that would drop on the ground. Sell or withdraw its contents first."
 collector-full: "&cThis Collector is full."
 collector-given: "&aGave &e{amount} &aCollector(s) to &e{player}&a."
 collector-pickup-success: "&aPicked up &e{amount} &aCollector(s) of &e{player}&a."
+collector-given-level: "&aGave &e{amount} &alevel &e{level} &aCollector(s) to &e{player}&a."
+collector-pickup-vaulted: "&aStored &e{amount} &aCollector(s) of &e{player} &ain their vault (&e/gens recover&a)."
+# Collector upgrades. Placeholders: {level} {max-level} {area} {cost}.
+# {currency} is the economy name; {cost} and {balance} use the economy display.
+collector-upgrade-success: "&aCollector upgraded to level &e{level}&a. It now collects a &e{area} &achunk area. Paid: {cost}&a."
+collector-upgrade-max-level: "&cThis Collector is already at the max level &7({max-level})&c."
+collector-upgrade-disabled: "&cCollector upgrades are disabled."
+collector-upgrade-not-owner: "&cYou don't own this Collector."
+collector-upgrade-gone: "&cThis Collector changed or no longer exists."
+collector-upgrade-unavailable: "&cLevel &e{level} &ccannot be bought right now. Please tell an admin."
+collector-upgrade-currency-unavailable: "{currency} &cis not available right now. Try again later."
+collector-upgrade-not-enough: "&cNot enough {currency}&c. Cost: {cost}&c, you have {balance}&c."
+collector-upgrade-charge-failed: "&cThe payment in {currency} &cwas refused, so the upgrade was cancelled."
+collector-upgrade-refunded: "&eThe Collector changed during the payment, so the upgrade was cancelled and {cost} &ewas refunded."
+collector-upgrade-refund-failed: "&cThe upgrade was cancelled but part of the payment could not be returned. Please tell an admin."
+# /gens collector adjust. Placeholders: {percent} {before} {after} {types} {removed} {range}
+collector-adjust-no-target: "&cLook at a Collector within &e{range} &cblocks."
+collector-adjust-empty: "&cThat Collector is empty. Nothing to adjust."
+collector-adjust-success: "&aCollector adjusted by &e{percent}%&a: &e{before} &a-> &e{after} &aitems across &e{types} &atype(s), &e{removed} &aremoved."
 
 # Infinite Hopper
 hopper-place-success: "&aHopper placed. Right-click to open. Drops in this column will be absorbed."
@@ -3413,4 +3715,12 @@ hopper-claim-success: "&aClaimed &e{amount} &aitems."
 hopper-claim-full: "&cYour inventory is full."
 hopper-given: "&aGave &e{amount} &aHopper(s) to &e{player}&a."
 hopper-pickup-success: "&aPicked up &e{amount} &aHopper(s) of &e{player}&a."
+# /gens hopper adjust. Placeholders: {percent} {before} {after} {types} {removed} {range}
+hopper-adjust-no-target: "&cLook at a Hopper within &e{range} &cblocks."
+hopper-adjust-empty: "&cThat Hopper is empty. Nothing to adjust."
+hopper-adjust-success: "&aHopper adjusted by &e{percent}%&a: &e{before} &a-> &e{after} &aitems across &e{types} &atype(s), &e{removed} &aremoved."
+# Shared by both adjust commands. Placeholders: {percent} {before} {after}
+storage-adjust-zero: "&eA 0% adjustment changes nothing."
+storage-adjust-unchanged: "&eNo stored amount changed after rounding &6{percent}%&e."
+storage-adjust-overflow: "&cThat adjustment would push the total past the storable maximum. Nothing was changed."
 ```

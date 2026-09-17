@@ -4,7 +4,8 @@
 
 Download the newer `sngens-v*` release, replace the jar, and restart. `config.yml`,
 `wands.yml`, `storages.yml`, the menu layouts and the language files pick up any new keys
-automatically, keeping your values and comments.
+automatically, keeping your values and comments. Two sections are the exception: `economies` and
+`collector.upgrade.levels` are left alone once they exist in your file.
 
 `generators.yml`, `events.yml`, `armors.yml` and `offhands.yml` are never rewritten, since they
 hold content you own. If a release note mentions a new key inside one of those, add it by hand.
@@ -101,7 +102,8 @@ Work through these in order:
 2. Raise `generator-tick-interval-seconds`. Twenty seconds is the default; thirty halves the
    work and players barely notice if you raise drop values to match.
 3. Hand out collectors. A collector captures every drop in its chunk before the item entity is
-   ever created, which is the single largest saving available.
+   ever created, which is the single largest saving available. An upgraded collector covers a
+   wider chunk square with one block.
 4. Set `item-stacking.unbounded-stack-size: true` on very large farms, so one entity can carry
    more than 64 items.
 5. Run `/gens debugspawn 20` on the affected island and read the JSON dump in
@@ -111,9 +113,9 @@ Work through these in order:
 
 ### What is the difference between a collector and an infinite hopper?
 
-A collector owns a chunk. It takes every generator drop in that chunk before the drop becomes an
-item entity, stores unlimited types, has a sell all button, sells its contents when broken, and
-keeps a sale log.
+A collector owns a chunk, or a wider chunk square once upgraded. It takes every generator drop
+in that area before the drop becomes an item entity. It stores unlimited types, has a sell all
+button, sells its contents when broken, and keeps a sale log.
 
 An infinite hopper owns a spot. It scans a small box above itself and absorbs whatever lands
 there, including drops that arrived on a water stream. It locks in a fixed number of item types,
@@ -121,6 +123,84 @@ sells only when a sellwand is swung at it, and has no sale log.
 
 The collector is the tool for absorbing a whole farm. The hopper is the tool for specialising on
 a few valuable drops, and it keeps the visible sucked up animation players like.
+
+### How do collector levels work, and what happens when areas overlap?
+
+A collector starts at level 1 and collects its own chunk. Each level adds a ring of chunks, so
+level 2 covers 3x3 and level 3 covers 5x5. Players buy the next level from the Upgrade button in
+the collector menu. You set the max level and each price under `collector.upgrade` in
+`storages.yml`.
+
+When two areas overlap, each chunk still belongs to one collector only. The collector standing in
+that chunk wins first, then the nearest one, then the oldest. With SuperiorSkyblock2 and
+`island-bound: true`, a collector never reaches past its own island.
+
+The level stays on the item. A break, a pickup, an island refund and `/gens recover` all keep it.
+Whoever clicks the button pays, so an admin can upgrade another player's collector with their
+own money. See [Configuration](configuration.md#collector-levels).
+
+### How do I charge a custom currency such as PlayerPoints or tokens?
+
+Add a `PLACEHOLDER` entry under `economies` in `config.yml`. It needs a balance placeholder and a
+console command that takes the amount. Add a `give-command` too, so a failed purchase can return
+it.
+
+```yaml
+economies:
+  points:
+    type: PLACEHOLDER
+    name: "&dPoints"
+    display: "&d{amount} Points"
+    decimals: 0
+    balance-placeholder: "%playerpoints_points%"
+    take-command: "points take {player} {amount}"
+    give-command: "points give {player} {amount}"
+```
+
+Then name its id in a price, on its own or next to Vault, and run `/gens reload`. Here it is in
+a collector level price in `storages.yml`:
+
+```yaml
+collector:
+  upgrade:
+    levels:
+      2:
+        cost:
+          vault: 250000
+          points: 50
+```
+
+Every economy in a cost is charged, or none of them is. See
+[Configuration](configuration.md#economies).
+
+### Why was a purchase refused with a placeholder economy?
+
+SnGens reads the balance before and after the take command. If it did not drop by the amount,
+the purchase is refused. Other economies already charged are rolled back, if they can be
+refunded. A partial drop is not given back automatically, so check it by hand. A console warning
+names the player, the command and both balances. Check these in order:
+
+1. The `take-command` works when you type it in the console yourself.
+2. The `balance-placeholder` is live. A cached placeholder still shows the old balance right
+   after the charge, so every purchase fails.
+3. `decimals` matches the currency. A plugin that only stores whole points needs `decimals: 0`.
+4. The placeholder expansion is installed. Without it the player is told the currency is not
+   available right now.
+
+### How do I give or take a percentage of what a collector or hopper stores?
+
+Look at the block and run `/gens collector adjust <percent>` or `/gens hopper adjust <percent>`.
+`10` adds ten percent of every stored type, and `-10` removes ten percent. Decimals such as
+`12.5` and a trailing `%` work too, down to `-100`.
+
+```
+/gens collector adjust 10
+/gens hopper adjust -12.5%
+```
+
+Amounts round to the nearest whole item, and a type that rounds to 0 is removed. The hologram,
+open menus and the database update at once. The command runs in game only, and needs
+`sngens.collector.admin` or `sngens.hopper.admin`.
 
 ### My hopper stopped absorbing a new item type.
 
@@ -288,7 +368,7 @@ which the plugin creates on first connect. Moving existing data means copying th
 
 ### Does the plugin expose a developer API?
 
-Yes, nineteen events, a read-only query service and a sell multiplier extension point, all in
+Yes, twenty events, a read-only query service and a sell multiplier extension point, all in
 the plugin jar. Every wand swing fires a cancellable event, and the service reads and creates
 wand items. See [Developer API](api.md). Server owners can switch every API event off with
 `api-events.enabled: false`.

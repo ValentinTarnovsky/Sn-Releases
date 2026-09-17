@@ -86,6 +86,7 @@ and no items lost.
 | `GeneratorRepairEvent` | A corrupted generator is repaired | It stays corrupted |
 | `GeneratorSellEvent` | Any sale, before the deposit | No payout, no items consumed |
 | `CollectorSellEvent` | A collector's contents are sold | The contents stay stored |
+| `CollectorUpgradeEvent` | A player buys the next level of a collector | No level, no charge |
 | `SellwandPreUseEvent` | A sellwand is swung at a block | Nothing is sold, no use is spent |
 | `BuildWandUseEvent` | A build wand preview is confirmed | Nothing is built, no charge, no use spent |
 | `UpgradeWandUseEvent` | An upgrade wand is swung, free or radius | No upgrade, no charge, no use spent |
@@ -110,6 +111,10 @@ can touch the Bukkit API freely.
 `RefundIssuedEvent` stays generator only. When an island kick, leave, ban or disband also
 removes the player's collectors and hoppers, those arrive as a separate
 `StorageRefundIssuedEvent`, so a generator listener never sees an empty id list.
+
+Collectors keep their bought level in the vault. `StorageRefundIssuedEvent#getCollectorLevels()`
+breaks `getCollectorCount()` down by level, as a map of level to count in ascending order. An
+admin pickup of an offline owner's collectors fires the same event.
 
 Listen like any Bukkit event:
 
@@ -152,6 +157,37 @@ public void onSell(GeneratorSellEvent event) {
 them before anything is charged. An event that you did not cancel is a proposal, not a commit.
 A later hop can still be cancelled, and the upgrade can still be refused after the events. No
 compensating event follows, so spend a quota against a state you can verify afterwards.
+
+`CollectorUpgradeEvent` fires after the balance check and before any economy is charged. A level
+N collector absorbs a (2N-1)x(2N-1) chunk square around its own chunk.
+
+| Getter | Returns |
+|--------|---------|
+| `getPlayer()` | The player buying the level, who also pays |
+| `getCollectorId()` | The collector's unique id |
+| `getOwner()` | The collector's owner |
+| `getLocation()` | A copy of the collector block location |
+| `getFromLevel()` | The current level |
+| `getToLevel()` | The level being bought |
+| `getCosts()` | Economy id to amount, in config order. Empty for a free level |
+
+The ids in `getCosts()` come from `economies` in SnGens' `config.yml`, and `vault` is the Vault
+economy. The player can be an admin upgrading someone else's collector, so compare `getOwner()`.
+
+Like `GeneratorUpgradeEvent`, an event you did not cancel is a proposal, not a commit. An
+economy can still refuse the charge, or the collector can be removed first. No compensating
+event follows. The event is delivered on the global region thread, which is the main thread on
+Paper.
+
+```java
+@EventHandler
+public void onCollectorUpgrade(CollectorUpgradeEvent event) {
+    if (event.getToLevel() > 2 && !event.getPlayer().hasPermission("myserver.bigcollectors")) {
+        event.setCancelled(true); // nothing is charged
+        event.getPlayer().sendMessage("Level 3 collectors are for ranked players.");
+    }
+}
+```
 
 Wand swings are vetoed through their own event, not through the generator ones. A build wand
 places its whole line in one batch and an upgrade wand upgrades its whole square in one batch,
@@ -197,7 +233,7 @@ Synchronous methods read in-memory state. Call them on the main thread.
 | `getIslandHoppers(UUID)` | `List<HopperView>` | The same for every member of that player's island |
 | `getPlacedCollectorCount(UUID)` | `int` | Collectors placed by that owner |
 | `getTotalPlacedCollectors()` | `int` | Collectors placed server wide |
-| `getOwnerCollectors(UUID)` | `List<CollectorView>` | Every collector that owner placed, with its contents |
+| `getOwnerCollectors(UUID)` | `List<CollectorView>` | Every collector that owner placed, with its contents and level |
 | `getIslandCollectors(UUID)` | `List<CollectorView>` | The same for every member of that player's island |
 | `getActiveServerEvent()` | `Optional<ServerEventView>` | Empty between events |
 | `getTopSnapshot()` | `List<TopEntryView>` | The last computed leaderboard |
@@ -331,7 +367,7 @@ so mutating them never affects SnGens.
 | `TopEntryView` | `rank`, `scopeId`, `headOwner`, `displayName`, `value` |
 | `SellContext` | `itemCount`, `baseValue`, `effectiveMultiplier`, `finalAmount`, `source` |
 | `HopperView` | `id`, `owner`, `location`, `maxTypes`, `slotsUsed`, `totalItems`, `contents`, `estimatedValue`, `createdAt`, `updatedAt` |
-| `CollectorView` | `id`, `owner`, `location`, `totalItems`, `slotsUsed`, `contents`, `estimatedValue`, `createdAt`, `updatedAt` |
+| `CollectorView` | `id`, `owner`, `location`, `totalItems`, `slotsUsed`, `contents`, `estimatedValue`, `createdAt`, `updatedAt`, `level`, `effectiveLevel`, `areaSide` |
 | `StoredItemView` | `key`, `item`, `amount`, `unitValue`, `totalValue` |
 | `WandView` | `type`, `uses`, `unlimited`, `sellMultiplier`, `distance`, `radius` |
 | `UpgradeStepView` | `level`, `fromGeneratorId`, `toGeneratorId`, `toDisplayName`, `cost`, `cumulativeCost` |
@@ -340,6 +376,17 @@ so mutating them never affects SnGens.
 
 A `HopperView` or `CollectorView` is a snapshot taken when you asked for it. Both keep
 absorbing items afterwards, so query again on each menu refresh instead of caching.
+
+On a `CollectorView`, `level()` is the level bought, and it stays as bought when the server
+lowers `max-level`. `effectiveLevel()` is that level capped by the current `max-level`.
+`areaSide()` is `2 * effectiveLevel() - 1`, the side of the chunk square the collector absorbs.
+
+```java
+for (CollectorView collector : api.getOwnerCollectors(player.getUniqueId())) {
+    player.sendMessage("Level " + collector.level() + ", collecting "
+            + collector.areaSide() + "x" + collector.areaSide() + " chunks");
+}
+```
 
 A `WandView` reports one of five types: `SELLWAND`, `BUILDWAND`, `UPGRADEWAND_FREE`,
 `UPGRADEWAND_RADIUS`, `ADMINWAND`. Read `type()` first, then only the field that belongs to
@@ -429,5 +476,9 @@ Call `getApiVersion()` for the API contract version. It is independent of the pl
 Additions bump the minor component. Existing members are never removed or changed; deprecated
 members keep working.
 
-The current contract version is `1.4.0`. It added the upgrade path, the quotes, the dry runs
-and the four upgrade methods in SnGens `2.57.0`.
+The current contract version is `1.5.0`. It added collector levels in SnGens `2.59.0`:
+`CollectorUpgradeEvent`, `CollectorView#level()`, `#effectiveLevel()`, `#areaSide()` and
+`StorageRefundIssuedEvent#getCollectorLevels()`.
+
+Version `1.4.0` added the upgrade path, the quotes, the dry runs and the four upgrade methods in
+SnGens `2.57.0`.

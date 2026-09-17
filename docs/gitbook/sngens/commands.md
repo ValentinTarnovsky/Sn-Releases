@@ -39,7 +39,8 @@ land in the target's vault and the owner claims them with `/gens recover`.
 stored. `/gens recover all` claims everything, and anything that does not fit is dropped on the
 ground, so it asks for confirmation first: run it twice within the confirmation window. The
 same command also hands back collectors and infinite hoppers stored by an island kick, leave,
-ban or disband. They are reported on their own line.
+ban or disband, plus collectors stored by an admin pickup. They are reported on their own line,
+and every collector comes back at the level it was bought to.
 
 **`/gens repair`** repairs your own corrupted generators. Passing a player name requires
 `sngens.admin`.
@@ -187,13 +188,39 @@ unlimited uses.
 
 | Command | Aliases | Permission | What it does |
 |---------|---------|------------|--------------|
-| `/gens collector give <player> [amount]` | `collectors` | `sngens.collector.admin` | Give collector blocks |
+| `/gens collector give <player> [amount] [level]` | `collectors` | `sngens.collector.admin` | Give collector blocks, optionally already upgraded |
 | `/gens collector pickup <player>` | `collectors` | `sngens.collector.admin` | Pick up every collector that player placed |
+| `/gens collector adjust <percent>` | `collectors` | `sngens.collector.admin` | Scale what the collector you look at stores |
 | `/gens hopper give <player> [amount]` | `hoppers` | `sngens.hopper.admin` | Give infinite hopper blocks |
 | `/gens hopper pickup <player>` | `hoppers` | `sngens.hopper.admin` | Pick up every hopper that player placed |
+| `/gens hopper adjust <percent>` | `hoppers` | `sngens.hopper.admin` | Scale what the hopper you look at stores |
 
-`pickup` runs the normal break flow for each block, so the stored contents are handled exactly as
-if the owner had broken it themselves. It works on offline owners too.
+```
+/gens collector give Notch 2 3     # two level 3 collectors (5x5 chunks each)
+/gens collector adjust 10          # +10% of every stored type
+/gens hopper adjust -25%           # -25% of every stored type
+```
+
+`[level]` defaults to 1 and is capped at 32. The level is kept on the item, so the collector
+places back at that level. See [Collector levels](configuration.md#collector-levels).
+
+While the owner is online, `pickup` runs the normal break flow for each block. The stored
+contents are handled exactly as if the owner had broken it themselves. With the owner offline,
+the collectors go to the owner's vault at their levels, claimed with `/gens recover`. Their
+contents drop at each block, whoever runs the command, up to `collector.break.drop-cap` stacks
+per collector. The rest is voided and logged. A hopper pickup also works on offline
+owners. It drops the contents and hands the hopper item to you, or drops it at the block.
+
+**`adjust`** is player only. Look at the block within `admin-adjust.target-range` blocks,
+eight by default, and pass a percent. It accepts `10`, `+10`, `-10`, `12.5` and `10%`, down to
+`-100` and with at most six decimals. Every stored item type is scaled and rounded to the
+nearest whole item. A type that rounds to 0 is removed, which frees a hopper type slot.
+
+{% hint style="warning" %}
+An adjust ignores capacity, so a capacity limited collector can end above its limit. It then
+stops absorbing until it is sold down. If the total would pass the storable maximum, nothing
+changes.
+{% endhint %}
 
 ### Diagnostics
 
@@ -230,4 +257,4 @@ generators without a refund, the second fills the chunk you are standing in.
 
 Every subcommand completes its own arguments, and only for senders who hold the permission. Player
 names, generator ids, event ids, armor set ids, off-hand ids and the `-s` flag all complete as you
-type.
+type. `adjust` suggests a few sample percents.

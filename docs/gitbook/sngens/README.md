@@ -37,6 +37,14 @@ production. Everything is configured in YAML, and nothing is hardcoded.
 - **Collectors and infinite hoppers.** Two storage blocks that capture generator drops. The
   collector eats every drop in its chunk before the item entity exists. The hopper scans its
   own column and locks in a fixed number of item types.
+- **Upgradeable collectors.** Players buy levels from the collector menu to cover a 3x3, 5x5 or
+  wider chunk area. You set the max level and the price of each level, and a collector keeps
+  its level through every pickup and refund.
+- **Multiple economies.** A price can charge Vault and any other currency, such as PlayerPoints
+  or tokens. SnGens reads it through a PlaceholderAPI balance and changes it with console
+  commands.
+- **Admin adjust.** `/gens collector adjust` and `/gens hopper adjust` scale everything a block
+  stores by a percent, for compensation or corrections.
 - **Equipment.** Off-hand items and four piece armor sets that grant generator speed, tier
   offset, sell multiplier, drop multiplier and lucky double drops.
 - **Server events.** Timed global modifiers such as double drops, faster ticks, a tier boost, a
@@ -54,8 +62,9 @@ production. Everything is configured in YAML, and nothing is hardcoded.
 - **SuperiorSkyblock2**: unlocks island mode. The leaderboard can rank islands instead of
   players, placement and wand use can be restricted to islands you belong to, island members can
   upgrade each other's generators, and generators, collectors and hoppers are returned to the
-  vault when a member is kicked, banned, leaves or the island is disbanded. Without it every
-  island option is a no-op and the plugin ranks individual players.
+  vault when a member is kicked, banned, leaves or the island is disbanded. Upgraded collectors
+  can be kept inside their own island. Without it every island option is a no-op and the plugin
+  ranks individual players.
 - **SnDisplayShops**: a sellwand swung at a display shop sells the generator drops stored in
   that shop, instead of falling through to the generic container path. Only the shop owner, or
   a player with `sngens.admin`, may do it. Without it the click is treated as a normal block.
