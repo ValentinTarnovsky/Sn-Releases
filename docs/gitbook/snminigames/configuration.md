@@ -453,7 +453,9 @@ maps:
     removable-materials: []
     # Survivors the round ends with (1 = last one standing).
     winners: 1
-    # Maximum round length in seconds; 0 disables the limit.
+    # Maximum round length in seconds; 0 disables the limit. If it runs out with
+    # more players standing than winners, the tie goes to whoever is highest
+    # (equal heights are settled at random); the rest keep their positions.
     time-limit: 300
     # Where the SURVIVORS are teleported when the round ends. Leave blank to send
     # each player back to where they were before joining. Eliminated players are
@@ -467,8 +469,8 @@ maps:
     # Use CONSOLE/economy actions, not [give]: rewards run while the player is
     # still in the round, so the pre-game inventory restore right afterwards
     # would wipe any item handed out here.
-    # With winners > 1 the surviving players are TIED (TNT Run has no score to
-    # rank them by), so their relative positions are stable but not earned.
+    # The surviving players are ranked by how high they stand when the round
+    # ends (equal heights at random), then the eliminated, last one out first.
     rewards:
       1:
         - "[console] eco give {player} 1000"
@@ -649,7 +651,10 @@ maps:
     round-break: 3
     # Survivors the round ends with (1 = last one standing).
     winners: 1
-    # Maximum match length in seconds; 0 disables the limit.
+    # Maximum match length in seconds; 0 disables the limit. If it runs out with
+    # more players standing than winners, the tie goes to whoever held the TNT
+    # for the least time over the whole match (equal times are settled at
+    # random); the rest keep their positions.
     time-limit: 300
     # Where the SURVIVORS are teleported when the match ends. Leave blank to
     # send each player back to where they were before joining. Exploded players
@@ -663,6 +668,8 @@ maps:
     # Use CONSOLE/economy actions, not [give]: rewards run while the player is
     # still in the round, so the pre-game inventory restore right afterwards
     # would wipe any item handed out here.
+    # The surviving players are ranked by time spent holding the TNT, least
+    # first (equal times at random), then the exploded, last one out first.
     rewards:
       1:
         - "[console] eco give {player} 1000"
@@ -849,7 +856,10 @@ maps:
       - SNOW_BLOCK
     # Survivors the round ends with (1 = last one standing).
     winners: 1
-    # Maximum round length in seconds; 0 disables the limit.
+    # Maximum round length in seconds; 0 disables the limit. If it runs out with
+    # more players standing than winners, the tie goes to whoever broke the most
+    # floor blocks (equal counts are settled at random); the rest keep their
+    # positions.
     time-limit: 300
     # Where the SURVIVORS are teleported when the round ends. Leave blank to send
     # each player back to where they were before joining. Eliminated players are
@@ -863,8 +873,9 @@ maps:
     # Use CONSOLE/economy actions, not [give]: rewards run while the player is
     # still in the round, so the pre-game inventory restore right afterwards
     # would wipe any item handed out here.
-    # With winners > 1 the surviving players are TIED (Spleef has no score to
-    # rank them by), so their relative positions are stable but not earned.
+    # The surviving players are ranked by floor blocks broken, with the shovel
+    # or a snowball (equal counts at random), then the eliminated, last one out
+    # first.
     rewards:
       1:
         - "[console] eco give {player} 1000"
@@ -1278,6 +1289,9 @@ messages:
     winner-broadcast: "&f{player}&7 won &6{game}&7!"
     # Broadcast when the round ends because it hit its time limit.
     time-limit: "&c{game}&c round ended - the time limit was reached."
+    # Broadcast right after time-limit when more players are still standing than the
+    # map's winners: only the highest of them wins. {count} players still standing.
+    tiebreak: "&e{count}&e players were still standing - the tie goes to whoever is highest."
 
     # Map setup feedback for /minigames admin tntrun ... The generic setup lines
     # (invalid-map-name, map-exists, map-not-found, cannot-delete-active,
@@ -1359,6 +1373,10 @@ messages:
     winner-broadcast: "&f{player}&7 won &6{game}&7!"
     # Broadcast when the match ends because it hit its time limit.
     time-limit: "&c{game}&c round ended - the time limit was reached."
+    # Broadcast right after time-limit when more players are still standing than the
+    # map's winners: only whoever held the TNT for the least time over the whole match
+    # wins. {count} players still standing.
+    tiebreak: "&e{count}&e players were still standing - the tie goes to whoever held the TNT the least."
 
     # Map setup feedback for /minigames admin tnttag ... The generic setup lines
     # (invalid-map-name, map-exists, map-not-found, cannot-delete-active,
@@ -1424,6 +1442,10 @@ messages:
     winner-broadcast: "&f{player}&7 won &6{game}&7!"
     # Broadcast when the round ends because it hit its time limit.
     time-limit: "&c{game}&c round ended - the time limit was reached."
+    # Broadcast right after time-limit when more players are still standing than the
+    # map's winners: only whoever broke the most floor blocks (shovel and snowballs)
+    # wins. {count} players still standing.
+    tiebreak: "&e{count}&e players were still standing - the tie goes to whoever broke the most blocks."
 
     # Map setup feedback for /minigames admin spleef ... The generic setup lines
     # (invalid-map-name, map-exists, map-not-found, cannot-delete-active,

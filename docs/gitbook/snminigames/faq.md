@@ -121,7 +121,15 @@ No. Movement is frozen at the start point until the GO title: every move that ch
 Nothing is lost. The full player state is written to disk before the game touches it, and it restores on the next start or when the player reconnects.
 
 ### Can more than one player win?
-Yes, in four of the five games. In Parkour, set `winners` above 1 on a map: each finisher waits frozen at the `finish-hold` spot until enough players finish or the time limit ends the round. In TNT Run, TNT Tag and Spleef, `winners` is the number of players still standing that ends the round; all of them are announced as winners. Note that none of those three has a score to rank survivors by, so with `winners` above 1 their relative positions are stable but not earned - keep the reward difference between those positions small, or leave `winners` at 1.
+Yes, in four of the five games. In Parkour, set `winners` above 1 on a map: each finisher waits frozen at the `finish-hold` spot until enough players finish or the time limit ends the round. In TNT Run, TNT Tag and Spleef, `winners` is the number of players still standing that ends the round; all of them are announced as winners, and never more than that.
+
+### The time limit ran out with several players alive. Who wins?
+Only one of them (or `winners` of them, if you raised it). Those three games end the round the moment the players standing drop to `winners`, so a time-limit end always leaves more than that, and the tie is broken per game:
+- **TNT Run**: whoever is standing highest when the time runs out.
+- **Spleef**: whoever broke the most floor blocks, with the shovel or a snowball. Blocks the melt takes count for nobody.
+- **TNT Tag**: whoever held the TNT for the least time over the whole match, counted from GO.
+
+Equal scores are settled at random. The server sees the `tiebreak` line from the lang file, then the usual winner line. The other survivors are not winners, but they keep their positions (2, 3, ...) and get those position rewards. The same ranking decides the order between winners when `winners` is above 1. To have rounds only end with a last player standing, set `time-limit: 0` on the map.
 
 FastMine deliberately has no `winners` key: exactly one player can clear their column first. Everyone else is ranked by blocks mined, with an earlier finish winning a tie, so the rest of the podium is earned rather than arbitrary - and the `rewards` positions below 1 are the ones worth tuning there.
 
