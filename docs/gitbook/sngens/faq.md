@@ -19,12 +19,20 @@ scheduler. The same jar runs on Paper and on Folia with no configuration change.
 
 In order:
 
-1. Vault, PlaceholderAPI and DecentHolograms must all be installed. They are hard
-   dependencies, so a missing one stops the plugin from loading at all.
+1. Vault and PlaceholderAPI must be installed, plus DecentHolograms or FancyHolograms. A
+   missing Vault or PlaceholderAPI stops the plugin from loading at all.
 2. `plugins/SnGens/license.yml` must contain your real license key, not the placeholder.
 3. The server must reach the license backend at startup.
 
 The console line tells you which of the three failed.
+
+### Can I use FancyHolograms instead of DecentHolograms?
+
+Yes. SnGens works with either one, and you only need one of them installed. With both
+installed, set `holograms.provider` in `config.yml` to `decentholograms` or `fancyholograms`.
+
+The default `auto` prefers DecentHolograms. The choice is read at startup, so restart the server
+after changing it. Your hologram heights and lines carry over unchanged.
 
 ### Do generators produce while the owner is offline?
 
@@ -335,9 +343,9 @@ To keep the system but protect specific generators, add their ids to
 ### Which changes need a restart, and which need only a reload?
 
 `/gens reload` covers configuration, generators, wands, events, storages, gear, menus and
-messages. Two things need a restart: the database connection block, since the pool is built at
-startup, and anything already handed out as an item, since a wand or generator in an inventory
-carries its own data.
+messages. Three things need a restart: the database connection block, since the pool is built at
+startup, the `holograms.provider` choice, and anything already handed out as an item, since a
+wand or generator in an inventory carries its own data.
 
 ### I added a key to config.yml and it vanished, or my file is missing new keys.
 

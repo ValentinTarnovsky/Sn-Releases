@@ -27,13 +27,13 @@ runs once, at boot: there are no periodic re-checks and no degraded mode while r
 |--------|----------|--------------|
 | Vault | Yes | Every payment and payout by default. Buying, upgrading, repairing and selling go through your Vault economy plugin. Collector levels can also charge other currencies. |
 | PlaceholderAPI | Yes | Registers the `%sngens_...%` expansion for scoreboards, tab, holograms and menus. |
-| DecentHolograms | Yes | Draws the floating text over broken generators, collectors and hoppers. |
+| DecentHolograms or FancyHolograms | One of the two | Draws the floating text over broken generators, collectors and hoppers. With both installed, `holograms.provider` in `config.yml` picks one. |
 | SuperiorSkyblock2 | No | Island mode: island leaderboards, island only placement, shared upgrades and vault returns on kick or disband. |
 | SnDisplayShops | No | Lets a sellwand sell the generator drops stored inside a display shop. |
 
 {% hint style="warning" %}
-The three required plugins are declared as hard dependencies. If any of them is missing the
-server will not load SnGens at all.
+Vault and PlaceholderAPI are hard dependencies: if either is missing, the server does not load
+SnGens at all. With no hologram plugin installed, SnGens logs an error and disables itself.
 {% endhint %}
 
 ## Server requirements

@@ -44,9 +44,9 @@ lore:
 ## Applying changes
 
 `/gens reload` re-reads every file and re-applies the settings, including the collector and
-hopper values. Two things still need a restart: the database connection block, since the pool
-is built at startup, and anything already handed out as an item, since a generator or wand in a
-player's inventory carries its own data.
+hopper values. Three things still need a restart: the database connection block, since the pool
+is built at startup, the `holograms.provider` choice, and anything already handed out as an item,
+since a generator or wand in a player's inventory carries its own data.
 
 ---
 
@@ -59,6 +59,7 @@ The main file. If you only ever touch one file, this is it.
 | Key | Default | What it does |
 |-----|---------|--------------|
 | `lang` | `en` | Which `lang/messages_<code>.yml` is loaded |
+| `holograms.provider` | `auto` | Draw holograms with DecentHolograms or FancyHolograms |
 | `generator-tick-interval-seconds` | `20` | Seconds between drops, for every generator |
 | `player-defaults.max-generators` | `10` | Slots a brand new player gets |
 | `player-defaults.starting-generator` | `wheat_generator` x3 | What a player receives on first join |
@@ -100,6 +101,20 @@ debug: false
 # overhead. The query API (SnGensProvider#get) stays available either way.
 api-events:
   enabled: true
+
+# -----------------------------------------------------------------------------
+# Holograms
+# -----------------------------------------------------------------------------
+# SnGens draws its holograms (broken generators, collectors, hoppers) through
+# DecentHolograms or FancyHolograms. At least one of them must be installed,
+# otherwise the plugin disables itself on startup.
+#   auto            - use DecentHolograms if installed, otherwise FancyHolograms.
+#   decentholograms - use DecentHolograms.
+#   fancyholograms  - use FancyHolograms.
+# If the chosen plugin is not installed, SnGens falls back to the other one.
+# Read at startup only: restart the server after changing it.
+holograms:
+  provider: auto
 
 # -----------------------------------------------------------------------------
 # External equipment (compatibility with cosmetic / world-forced armor plugins)
@@ -346,7 +361,7 @@ corruption:
   # Reminder cadence sent privately to affected owners.
   notify:
     interval: 5
-  # DecentHolograms hologram shown above broken generators.
+  # Hologram shown above broken generators (see holograms.provider).
   hologram:
     height: 2
     lines:
@@ -444,6 +459,30 @@ upgrade-gui:
     # the daily pool or bonus pool is set to infinite (-1). Translate freely.
     infinite-placeholder: "Unlimited"
 ```
+
+### Holograms
+
+SnGens shows a hologram over broken generators, collectors and hoppers. It draws them through
+DecentHolograms or FancyHolograms, and you need at least one of the two installed.
+
+```yaml
+holograms:
+  provider: auto   # auto, decentholograms or fancyholograms
+```
+
+With `auto`, DecentHolograms wins when both are installed. Name one plugin to choose it
+instead. If the plugin you name is missing, SnGens uses the other one and logs a warning.
+
+The choice is made once at startup. After changing it, restart the server: `/gens reload`
+only warns that the switch is pending.
+
+{% hint style="info" %}
+The holograms are temporary. They never land in the hologram plugin's own files, and SnGens
+rebuilds them on every start. The same `height` and `y-offset` settings work with both plugins.
+{% endhint %}
+
+With FancyHolograms, hologram lines also accept MiniMessage tags on top of `&` codes and
+`&#RRGGBB` hex colours.
 
 ### Interaction bindings
 

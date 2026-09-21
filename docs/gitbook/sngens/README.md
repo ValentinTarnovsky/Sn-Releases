@@ -70,8 +70,8 @@ production. Everything is configured in YAML, and nothing is hardcoded.
   a player with `sngens.admin`, may do it. Without it the click is treated as a normal block.
 
 {% hint style="info" %}
-Vault, PlaceholderAPI and DecentHolograms are required, not optional. See
-[Installation](installation.md).
+Vault and PlaceholderAPI are required, not optional. You also need one hologram plugin:
+DecentHolograms or FancyHolograms. See [Installation](installation.md).
 {% endhint %}
 
 ## Links
