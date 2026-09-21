@@ -120,6 +120,17 @@ crate file**, not the display name.
 If it prints `0` instead, the id is right and either the balance really is zero or the player's data
 is still loading (a second after join). See [Placeholders](placeholders.md).
 
+### `%sncrates_keys_mycrate%` above a crate block prints literally, or shows nothing.
+
+With `holograms.provider: snlib`, placeholders are read once for everybody, with no player, so a
+player placeholder has nobody to answer for. Switch to `decentholograms` or `fancyholograms` and
+every viewer sees their own balance. See [Holograms](configuration.md#holograms).
+
+### How do I hide the hologram of one crate?
+
+Add `enabled: false` under that crate's `hologram:` section in its file, then `/crates reload`. To
+remove every crate hologram, set `holograms.enabled: false` in `config.yml` instead.
+
 ### `%player_name%` in a reward's name prints literally.
 
 Item text inside `crates/*.yml` resolves placeholders **once, when crates load**, against no

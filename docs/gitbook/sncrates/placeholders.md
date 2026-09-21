@@ -74,15 +74,24 @@ to `0`.
 Every scoreboard, tab, hologram and chat plugin passes a player, so this only shows up in that one
 narrow case. If you hit it, give the parse a player.
 
+SnCrates' own crate holograms are that case when `holograms.provider` is `snlib`: SnLib reads
+placeholders once for everybody, with no player. Use `decentholograms` or `fancyholograms` to show
+`%sncrates_keys_<crateId>%` above a crate block.
+
 ## Placeholders inside SnCrates itself
 
-Two other places accept placeholders, and they behave differently from each other:
+Other places accept placeholders too, and they behave differently from each other:
 
 | Where | Resolved | Against |
 |---|---|---|
 | Menu names and lore under `guis/` | Every time the item is built | The **viewer** |
 | Crate and reward item text in `crates/*.yml` | **Once**, when crates load | Nobody in particular |
 | Reward win commands | At win time, after `{player}`/`{amount}`/`{crate}` | The **winner** |
+| Hologram lines (`holograms.lines`, a crate's `hologram.lines`) | When the hologram is drawn, then every `update-interval-ticks` | The **viewer** with `decentholograms` or `fancyholograms`, nobody with `snlib` |
+
+Hologram lines also take two tokens of their own, replaced before any placeholder: `{crate}` is the
+crate's display name and `{crate-id}` its id. They are kept unresolved in the files, so an editor
+save never freezes a placeholder into plain text.
 
 So `%player_name%` in a menu button's lore renders the name of whoever is looking, and the same
 placeholder written into a reward's `display-name` in a crate file does not - it is baked in at load

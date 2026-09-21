@@ -7,7 +7,7 @@
 | Java | 21 or newer |
 | Server | Paper 1.20.x or 1.21.x |
 | Required | `SnLib.jar` (SnLib 1.24.0 or newer - API level 16) |
-| Optional | PlaceholderAPI |
+| Optional | PlaceholderAPI, DecentHolograms or FancyHolograms (crate holograms use SnLib's own without them) |
 | Database | SQLite (default, no setup) or MySQL |
 | License | Yes - SnCrates is part of the licensed bundle |
 
@@ -118,9 +118,10 @@ prefix exists for exactly that reason.
 - `/crates givekey <you> example` hands you a key item named **Example Key**.
 - `/crates preview example` shows the two shipped rewards with their chances.
 - `/crates open example` spends the key and runs the CS:GO roulette.
+- Bind a block from `/crates editor` and a hologram with the crate's name appears above it.
 
 `/crates reload` re-reads `config.yml`, the language file, every `guis/*.yml` and every crate file,
-and re-sources the command aliases. It does not need a restart.
+re-sources the command aliases and redraws every crate hologram. It does not need a restart.
 
 {% hint style="warning" %}
 `command.user-open-aliases` is the one setting a reload cannot apply. Each entry registers its own

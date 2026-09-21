@@ -19,6 +19,9 @@ touching a file.
 - **Crate blocks.** Bind any block in the world to a crate from the editor. Right-click opens one,
   sneak + right-click mass-opens, left-click shows the preview. A bound block cannot be mined and
   survives explosions.
+- **A hologram above every crate block.** Floating text drawn by SnLib out of the box, or by
+  DecentHolograms or FancyHolograms if you prefer. One template covers every crate, and any crate
+  can replace its lines, change its height or hide its holograms in its own file.
 - **Mass opens that do not freeze the server.** Sneak + right-click a block, or press Q in
   `/crates`, to open a whole balance at once. The batch is spread over ticks, the menu stays open
   while it drains, and one summary lists what came out, reward by reward.
@@ -62,7 +65,8 @@ crates you delete afterwards.
 ## Requirements
 
 Java 21+, Paper 1.20.x or 1.21.x, and **SnLib** in `plugins/`. PlaceholderAPI is optional and only
-needed for the `sncrates` placeholders and for placeholders inside reward win commands.
+needed for the `sncrates` placeholders and for placeholders inside reward win commands and
+holograms. DecentHolograms and FancyHolograms are optional too: crate holograms work without them.
 
 {% hint style="info" %}
 SnCrates is part of the licensed bundle. Your key goes in the shared

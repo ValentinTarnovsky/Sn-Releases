@@ -162,6 +162,49 @@ would otherwise be unusable.
 
 Only the keys that fit are handed over, and exactly that many are deducted.
 
+### Holograms
+
+```yaml
+holograms:
+  enabled: true
+  provider: snlib
+  height: 0.3
+  update-interval-ticks: 20
+  lines:
+    - "{crate}"
+    - "&7Right-click to open"
+    - "&7Left-click to preview"
+```
+
+Every block bound to a crate gets one hologram floating above it. `enabled: false` removes all of
+them, whatever a crate file says.
+
+`provider` picks the plugin that draws them:
+
+| Value | Needs | Placeholders |
+|---|---|---|
+| `snlib` | Nothing, it is built in | Read once for everybody, so only server-wide ones such as `%server_online%` work |
+| `decentholograms` | DecentHolograms | Each viewer sees their own value, so `%sncrates_keys_<crateId>%` works |
+| `fancyholograms` | FancyHolograms | Each viewer sees their own value, so `%sncrates_keys_<crateId>%` works |
+
+A provider that is not installed falls back to `snlib`, with one warning in the console. So does an
+installed one that is too old or too new to work with SnCrates. Switching provider takes effect on
+`/crates reload`, and the old plugin's holograms are removed. If DecentHolograms or FancyHolograms
+stops while the server runs, the holograms move to `snlib` until it is back.
+
+`height` is the distance in blocks from the crate block's top face to the **lowest** line. Every
+provider reads it the same way, so the text never sinks into the block however many lines it has.
+
+`update-interval-ticks` is how often placeholders in the lines are re-read (20 ticks is one second).
+`0` draws the text once. Lines without a placeholder never refresh, whatever this says.
+
+`lines` are the lines, top to bottom. `{crate}` is the crate's display name and `{crate-id}` its id.
+`&` colour codes and `&#RRGGBB` work with every provider.
+
+{% hint style="info" %}
+A crate can replace any of these values in its own file: see [The hologram section](#the-hologram-section).
+{% endhint %}
+
 ### Editor
 
 ```yaml
@@ -436,6 +479,11 @@ example:
     complete-particle-count: 25
     rare-win-particle: ""
 
+  hologram:
+    lines:
+      - "{crate}"
+      - "&7Right-click with a key to open"
+
   key-item:
     material: TRIPWIRE_HOOK
     display-name: "&#8354f2&lExample Key"
@@ -481,6 +529,26 @@ does not turn itself back on.
 Delete the key to inherit. `fail-chance: 0` is the same shape: it means this crate never fails,
 even when `fail.chance` says otherwise, and deleting the key is what inherits.
 {% endhint %}
+
+### The hologram section
+
+`hologram:` changes the holograms above this crate's blocks. Every key is optional. A key you leave
+out follows [`holograms`](#holograms) in `config.yml`, and a key you write overrides it for this
+crate only.
+
+| Key | Overrides | Example |
+|---|---|---|
+| `enabled` | Whether this crate's blocks show a hologram. Only `false` does anything | `enabled: false` |
+| `lines` | `holograms.lines`, the whole list | `lines: ["&a&lVOTE", "&7/vote for keys"]` |
+| `height` | `holograms.height` | `height: 0.5` |
+
+These keys have two states, not three: leave a key out to inherit, write it to override. An empty
+`lines: []` inherits the template too. To hide a crate's holograms, write `enabled: false`.
+
+`holograms.enabled: false` in `config.yml` still hides every hologram, whatever this section says.
+
+Placeholders in `lines` are kept exactly as you wrote them, through every editor save, and resolved
+only when the hologram is drawn.
 
 ### The item format
 
@@ -635,11 +703,14 @@ A bound block cannot be mined and survives explosions. Deleting the crate unbind
 to it, and a block left bound to a crate that no longer exists breaks normally the next time
 somebody swings at it.
 
+A block's [hologram](#holograms) appears the moment it is bound and goes when it is unbound.
+Renaming the crate in the editor updates its holograms straight away.
+
 ### What deleting removes
 
 | Deleting | Also clears | Deliberately keeps |
 |---|---|---|
-| A crate | Its bound blocks, global limits, per-player limits and reward filters | Key balances, statistics and history |
+| A crate | Its bound blocks and their holograms, global limits, per-player limits and reward filters | Key balances, statistics and history |
 | A reward | That reward's limits and filters | - |
 
 Both force-close and settle any opening still running on the target first, so nobody loses a paid

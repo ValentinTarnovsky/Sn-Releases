@@ -21,7 +21,8 @@ Everything else in the jar is obfuscated and internal. Do not call it.
 ## Depending on SnCrates
 
 The jar is obfuscated, but the classes under `com.sn.crates.api.**` keep their real names, and so do
-the model types their signatures expose (`Crate`, `Reward`, `KeyType`, `PhysicalCrateBlock`).
+the model types their signatures expose (`Crate`, `Reward`, `KeyType`, `PhysicalCrateBlock`, and
+`CrateHologram` through `Crate.getHologram()`).
 Compile against the published jar.
 
 Install it into your local Maven repository:
@@ -125,12 +126,18 @@ SnCrates.
 
 | Type | What it is | Useful getters |
 |---|---|---|
-| `com.sn.crates.model.Crate` | A crate definition | `getId()`, `getDisplayName()`, `getRewards()`, `getReward(String id)`, `getAnimationType()`, `getAcceptedKeyTypes()`, `accepts(KeyType)` |
+| `com.sn.crates.model.Crate` | A crate definition | `getId()`, `getDisplayName()`, `getRewards()`, `getReward(String id)`, `getAnimationType()`, `getAcceptedKeyTypes()`, `accepts(KeyType)`, `getHologram()` |
+| `com.sn.crates.model.CrateHologram` | The crate file's own `hologram:` override | `getEnabled()`, `getLines()`, `getHeight()`, `isAllInherited()` |
 | `com.sn.crates.model.Reward` | One entry of a crate's reward pool | `getId()`, `getWeight()`, `isEnabled()`, `getDisplayItemClone()`, `getAmount()`, `getCommands()`, `isBroadcast()`, `isGiveItem()`, `getPerPlayerLimit()`, `getGlobalLimit()` |
 | `com.sn.crates.model.KeyType` | Enum: `PHYSICAL`, `VIRTUAL`, `PERMISSION` | - |
 | `com.sn.crates.model.PhysicalCrateBlock` | A crate bound to a block in the world | `getCrateId()`, `getWorld()`, `getX()`, `getY()`, `getZ()` |
 
 `Reward.getDisplayItemClone()` hands back a copy, so mutating it cannot corrupt the crate.
+
+`CrateHologram` reports what the crate FILE declares, not what is drawn. Each getter returns an
+`Inheritable` holder: `isInherited()` means the crate follows `holograms.*` in `config.yml`, and
+`resolve(globalValue)` gives the value that applies. `getLines()` holds the raw text, placeholders
+unresolved.
 
 ## Listening
 
