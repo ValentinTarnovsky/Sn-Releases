@@ -126,13 +126,15 @@ SnCrates.
 
 | Type | What it is | Useful getters |
 |---|---|---|
-| `com.sn.crates.model.Crate` | A crate definition | `getId()`, `getDisplayName()`, `getRewards()`, `getReward(String id)`, `getAnimationType()`, `getAcceptedKeyTypes()`, `accepts(KeyType)`, `getHologram()` |
+| `com.sn.crates.model.Crate` | A crate definition | `getId()`, `getDisplayName()`, `getRewards()`, `getReward(String id)`, `getAnimationType()`, `getAcceptedKeyTypes()`, `accepts(KeyType)`, `getHologram()`, `getEditorIconClone()` |
 | `com.sn.crates.model.CrateHologram` | The crate file's own `hologram:` override | `getEnabled()`, `getLines()`, `getHeight()`, `isAllInherited()` |
 | `com.sn.crates.model.Reward` | One entry of a crate's reward pool | `getId()`, `getWeight()`, `isEnabled()`, `getDisplayItemClone()`, `getAmount()`, `getCommands()`, `isBroadcast()`, `isGiveItem()`, `getPerPlayerLimit()`, `getGlobalLimit()` |
 | `com.sn.crates.model.KeyType` | Enum: `PHYSICAL`, `VIRTUAL`, `PERMISSION` | - |
 | `com.sn.crates.model.PhysicalCrateBlock` | A crate bound to a block in the world | `getCrateId()`, `getWorld()`, `getX()`, `getY()`, `getZ()` |
 
-`Reward.getDisplayItemClone()` hands back a copy, so mutating it cannot corrupt the crate.
+`Reward.getDisplayItemClone()` and `Crate.getEditorIconClone()` (2.6.0) hand back a copy, so
+mutating it cannot corrupt the crate. The editor icon is the item an admin picked to tell the crate
+apart in `/crates editor`, `null` when it has none; players never see it.
 
 `CrateHologram` reports what the crate FILE declares, not what is drawn. Each getter returns an
 `Inheritable` holder: `isInherited()` means the crate follows `holograms.*` in `config.yml`, and

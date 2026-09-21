@@ -6,7 +6,7 @@
 |---|---|
 | Java | 21 or newer |
 | Server | Paper 1.20.x or 1.21.x |
-| Required | `SnLib.jar` (SnLib 1.24.0 or newer - API level 16) |
+| Required | `SnLib.jar` (SnLib 1.28.0 or newer - API level 19) |
 | Optional | PlaceholderAPI, DecentHolograms or FancyHolograms (crate holograms use SnLib's own without them) |
 | Database | SQLite (default, no setup) or MySQL |
 | License | Yes - SnCrates is part of the licensed bundle |
@@ -144,7 +144,7 @@ A second shape of the same problem is SnLib being present but too old. The plugi
 refuses to start, and says exactly what it needs:
 
 ```
-[SnCrates] Requires SnLib API level 16 (installed: 13). Update SnLib.jar (restart required):
+[SnCrates] Requires SnLib API level 19 (installed: 16). Update SnLib.jar (restart required):
 https://github.com/ValentinTarnovsky/SnLib/releases
 ```
 

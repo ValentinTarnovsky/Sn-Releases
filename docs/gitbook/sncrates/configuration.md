@@ -647,7 +647,7 @@ every settings and effects key.
 
 | Screen | What it does |
 |---|---|
-| Crate list | Create a crate, page through the existing ones |
+| Crate list | Create a crate, page through the existing ones, give a crate its own [icon](#crate-icons) |
 | Crate panel | Display name, animation, accepted keys, open permission, preview layout, key item, mass-open, fail chance, the five per-crate effects, crate block, duplicate, delete |
 | Reward list | Add a reward, reorder, mass creation, page through |
 | Reward panel | The item, weight, amount, per-player limit, global limit, limit window, win commands, can-be-won, announce, give-item, duplicate, delete |
@@ -688,6 +688,30 @@ also editable on the reward's own panel afterwards, which is the easier way to c
 
 One window does three jobs, depending on which button opened it: replace a reward's item, create a
 new reward, or set a crate's physical key item.
+
+### Crate icons
+
+On a server with many crates the list is a wall of identical chests. Since 2.6.0 each crate can be
+drawn with an item of your choice instead, in the crate list only:
+
+1. Open `/crates editor`.
+2. Pick up any item from your own inventory, so it is on your cursor.
+3. Click a crate with it.
+
+The crate stores a copy of one item, and the item stays on your cursor: click the next crate with
+it, or put it back. **Shift + right-click** a crate to draw it with the default icon again. A click
+with an empty cursor opens the crate, as it always did.
+
+| | |
+|---|---|
+| Who sees it | Only admins in the crate list. `/crates`, the preview and every other player menu draw crates exactly as before |
+| Name and lore | The crate template's `display-name` and `lore` are drawn over the item. Set `display-name: ""` to keep the item's own name. The item's own lore is not shown unless you add a `"{lore}"` line to the template |
+| Where it is saved | `editor-icon:` in the crate's file, a stored item. Duplicating the crate copies it |
+| Needs | `player-inventory: open` in `editor-main.yml` (shipped that way). It lets you use your own inventory while the list is open; nothing can be put into the menu itself. Set it to `locked` and no new icon can be set |
+
+An `editor-icon:` that cannot be read (an item saved by a newer server version, for example) is
+reported once in the console and the crate is drawn with the default icon. The value stays in the
+file until you reset the icon.
 
 ### Crate blocks
 
