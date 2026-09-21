@@ -560,7 +560,11 @@ SnLib merges by key, so no version marker is needed. Do not add one.
 #      template (a different id) or type a duration on the command.
 #    - ladder is the escalation list. Step 1 is the first offence, step 2 the
 #      second, and the last step repeats for every further offence.
-#    - Each step is a duration token (30s, 30m, 12h, 5d) or permanent.
+#    - Each step is a duration token or permanent. Units: s, m (MINUTES), h,
+#      d, w (weeks), mo (months of 30 days) and y (years of 365 days), and
+#      they chain: 30s, 30m, 12h, 5d, 2w, 1mo, 1y, 1d12h. A step that is not
+#      made of those alone is applied as PERMANENT, with a console warning
+#      every time it is used.
 #    - Offences reverted by /snbans rollback do not count: a rollback DELETES
 #      the punishments it undoes, so they leave the player's history entirely.
 #      Expired and manually removed ones do count.
@@ -590,7 +594,7 @@ spam:
 
 ### Writing a template
 
-Each top-level key is a template id, matched against the full reason of the command and case-insensitively. `type` is `ban`, `mute` or `blacklist`. `ladder` is the escalation list, where every step is a duration token such as `30s`, `5m`, `2h` or `7d`, or the literal `permanent`.
+Each top-level key is a template id, matched against the full reason of the command and case-insensitively. `type` is `ban`, `mute` or `blacklist`. `ladder` is the escalation list, where every step is a duration token such as `30s`, `5m`, `2h`, `7d`, `2w`, `1mo` or `1y`, or the literal `permanent`. `m` is minutes; a month is `mo`.
 
 `reason` is the text stored on the punishment and rendered as `{reason}` everywhere: the broadcast, the staff notice, the history entry, the Discord embed and the disconnect screen. It exists so the two halves of a template can be different things - the id is the short word staff have to type and tab-complete (`hacks`), while the reason is the sentence a player is entitled to read ("Using unfair advantages"). The key is optional: a template without one keeps its id as its reason, which is exactly how templates behaved before the key existed.
 
@@ -982,7 +986,7 @@ On Velocity, a `lang` code naming a file that is neither bundled nor already in 
 | `prefix` | The single value SnLib prepends to every single-line message. It ships as the SnBans brand tag. |
 | `snlib` | SnLib's shared command contract, 12 keys: permission, usage, number and value validation, out-of-range, number-too-small, player-not-found, unknown subcommand, reload confirmation, and the help header, entry and footer. |
 | `messages` (errors) | Refusals and errors: `console-only`, `unknown-player`, `hierarchy-denied`, `already-punished`, `not-punished`, `invalid-duration`, `internal-error`, `match-self`, `self-target`, `reload-busy`, `player-only` (the inverse of `console-only`, sent only by `/helpop` and `/report`), plus `muted` and `muted-command` for a muted player. |
-| `messages.format` | The words other messages splice in as placeholder values: `permanent`, `no-template`, `no-reason`, `console`, the three `status-*` words behind `{status}`, the twelve `type-*` words behind `{type}`, and the four `wipe-*` plurals behind `{kind}`. `no-reason` is the odd one out: it is WRITTEN to the database as the reason of a punishment a `snbans.noreason` holder issued bare, so retranslating it changes what new punishments record and leaves the stored ones reading as they did. |
+| `messages.format` | The words other messages splice in as placeholder values: `permanent`, `no-template`, `no-reason`, `console`, the three `status-*` words behind `{status}`, the twelve `type-*` words behind `{type}`, the four `wipe-*` plurals behind `{kind}`, and the eight `unit-*` words (`unit-day`, `unit-days` and so on down to `unit-seconds`) every `{duration}` is written with. Days are the largest unit rendered, so a `2w` ban reads `14 days`. `no-reason` is the odd one out: it is WRITTEN to the database as the reason of a punishment a `snbans.noreason` holder issued bare, so retranslating it changes what new punishments record and leaves the stored ones reading as they did. |
 | `messages.<event>` | One block per event (`ban`, `ipban`, `mute`, `ipmute`, `blacklist`, `unban`, `unmute`, `unblacklist`, `kick`, `ipkick`), each with `announce` for the public broadcast and `notify` for `snbans.notify` holders. Five carry `screen`, the disconnect screen the player sees: `ban`, `ipban` and `blacklist` because they deny a login, plus `kick` and `ipkick` because they disconnect somebody already in. `kick` additionally carries `not-online`, the answer when the target is not connected to this server. A kick block has no `{duration}`, `{id}`, `{template}` or `{status}` to render, since a kick has no length, no row, no ladder and no state; `{total}` is how many accounts an `ipkick` disconnected and is not available in a `screen`. |
 | `messages.attempt` | The three attempt notices of `attempt-notices`: `login`, `chat` and `command`. They share the audience of a `notify` block and are sent the same way, so they are lists and carry their own inline tag. `{player}` is the account that tried and `{server}` the server it tried against - neither is read off the punishment row, unlike every other block here. |
 | `messages.request` | The two staff requests plus the four lines their sender gets back: `helpop` and `report` are lists sent to `snbans.requests.receive` holders on every server of the network, and `sent`, `throttled`, `self` and `disabled` answer the player who typed the command. Two tokens are unique to this block - `{reported}`, the account a `/report` named (absent in the `helpop` line, which names nobody), and `{message}`, what the player typed. `{server}` is the server the request was filed on. |

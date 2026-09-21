@@ -8,7 +8,9 @@ Every command exists on both platforms with the same syntax, permissions and mes
 
 Every command is reachable twice: as its own root (`/ban Notch hacks`) and as a subcommand of the admin root (`/snbans ban Notch hacks`). The two are the same command - same permission, same arguments, same messages - and the second form is what lets `/snbans help` list the whole surface rather than only the admin subcommands. The listing is permission-filtered and paged, so `/snbans help 2` shows the rest.
 
-Duration tokens are `30s`, `5m`, `2h`, `7d`, and the literal `permanent`. No duration and no matching template means permanent. A token that reads as nothing, such as `5x`, is refused rather than stored as a permanent punishment.
+A duration is a number and a unit: `s`, `m` (minutes), `h`, `d`, `w` (weeks), `mo` (months of 30 days) or `y` (years of 365 days). Units chain, as in `1d12h`, and the literal `permanent` names a punishment that never expires. No duration and no matching template means permanent. A token that reads as nothing, such as `5x`, is refused rather than stored as a permanent punishment.
+
+A token is a duration only when all of it is, and a reason that is exactly a template id is always that template: `/ban Notch content18` applies the `content18` ladder and never reads its digits as a length.
 
 | Command | Permission | Description |
 |---------|-----------|-------------|
