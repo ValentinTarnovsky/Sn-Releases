@@ -1,13 +1,13 @@
 # SnBattlePass
 
-Permanent battle pass for Paper 1.20.x and 1.21.x. Players climb tiers by farming blocks with EdTools and by completing rotating challenges. Every tier can pay a free reward and a premium one, and the premium track opens with a pass they buy in game, receive from your store, or hold through a permission.
+Permanent battle pass for Paper 1.20.x and 1.21.x. Players climb tiers by farming blocks with EdTools or RivalHarvesterHoes and by completing rotating challenges. Every tier can pay a free reward and a premium one, and the premium track opens with a pass they buy in game, receive from your store, or hold through a permission.
 
 The pass is permanent. There is no season to reset, and nothing expires underneath a player.
 
 ## Features
 
 - Free and premium reward tracks, with 54 tiers out of the box and a curve set by two numbers.
-- Passive XP from EdTools block farming, with a per-tool override map so a late game drill pays more than a starter pickaxe.
+- Passive XP from block farming, with a per-tool override map so a late game drill pays more than a starter pickaxe. The farming source is EdTools or RivalHarvesterHoes (since 2.7.0): one of the two is required, and `xp.passive.source` picks when both are installed.
 - Five rotating challenge slots per player, rolled from a weighted pool you curate, with a periodic reminder for players who leave slots unrolled.
 - Rewards are console commands, so any plugin's items, currency, keys or ranks can be given.
 - The premium track unlocks retroactively: buying a pass opens every premium reward on tiers the player already passed.

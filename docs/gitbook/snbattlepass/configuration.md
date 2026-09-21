@@ -118,10 +118,18 @@ xp:
   # Levels a player can climb, and the number of reward tiers. Hard cap 54.
   max-tier: 54
   passive:
+    # Plugin whose block breaks earn passive XP and advance the farm challenge:
+    # EDTOOLS or RIVAL_HARVESTER_HOES. One of the two must be installed or the
+    # battle pass does not enable. With only one installed that one is used
+    # whatever this says; this decides only when BOTH are. Needs a RESTART, not
+    # a reload: the farming listener is registered once at boot.
+    source: EDTOOLS
     # XP granted per block farmed with a tool that has no override below.
     xp-per-block: 0.5
-    # XP per farmed block for specific EdTools tool ids; anything not listed
-    # earns xp-per-block.
+    # XP per farmed block for specific tool ids; anything not listed earns
+    # xp-per-block. With EdTools the id is the EdTools tool id. With
+    # RivalHarvesterHoes it is the crop's material in capitals (SUGAR_CANE,
+    # WHEAT, PUMPKIN...).
     # sn:extensible
     tool-overrides:
       example_drill: 1.5
@@ -278,7 +286,8 @@ notifications:
 #                    0 keeps the entry out of random rolls while /battlepass
 #                    givechallenge can still hand it out.
 #    filter          "all" counts every signal of that type, or name one id: a
-#                    crate, an EdTools tool, a SnPets box, an offhand box, a
+#                    crate, an EdTools tool (or, with RivalHarvesterHoes, a crop
+#                    material such as SUGAR_CANE), a SnPets box, an offhand box, a
 #                    generator or a SnEnvoys reward. Ids are matched ignoring
 #                    case. A typo shows up as a challenge that never advances,
 #                    so turn debug on to print the id a source really reports.
@@ -294,6 +303,8 @@ notifications:
 #    icon            Material shown for this challenge in the menu.
 #    display-name    coloured name shown to the player.
 #
+#  EDTOOLS_FARM counts farmed blocks from whichever farming source is active
+#  (xp.passive.source in config.yml): EdTools or RivalHarvesterHoes.
 #  ENVOY_OPEN counts SnEnvoys claims and only advances while SnEnvoys is
 #  installed; disable that entry on a server without it.
 # ============================================================

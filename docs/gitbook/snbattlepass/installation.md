@@ -11,7 +11,7 @@ The license key lives in `plugins/.Sn-License/license.yml`, shared by every plug
 {% endhint %}
 
 {% hint style="warning" %}
-Requires **SnLib** installed (`depend: [SnLib]`), version 1.28.0 or later, and **EdTools**. Neither is optional: the plugin will not enable without SnLib, and passive XP comes from EdTools block break events.
+Requires **SnLib** installed (`depend: [SnLib]`), version 1.28.0 or later, and one of **EdTools** or **RivalHarvesterHoes**. Passive XP comes from the block breaks of one of those two, so the plugin will not enable without SnLib or with neither of them installed. With both installed, `xp.passive.source` in `config.yml` picks one (EdTools by default).
 {% endhint %}
 
 ## Dependencies
@@ -19,7 +19,7 @@ Requires **SnLib** installed (`depend: [SnLib]`), version 1.28.0 or later, and *
 | Plugin | Required |
 |--------|----------|
 | SnLib | Yes |
-| EdTools | Yes |
+| EdTools **or** RivalHarvesterHoes | One of the two |
 | SnCrates | No |
 | SnGens | No |
 | SnEnvoys | No |

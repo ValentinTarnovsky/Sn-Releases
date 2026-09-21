@@ -28,7 +28,7 @@ Since 2.6.0, the page holding the highest tier the player has reached: a player 
 Yes. Delete its letter from the menu's `layout:` grid. A key the layout does not use is hidden, and because the layout is a list value rather than a key, the auto-merge never restores it.
 
 ### One of my challenge types never progresses. Why?
-Its source plugin is probably not installed, or the tool or crate id in the pool entry does not match. Challenge types map to SnCrates, SnGens, SnEnvoys, SnPets and EdTools, and an id is a plain string that cannot be validated at load. Set `enabled: false` on pool entries whose source plugin is missing.
+Its source plugin is probably not installed, or the tool or crate id in the pool entry does not match. Challenge types map to SnCrates, SnGens, SnEnvoys, SnPets and the farming source (EdTools or RivalHarvesterHoes), and an id is a plain string that cannot be validated at load. Set `enabled: false` on pool entries whose source plugin is missing.
 
 ### Which pet box openings count?
 SnPets boxes are counted through the SnPets API, and only when a box really opens: an attempt SnPets refuses - a cooldown still running, storage full, a failed success roll - hands the boxes back and adds no progress, and a shift-click stack credits the boxes that fitted. RivalPets boxes are still counted from the right-click on the box item. Both plugins can be installed at once; they never count the same opening.
@@ -45,7 +45,12 @@ Challenges already running in the removed slots freeze: they stop earning and st
 Stored levels above the new ceiling are clamped to it, and that clamp is written back. Raising the ceiling again does not restore them, so lower this value deliberately.
 
 ### Which settings need a restart?
-The `database` block, `integrations.rival-pets.*` and `integrations.sn-pets.*`. Everything else applies on `/battlepass reload`.
+The `database` block, `xp.passive.source`, `integrations.rival-pets.*` and `integrations.sn-pets.*`. Everything else applies on `/battlepass reload`.
+
+### Can I use RivalHarvesterHoes instead of EdTools?
+Yes, since 2.7.0. The battle pass needs one of the two for passive XP and the farm challenge. With only one installed that one is used; with both, `xp.passive.source` decides (`EDTOOLS` by default, or `RIVAL_HARVESTER_HOES`), and changing it needs a restart. The boot log says `Hooked into EdTools` or `Hooked into RivalHarvesterHoes`, so you can see which one is live; with neither installed it explains why and the plugin does not enable.
+
+With harvester hoes, every crop break is one farmed block: the extra yield the hoe's enchants add does not multiply pass XP. The id a break reports is the crop's material, so `xp.passive.tool-overrides` takes entries like `SUGAR_CANE: 1.0` (in capitals) and a farm challenge can use `filter: WHEAT`.
 
 ### How do I know a pet's farming boost is actually working?
 Since 2.4.0, look at `%battlepass_boost%` (or the `{boost}` line of the `xp-info` tile, if your menu prints it): it is the boost in percentage points the farming drain is paying with right now, `0.0` when nothing matching is equipped. Before 2.4.0 the only visible number was the per-tool XP rate, which a level-1 pet moves from `0.5` to `0.502` - not something anyone notices.
