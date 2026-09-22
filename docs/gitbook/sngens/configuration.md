@@ -1422,8 +1422,8 @@ events:
 | `sell_multiplier` | `multiplier` | Drop value is multiplied for every sale |
 
 Common fields on every event: `display-name`, `duration` in seconds, `chance` as its weight in
-random mode, `only-by-command`, the `start-message` and `end-message` lists, and
-`blacklisted_generators`.
+random mode, `only-by-command`, the `start-message` and `end-message` lists,
+`blacklisted_generators`, and the optional `bossbar` section described below.
 
 `{name}`, `{duration}` and `{next_duration}` are available in the two message lists.
 
@@ -1456,6 +1456,37 @@ random mode, `only-by-command`, the `start-message` and `end-message` lists, and
 or reward generator out of a tier boost or a mixed up event.
 {% endhint %}
 
+### Boss bar
+
+Any event can show a boss bar to every online player while it runs. Add a `bossbar` section to
+the event:
+
+```yaml
+    chaos_drops:
+      # ...
+      bossbar:
+        enabled: true
+        text: '&#ff00ff&lChaos Drops &8| &7Time left: &f{time_left}'
+        color: PURPLE
+        style: SOLID
+```
+
+| Key | Values |
+|-----|--------|
+| `enabled` | `true` shows the bar. `false`, or no `bossbar` section at all, shows none. |
+| `text` | Color codes and hex colors work. Placeholders: `{name}`, `{time_left}`, `{duration}`. |
+| `color` | `PINK`, `BLUE`, `RED`, `GREEN`, `YELLOW`, `PURPLE`, `WHITE` |
+| `style` | `SOLID`, `SEGMENTED_6`, `SEGMENTED_10`, `SEGMENTED_12`, `SEGMENTED_20` |
+
+The bar starts full and drains as the event runs out. Players who join mid-event see it too.
+`/gens reload` applies a changed look right away. An unknown color or style falls back to
+`WHITE` or `SOLID` and logs a warning in the console.
+
+{% hint style="warning" %}
+`events.yml` is never rewritten on update. On a server that already has the file, add the
+`bossbar` section to each event yourself.
+{% endhint %}
+
 ```yaml
 # =============================================================================
 #  SnGens - Events
@@ -1476,6 +1507,14 @@ or reward generator out of a tier boost or a mixed up event.
 #    start-message, end-message, blacklisted_generators
 #
 #  Placeholders in start/end messages: {name} {duration} {next_duration}
+#
+#  Boss bar (optional, per event). Shown to every online player while the
+#  event runs; it starts full and drains as the time runs out. An event
+#  without a `bossbar` section, or with `enabled: false`, shows no bar.
+#    bossbar.enabled → true / false
+#    bossbar.text    → placeholders: {name} {time_left} {duration}
+#    bossbar.color   → PINK, BLUE, RED, GREEN, YELLOW, PURPLE, WHITE
+#    bossbar.style   → SOLID, SEGMENTED_6, SEGMENTED_10, SEGMENTED_12, SEGMENTED_20
 # =============================================================================
 
 events:
@@ -1513,6 +1552,11 @@ events:
         - '  &#ff00ff&lEvent Ended'
         - '  &#ff00ffNext event in: &f{next_duration}'
         - '&7'
+      bossbar:
+        enabled: true
+        text: '&#ff00ff&lChaos Drops &8| &7Time left: &f{time_left}'
+        color: PURPLE
+        style: SOLID
       blacklisted_generators:
         - disabled_generator_id
 
@@ -1536,6 +1580,11 @@ events:
         - '  &#ff1744&lEvent Ended'
         - '  &#ff1744Next event in: &f{next_duration}'
         - '&7'
+      bossbar:
+        enabled: true
+        text: '&#ff1744&lTurbo Speed &8| &7Time left: &f{time_left}'
+        color: RED
+        style: SOLID
       blacklisted_generators:
         - disabled_generator_id
 
@@ -1559,6 +1608,11 @@ events:
         - '  &#00b0ff&lEvent Ended'
         - '  &#00b0ffNext event in: &f{next_duration}'
         - '&7'
+      bossbar:
+        enabled: true
+        text: '&#00b0ff&lDrop Rain &8| &7Time left: &f{time_left}'
+        color: BLUE
+        style: SOLID
       blacklisted_generators:
         - disabled_generator_id
 
@@ -1582,6 +1636,11 @@ events:
         - '  &#00e676&lEvent Ended'
         - '  &#00e676Next event in: &f{next_duration}'
         - '&7'
+      bossbar:
+        enabled: true
+        text: '&#00e676&lTier Boost &8| &7Time left: &f{time_left}'
+        color: GREEN
+        style: SOLID
       blacklisted_generators:
         - disabled_generator_id
 
@@ -1605,6 +1664,11 @@ events:
         - '  &#ffd600&lEvent Ended'
         - '  &#ffd600Next event in: &f{next_duration}'
         - '&7'
+      bossbar:
+        enabled: true
+        text: '&#ffd600&lGold Rush &8| &7Time left: &f{time_left}'
+        color: YELLOW
+        style: SOLID
       blacklisted_generators:
         - disabled_generator_id
 ```

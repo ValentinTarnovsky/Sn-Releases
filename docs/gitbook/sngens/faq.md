@@ -340,6 +340,14 @@ To keep the system but protect specific generators, add their ids to
 `corruption.blacklisted-generators`, or set `corrupted.enabled: false` on the generator itself in
 `generators.yml`.
 
+### How do I show a boss bar during an event?
+
+Add a `bossbar` section to the event in `events.yml`, with `enabled: true`, a `text`, a `color`
+and a `style`. Then run `/gens reload`.
+
+`events.yml` is never rewritten on update, so an older file has no boss bars until you add them.
+The fields and a full example are in the configuration page, under `events.yml`.
+
 ### Which changes need a restart, and which need only a reload?
 
 `/gens reload` covers configuration, generators, wands, events, storages, gear, menus and

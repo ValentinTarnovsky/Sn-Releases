@@ -48,7 +48,8 @@ production. Everything is configured in YAML, and nothing is hardcoded.
 - **Equipment.** Off-hand items and four piece armor sets that grant generator speed, tier
   offset, sell multiplier, drop multiplier and lucky double drops.
 - **Server events.** Timed global modifiers such as double drops, faster ticks, a tier boost, a
-  sell multiplier or fully randomised drops, on a rotation or launched by command.
+  sell multiplier or fully randomised drops, on a rotation or launched by command. Each event can
+  show its own boss bar, with its own text, color and style, that drains as it runs out.
 - **Leaderboard.** `/gens top` ranks players or entire islands by the total value of everything
   they have placed, with broadcasts when the podium changes.
 - **Generator vault.** Generators removed by a pickup, an island kick or a disband are stored
