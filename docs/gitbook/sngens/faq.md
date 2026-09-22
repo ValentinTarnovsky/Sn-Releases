@@ -74,6 +74,16 @@ is skipped with a console warning naming the missing id. The database rows are l
 
 Put the id back and run `/gens reload` to bring them fully back to life.
 
+Blocks still stored under the missing id show up in `/gens inspect <player>` as an "Unknown
+tier" item with that id, so you can see who still owns them.
+
+### How do I see which generators a player or island has?
+
+Run `/gens inspect <player>`. It opens a read-only menu with one item per tier and the amount,
+and a toggle that widens the view to the player's whole island. Nothing in the menu upgrades or
+removes anything. It reads the database, so it works for offline players too. The node is
+`sngens.admin.inspect`, which `sngens.admin` already includes. See [Commands](commands.md).
+
 ### How do I give a rank more generator slots or a better sell multiplier?
 
 Two permission families do this, and both are additive across every node the player holds:

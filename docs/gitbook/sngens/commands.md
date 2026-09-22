@@ -69,6 +69,32 @@ give one of them a different name.
 
 `/gens pause` lives in memory only. A restart always comes back unpaused.
 
+### Inspection
+
+| Command | Permission | What it does |
+|---------|------------|--------------|
+| `/gens inspect <player\|uuid>` | `sngens.admin.inspect` | Open a read-only menu of that player's generators |
+
+```
+/gens inspect Notch
+/gens inspect 069a79f4-44e9-4726-a5be-fca90e38aaf5
+```
+
+Pass the UUID for a player who has not joined in a long time. The server only remembers the
+names of recent players.
+
+The menu looks like `/gens upgrade`, one item per tier with the amount, but nothing in it changes
+anything. Only the arrows and the two toggles react to clicks.
+
+The view toggle switches between the player's own generators and those of their whole island.
+It only appears when the player has an island. The sort toggle switches between most owned
+first and upgrade chain order. The summary item shows the island, the totals, the corrupted
+count and the player's slots.
+
+The data is read from the database when you run the command, so offline players are included,
+even when their island is not loaded. Run the command again to refresh the menu. For an offline
+player, the slot maximum leaves out `sngens.max.<n>` permission bonuses.
+
 ### Player economy
 
 | Command | Aliases | Permission | What it does |

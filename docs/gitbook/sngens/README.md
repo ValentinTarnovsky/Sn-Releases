@@ -45,6 +45,8 @@ production. Everything is configured in YAML, and nothing is hardcoded.
   commands.
 - **Admin adjust.** `/gens collector adjust` and `/gens hopper adjust` scale everything a block
   stores by a percent, for compensation or corrections.
+- **Inspect menu.** `/gens inspect <player>` shows staff a player's or island's generators per
+  tier in a read-only menu, offline players included.
 - **Equipment.** Off-hand items and four piece armor sets that grant generator speed, tier
   offset, sell multiplier, drop multiplier and lucky double drops.
 - **Server events.** Timed global modifiers such as double drops, faster ticks, a tier boost, a

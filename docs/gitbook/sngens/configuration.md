@@ -1,6 +1,6 @@
 # Configuration
 
-SnGens ships eleven configuration files plus one language file and eight menu layouts. Every
+SnGens ships eleven configuration files plus one language file and nine menu layouts. Every
 one of them is plain YAML, and every player facing string in them supports colour codes.
 
 | File | What it holds | Updated on new versions |
@@ -12,7 +12,7 @@ one of them is plain YAML, and every player facing string in them supports colou
 | `storages.yml` | Collector, collector levels, infinite hopper, admin adjust | Merged |
 | `armors.yml` | Armor sets and their full set bonuses | Seeded once |
 | `offhands.yml` | Off-hand items and their bonuses | Seeded once |
-| `gui/*.yml` | The eight menu layouts | Merged |
+| `gui/*.yml` | The nine menu layouts | Merged |
 | `lang/messages_<code>.yml` | Every message the plugin sends | Merged |
 
 **Merged** means the plugin inserts keys that a new version added into your existing file on
@@ -2513,7 +2513,7 @@ offhands:
 
 ## gui/
 
-Eight menu layouts. They share the same conventions:
+Nine menu layouts. They share the same conventions:
 
 - `title` is the menu name, `size` is the slot count, and slots are numbered from 0.
 - `item-slots` or `entry-slots` list where the dynamic content goes. Content is paginated over
@@ -2784,6 +2784,166 @@ items:
     lore:
       - "&7Click to switch which generators"
       - "&7this menu shows."
+      - "&7"
+      - "{view_options}"
+      - "&7"
+      - "&eClick to cycle."
+
+  sort-toggle:
+    material: HOPPER
+    display-name: "&eSort: &f{sort_mode}"
+    slots: [52]
+    lore:
+      - "&7Click to switch the sort order"
+      - "&7of generators in this menu."
+      - "&7"
+      - "{sort_options}"
+      - "&7"
+      - "&eClick to cycle."
+
+  filler:
+    material: GRAY_STAINED_GLASS_PANE
+    display-name: "&7"
+    slots: [46, 47, 49, 51]
+    lore: []
+```
+
+### gui/inspect_gens_gui.yml
+
+The read-only staff menu opened by `/gens inspect <player|uuid>`. It lists a player's
+generators, or their whole island's, one entry per tier, and nothing in it changes anything.
+
+The view toggle only renders when the player has an island. `default-view-mode` picks the
+starting view. Entry lore accepts `{amount}`, `{amount_short}`, `{id}` and `{corrupted}`, and
+`unknown-item` is used for rows whose tier id is no longer in `generators.yml`. The summary item
+accepts `{target}`, `{view_mode}`, `{island}`, `{members}`, `{total}`, `{corrupted}`, `{tiers}`,
+`{placed}` and `{max}`.
+
+```yaml
+# =============================================================================
+#  SnGens - Inspect Generators GUI
+# =============================================================================
+#  Read-only staff menu opened via /sngens inspect <player|uuid>
+#  (permission sngens.admin.inspect). Lists the generators of a player, or of
+#  that player's whole SuperiorSkyblock2 island, one item per tier. Nothing in
+#  this menu upgrades, removes or changes anything.
+#
+#  The data is a snapshot read from the database when the command runs, so
+#  offline players are included. Reopen the menu to refresh it.
+#
+#  View modes (toggle in slot 50, hidden when the player has no island):
+#    PERSONAL - only the inspected player's generators
+#    ISLAND   - the generators of every member of the player's island
+#
+#  Sort modes (toggle in slot 52):
+#    QUANTITY - most-owned first
+#    TIER     - upgrade-chain order, lowest tier first (unknown tiers last)
+#
+#  Lore placeholders for generator items (and unknown-item):
+#    {amount}  {amount_short}  {id}  {corrupted}
+#    {amount} includes corrupted generators; {corrupted} is how many of them are.
+#
+#  Summary item placeholders:
+#    {target}  {view_mode}  {island}  {members}  {total}  {corrupted}  {tiers}
+#    {placed}  {max}
+#    {placed}/{max} are the inspected player's own slots. For an offline player
+#    {max} counts the default plus the /sngens addmax bonus only; sngens.max.<n>
+#    permission bonuses need the player online.
+# =============================================================================
+
+title: "Inspect: {target}"
+size: 54
+
+# Starting view when the inspected player has an island: PERSONAL or ISLAND.
+default-view-mode: PERSONAL
+
+# Slots that hold the per-tier entries (top 5 rows = 0..44).
+item-slots: [0, 1, 2, 3, 4, 5, 6, 7, 8,
+             9, 10, 11, 12, 13, 14, 15, 16, 17,
+             18, 19, 20, 21, 22, 23, 24, 25, 26,
+             27, 28, 29, 30, 31, 32, 33, 34, 35,
+             36, 37, 38, 39, 40, 41, 42, 43, 44]
+
+# Lore for each generator entry (the item itself is the tier's generator item).
+lore:
+  - "&7Amount: &f{amount} &8({amount_short})"
+  - "&7Tier id: &f{id}"
+
+# Shown for generators whose tier id is no longer defined in generators.yml.
+unknown-item:
+  material: BARRIER
+  display-name: "&cUnknown tier: &f{id}"
+  lore:
+    - "&7Amount: &f{amount} &8({amount_short})"
+    - "&7This tier id is not defined"
+    - "&7in generators.yml anymore."
+
+# Shown as {island} when the inspected player has no island.
+no-island-label: "None"
+
+
+# View / sort labels and option formatting.
+view-modes:
+  personal: "Personal"
+  island: "Island"
+
+sort-modes:
+  quantity: "By Quantity"
+  tier: "By Tier"
+
+view-option-selected: " &a❯ &f{mode}"
+view-option-unselected: " &7  {mode}"
+sort-option-selected: " &a❯ &f{mode}"
+sort-option-unselected: " &7  {mode}"
+
+
+# -----------------------------------------------------------------------------
+# Static / nav items.
+# -----------------------------------------------------------------------------
+items:
+
+  previous-page:
+    type: PREVIOUS_PAGE
+    material: TIPPED_ARROW
+    display-name: "&cPrevious Page"
+    slots: [45]
+    lore:
+      - "&7Click to go to the previous page!"
+    color: { r: 255, g: 0, b: 0 }
+
+  next-page:
+    type: NEXT_PAGE
+    material: TIPPED_ARROW
+    display-name: "&aNext Page"
+    slots: [53]
+    lore:
+      - "&7Click to go to the next page!"
+    color: { r: 0, g: 255, b: 0 }
+
+  summary:
+    material: BOOK
+    display-name: "&e{target}"
+    slots: [48]
+    lore:
+      - "&7View: &f{view_mode}"
+      - "&7Island: &f{island}"
+      - "&7Members: &f{members}"
+      - "&7"
+      - "&7Generators: &f{total}"
+      - "&7Corrupted: &c{corrupted}"
+      - "&7Tiers: &f{tiers}"
+      - "&7"
+      - "&7Slots of {target}: &f{placed}/{max}"
+      - "&7"
+      - "&8Snapshot from when the menu opened."
+
+  view-toggle:
+    material: OAK_SIGN
+    display-name: "&eView: &f{view_mode}"
+    slots: [50]
+    lore:
+      - "&7Click to switch between the player's"
+      - "&7generators and their island's."
       - "&7"
       - "{view_options}"
       - "&7"
@@ -3380,6 +3540,14 @@ upgrade-in-progress: "&cAn upgrade is already running. Wait for it to finish."
 
 
 # -----------------------------------------------------------------------------
+# Inspect (/gens inspect <player>, read-only staff view)
+# -----------------------------------------------------------------------------
+inspect-loading: "&7Loading the generators of &e{target}&7..."
+inspect-busy: "&cYour previous inspect is still loading. Wait for it to open."
+inspect-failed: "&cCould not load the generators of &e{target}&c. Check the console."
+
+
+# -----------------------------------------------------------------------------
 # Repair
 # -----------------------------------------------------------------------------
 fix-all: "&aAll of your broken generators have been repaired."
@@ -3598,6 +3766,9 @@ help-entries:
   removegenerators:
     usage: "<player>"
     description: "Remove all of a player's generators"
+  inspect:
+    usage: "<player|uuid>"
+    description: "Inspect a player's or island's generators (read-only)"
   addupgrades:
     usage: "<player> <amount>"
     description: "Add bonus upgrade-menu uses to a player's island"

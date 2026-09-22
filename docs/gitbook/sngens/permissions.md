@@ -43,10 +43,14 @@ command available to everyone.
 | `sngens.command.debugspawn` | `op` | `/gens debugspawn` |
 | `sngens.admin.handicap` | `op` | `/gens handicap` |
 | `sngens.admin.wipeuser` | `op` | `/gens wipeuser`, the destructive purge |
+| `sngens.admin.inspect` | `op` | `/gens inspect`, the read-only view of a player's generators |
 
 `sngens.admin` also acts as a general override in a few places: it bypasses the island only
 restriction on wands, the generator slot check when using a build wand, and the owner check when
 selling a display shop with a sellwand.
+
+`sngens.admin` also grants `sngens.admin.inspect` as a child node. Grant `sngens.admin.inspect`
+on its own to let a moderator inspect players without any other admin power.
 
 ## Numeric nodes
 
