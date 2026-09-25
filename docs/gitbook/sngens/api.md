@@ -91,6 +91,11 @@ and no items lost.
 | `BuildWandUseEvent` | A build wand preview is confirmed | Nothing is built, no charge, no use spent |
 | `UpgradeWandUseEvent` | An upgrade wand is swung, free or radius | No upgrade, no charge, no use spent |
 | `AdminWandSelectEvent` | The admin region wand sets a corner | The previous selection is kept |
+| `SlotTransferEvent` | Stored generator slots are about to move between two players | The transfer is refused, nothing moves |
+| `SellMultiplierTransferEvent` | Part of a stored sell multiplier is about to move between two players | The transfer is refused, nothing moves |
+
+The two transfer events carry UUIDs, because either player may be offline. They fire on the
+sender's region thread while the sender is online, and on the global thread otherwise.
 
 Notification events fire after the fact. They cannot be cancelled.
 
@@ -228,6 +233,8 @@ Synchronous methods read in-memory state. Call them on the main thread.
 | `getPlacedCount(UUID)` | `int` | Generators currently placed |
 | `getMaxSlots(UUID)` | `int` | Slot allowance. Permission bonuses only count while the player is online |
 | `getEffectiveSellMultiplier(Player)` | `double` | The fully resolved multiplier for a sale |
+| `getSlotBreakdown(UUID)` | `Optional<SlotBreakdown>` | Slots split into base, permission and stored, plus the transferable amount |
+| `getSellMultiplierBreakdown(UUID)` | `Optional<SellMultiplierBreakdown>` | Stored multiplier, its transfer floor and the transferable part |
 | `getGeneratorAt(Location)` | `Optional<GeneratorView>` | Empty when the block is not a generator |
 | `isGenerator(Location)` | `boolean` | Cheap existence check |
 | `getPlacedHopperCount(UUID)` | `int` | Infinite hoppers placed by that owner |
@@ -355,6 +362,83 @@ api.getGeneratorAt(loc).ifPresent(gen -> {
 });
 ```
 
+## Transfers
+
+These two methods move what a player owns to another player. Both players may be offline.
+
+| Method | Returns | Notes |
+|--------|---------|-------|
+| `transferSlots(UUID, UUID, int)` | `CompletableFuture<TransferResult>` | Moves stored generator slots from the first player to the second |
+| `transferSellMultiplier(UUID, UUID, double)` | `CompletableFuture<TransferResult>` | Moves part of the stored sell multiplier |
+
+Only stored values move. Base slots, `sngens.max.<n>` permission slots and every other
+multiplier source stay with their owner. So rank slots can never reach another account.
+
+SnGens checks and writes in one step. For an online sender, that step runs on the sender's own
+thread, where their generator placements also run. The sender cannot place a generator in
+between and end up above the limit.
+
+A transfer is refused, with nothing changed, when:
+
+* the sender does not store that much, or their multiplier would drop below `player-defaults.multiplier`
+* the sender would keep more generators placed than slots
+* the receiver would pass an enabled `player-generator-limit` or `player-multiplier-limit`
+* either player already has a transfer running, or a listener cancelled the event
+
+{% hint style="info" %}
+While the sender is offline, SnGens cannot read their permission slots. The free slot check
+then counts only base and stored slots. Call `getSlotBreakdown(uuid)` and read
+`transferable()` for the exact amount the sender side accepts right now.
+{% endhint %}
+
+Both rows are saved in one database transaction before the future completes. A success
+completes on an async thread. A refusal may complete on the calling thread or on the sender's
+thread. Always hop back before you touch the Bukkit API. SnGens sends no chat message, so render
+the result yourself.
+
+```java
+UUID from = sender.getUniqueId();
+api.getSlotBreakdown(from).ifPresent(b ->
+        sender.sendMessage("You can transfer up to " + b.transferable() + " slots"));
+
+api.transferSlots(from, target.getUniqueId(), 5).thenAccept(result ->
+        Bukkit.getScheduler().runTask(this, () -> {
+            switch (result.status()) {
+                case SUCCESS -> sender.sendMessage("Sent 5 slots, you keep " + (int) result.fromStored());
+                case NOT_ENOUGH_FREE_SLOTS -> sender.sendMessage("Pick some generators up first");
+                case BELOW_MINIMUM -> sender.sendMessage("You do not have that many transferable slots");
+                default -> sender.sendMessage("Transfer refused: " + result.status());
+            }
+        }));
+```
+
+{% hint style="warning" %}
+The transfer events have no setter for the amount. To charge a tax, check the balance in the
+listener and cancel when the player cannot pay. Take the money once the result reports
+`SUCCESS`, because the transfer is validated again after the listeners.
+{% endhint %}
+
+A `SlotBreakdown` splits the slots into `base`, `permission` and `stored`. `permission` reads
+`0` while the player is offline. In both breakdowns, `limit` is `-1` when that cap is disabled.
+
+On `SUCCESS`, a `TransferResult` carries the stored values right after the transfer in
+`fromStored` and `toStored`. On a refusal they are the current values. `amount` is always the
+amount you asked for.
+
+`TransferStatus` reports why a transfer succeeded or was refused:
+
+| Status | Meaning |
+|--------|---------|
+| `SUCCESS` | The amount moved |
+| `INVALID_REQUEST` | A null player id, or an amount that is not a positive finite number |
+| `SAME_PLAYER` | The sender and the receiver are the same player |
+| `UNKNOWN_PLAYER` | One of the players never joined since SnGens was installed |
+| `BELOW_MINIMUM` | The sender does not own that much: more slots than stored, or a multiplier below `player-defaults.multiplier` |
+| `NOT_ENOUGH_FREE_SLOTS` | Slots only. The sender would keep more generators placed than slots |
+| `TARGET_LIMIT` | The receiver would pass an enabled `player-generator-limit` or `player-multiplier-limit`, or its stored value is not valid. For slots, only base and stored slots count |
+| `BUSY` | One of the players already has a transfer running, or the server is stopping. Retry later |
+| `CANCELLED` | A `SlotTransferEvent` or `SellMultiplierTransferEvent` listener cancelled the transfer |
+
 ## Views
 
 Every returned object is an immutable snapshot. `Location` and `ItemStack` values are cloned,
@@ -376,6 +460,9 @@ so mutating them never affects SnGens.
 | `UpgradeStepView` | `level`, `fromGeneratorId`, `toGeneratorId`, `toDisplayName`, `cost`, `cumulativeCost` |
 | `UpgradeQuote` | `fromGeneratorId`, `toGeneratorId`, `levels`, `totalCost`, `capped`, `steps` |
 | `UpgradeResult` | `status`, `success`, `dryRun`, `fromGeneratorId`, `toGeneratorId`, `levels`, `totalCost`, `charged`, `failedRequirements` |
+| `SlotBreakdown` | `uuid`, `online`, `placed`, `base`, `permission`, `stored`, `limit`, `max`, `transferable`, `free` |
+| `SellMultiplierBreakdown` | `uuid`, `stored`, `minimum`, `limit`, `transferable` |
+| `TransferResult` | `status`, `success`, `from`, `to`, `amount`, `fromStored`, `toStored` |
 
 A `HopperView` or `CollectorView` is a snapshot taken when you asked for it. Both keep
 absorbing items afterwards, so query again on each menu refresh instead of caching.
@@ -479,7 +566,11 @@ Call `getApiVersion()` for the API contract version. It is independent of the pl
 Additions bump the minor component. Existing members are never removed or changed; deprecated
 members keep working.
 
-The current contract version is `1.5.0`. It added collector levels in SnGens `2.59.0`:
+The current contract version is `1.6.0`. It added player to player transfers in SnGens `2.63.0`:
+`transferSlots`, `transferSellMultiplier`, `getSlotBreakdown`, `getSellMultiplierBreakdown`,
+`SlotTransferEvent` and `SellMultiplierTransferEvent`.
+
+Version `1.5.0` added collector levels in SnGens `2.59.0`:
 `CollectorUpgradeEvent`, `CollectorView#level()`, `#effectiveLevel()`, `#areaSide()` and
 `StorageRefundIssuedEvent#getCollectorLevels()`.
 

@@ -394,7 +394,8 @@ which the plugin creates on first connect. Moving existing data means copying th
 
 ### Does the plugin expose a developer API?
 
-Yes, twenty events, a read-only query service and a sell multiplier extension point, all in
-the plugin jar. Every wand swing fires a cancellable event, and the service reads and creates
-wand items. See [Developer API](api.md). Server owners can switch every API event off with
+Yes, twenty two events, a query service and a sell multiplier extension point, all in the
+plugin jar. Every wand swing fires a cancellable event, and the service reads and creates
+wand items. It can also upgrade generators, and move stored slots or sell multiplier from one
+player to another. See [Developer API](api.md). Server owners can switch every API event off with
 `api-events.enabled: false`.
