@@ -251,7 +251,8 @@ contents all survive a round trip untouched.
 
 An item's name and lore resolve placeholders per player, in the preview and on the item that lands
 in the inventory. Both `%player_name%` style PlaceholderAPI tokens and `&` or `&#RRGGBB` colors
-work.
+work. Only the lore lines that actually change are rewritten. Every other line reaches the player
+exactly as stored, fonts and hover or click events included.
 
 ### Command items
 
